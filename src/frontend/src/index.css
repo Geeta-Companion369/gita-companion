@@ -1,0 +1,2062 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-display: Fraunces;
+    --font-body: Lora;
+    --font-mono: GeistMono;
+    --radius: 0.375rem;
+
+    /* VIBRANT SACRED PALETTE — Bold, radiant, at full strength */
+    --background: 0.93 0.06 72; /* Warm candlelit parchment — luminous */
+    --foreground: 0.1 0.09 28; /* Deep ink-black with warmth */
+    --card: 0.95 0.05 74; /* Lighter parchment for card surfaces */
+    --card-foreground: 0.1 0.09 28;
+    --popover: 0.95 0.05 74;
+    --popover-foreground: 0.1 0.09 28;
+
+    --primary: 0.16 0.09 32; /* Deep sacred brown — ink-dark */
+    --primary-foreground: 0.95 0.05 74;
+
+    --secondary: 0.68 0.24 48; /* Warm cognac — mid-tone accent */
+    --secondary-foreground: 0.1 0.09 28;
+    --muted: 0.82 0.07 68;
+    --muted-foreground: 0.46 0.09 52;
+
+    /* BRILLIANT GOLD — maximum luminosity */
+    --accent: 0.78 0.34 54; /* Radiant illuminated gold at full strength */
+    --accent-foreground: 0.1 0.09 28;
+
+    /* Extended sacred color scale */
+    --gold-bright: 0.86 0.4 54; /* Maximum brightness gold */
+    --gold-deep: 0.7 0.3 50; /* Deeper gold for gradients */
+    --saffron: 0.65 0.28 32; /* Bold deep saffron */
+    --lapis-blue: 0.5 0.26 268; /* Rich royal lapis blue */
+    --sacred: 0.54 0.24 280; /* Luminous sacred violet */
+    --sacred-foreground: 0.95 0.05 74;
+
+    --destructive: 0.56 0.28 24;
+    --destructive-foreground: 0.95 0.05 74;
+
+    --border: 0.78 0.14 60;
+    --input: 0.88 0.06 70;
+    --ring: 0.78 0.34 54;
+
+    --chart-1: 0.78 0.34 54;
+    --chart-2: 0.65 0.28 32;
+    --chart-3: 0.5 0.26 268;
+    --chart-4: 0.68 0.24 48;
+    --chart-5: 0.54 0.24 280;
+
+    --sidebar: 0.93 0.06 72;
+    --sidebar-foreground: 0.1 0.09 28;
+    --sidebar-primary: 0.16 0.09 32;
+    --sidebar-primary-foreground: 0.95 0.05 74;
+    --sidebar-accent: 0.78 0.34 54;
+    --sidebar-accent-foreground: 0.1 0.09 28;
+    --sidebar-border: 0.78 0.14 60;
+    --sidebar-ring: 0.78 0.34 54;
+
+    --spine-color: 0.32 0.16 36;
+    --spine-light: 0.52 0.18 44;
+    --page-edge: 0.7 0.14 54;
+
+    /* === NAMED SACRED COLOR TOKENS (for direct CSS usage) === */
+    --color-gold: #ffd700;
+    --color-saffron: #ff8c00;
+    --color-lotus-pink: #ffb6c1;
+    --color-cream: #fff8f0;
+    --color-parchment: #f5deb3;
+    --color-maroon: #8b2500;
+    --color-lapis: #3f51b5;
+    --color-sacred-glow: rgba(212, 175, 55, 0.4);
+
+    /* === SPIRITUAL PALETTE SYSTEM — Amber, Gold, Saffron, Lapis, Crimson, Emerald === */
+    --rb-home-1: oklch(0.75 0.34 54);
+    --rb-home-2: oklch(0.65 0.3 46);
+    --rb-home-3: oklch(0.52 0.26 268);
+    --rb-home-4: oklch(0.5 0.24 268);
+    --rb-home-5: oklch(0.6 0.26 268);
+    --rb-home-6: oklch(0.75 0.3 54);
+
+    --rb-guidance-1: oklch(0.52 0.26 268);
+    --rb-guidance-2: oklch(0.46 0.24 268);
+    --rb-guidance-3: oklch(0.6 0.24 32);
+    --rb-guidance-4: oklch(0.52 0.24 268);
+
+    --rb-emergency-1: oklch(0.28 0.22 18);
+    --rb-emergency-2: oklch(0.22 0.2 14);
+    --rb-emergency-3: oklch(0.32 0.24 20);
+    --rb-emergency-4: oklch(0.26 0.22 16);
+
+    --rb-garbha-1: oklch(0.76 0.22 340);
+    --rb-garbha-2: oklch(0.8 0.2 32);
+    --rb-garbha-3: oklch(0.72 0.24 350);
+    --rb-garbha-4: oklch(0.78 0.22 36);
+
+    --rb-temple-1: oklch(0.78 0.34 54);
+    --rb-temple-2: oklch(0.68 0.32 46);
+    --rb-temple-3: oklch(0.6 0.28 40);
+    --rb-temple-4: oklch(0.74 0.32 52);
+
+    --rb-nature-1: oklch(0.54 0.24 160);
+    --rb-nature-2: oklch(0.48 0.22 155);
+    --rb-nature-3: oklch(0.62 0.2 160);
+    --rb-nature-4: oklch(0.52 0.22 158);
+  }
+
+  .dark {
+    --background: 0.2 0.1 46;
+    --foreground: 0.93 0.05 74;
+    --card: 0.24 0.09 44;
+    --card-foreground: 0.93 0.05 74;
+    --popover: 0.26 0.09 46;
+    --popover-foreground: 0.93 0.05 74;
+
+    --primary: 0.86 0.3 54;
+    --primary-foreground: 0.2 0.1 46;
+
+    --secondary: 0.74 0.18 52;
+    --secondary-foreground: 0.93 0.05 74;
+    --muted: 0.33 0.09 48;
+    --muted-foreground: 0.74 0.09 62;
+
+    --accent: 0.84 0.38 54;
+    --accent-foreground: 0.1 0.09 28;
+
+    --gold-bright: 0.9 0.4 54;
+    --gold-deep: 0.78 0.32 52;
+    --saffron: 0.74 0.3 32;
+    --lapis-blue: 0.58 0.28 268;
+    --sacred: 0.7 0.26 280;
+    --sacred-foreground: 0.93 0.05 74;
+
+    --destructive: 0.7 0.26 26;
+    --destructive-foreground: 0.93 0.05 74;
+
+    --border: 0.34 0.09 46;
+    --input: 0.34 0.09 46;
+    --ring: 0.84 0.38 54;
+
+    --chart-1: 0.84 0.38 54;
+    --chart-2: 0.86 0.3 54;
+    --chart-3: 0.74 0.3 32;
+    --chart-4: 0.74 0.18 52;
+    --chart-5: 0.7 0.26 280;
+
+    --sidebar: 0.2 0.1 46;
+    --sidebar-foreground: 0.93 0.05 74;
+    --sidebar-primary: 0.86 0.3 54;
+    --sidebar-primary-foreground: 0.2 0.1 46;
+    --sidebar-accent: 0.33 0.09 48;
+    --sidebar-accent-foreground: 0.93 0.05 74;
+    --sidebar-border: 0.34 0.09 46;
+    --sidebar-ring: 0.84 0.38 54;
+
+    --spine-color: 0.24 0.1 38;
+    --spine-light: 0.4 0.14 44;
+    --page-edge: 0.38 0.1 50;
+  }
+
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.065'/%3E%3C/svg%3E");
+  }
+}
+
+@font-face {
+  font-family: Lora;
+  src: url("/assets/fonts/Lora.woff2") format("woff2");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Fraunces;
+  src: url("/assets/fonts/Fraunces.woff2") format("woff2");
+  font-display: swap;
+}
+
+@font-face {
+  font-family: GeistMono;
+  src: url("/assets/fonts/GeistMono.woff2") format("woff2");
+  font-display: swap;
+}
+
+@layer utilities {
+  .transition-smooth {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  /* === SHADOWS — richer, deeper, more luminous === */
+  .shadow-sacred {
+    box-shadow: 0 6px 24px rgba(200, 155, 45, 0.42), 0 2px 8px
+      rgba(180, 130, 40, 0.22), inset 0 1px 2px rgba(255, 248, 220, 0.55), 0 0
+      32px rgba(244, 208, 63, 0.18);
+  }
+
+  .shadow-elevated {
+    box-shadow: 0 12px 48px rgba(220, 175, 65, 0.48), 0 4px 12px
+      rgba(180, 130, 40, 0.28), inset 0 2px 4px rgba(255, 248, 220, 0.5), 0 0
+      40px rgba(244, 208, 63, 0.22);
+  }
+
+  .shadow-warm-glow {
+    box-shadow: 0 12px 64px rgba(238, 175, 65, 0.62), 0 4px 16px
+      rgba(200, 155, 55, 0.32), inset 0 2px 4px rgba(255, 248, 220, 0.45), 0 0
+      48px rgba(244, 208, 63, 0.28);
+  }
+
+  /* === DIVINE GLOW — maximum luminosity for sacred elements === */
+  .glow-divine {
+    box-shadow: 0 0 48px rgba(244, 208, 63, 0.35), 0 0 80px
+      rgba(244, 208, 63, 0.2), inset 0 1px 2px rgba(255, 248, 220, 0.6);
+    filter: brightness(1.08);
+  }
+
+  .glow-accent {
+    box-shadow: 0 0 32px rgba(244, 208, 63, 0.28), 0 0 64px
+      rgba(244, 208, 63, 0.15);
+  }
+
+  .shadow-sacred-glow {
+    box-shadow: 0 10px 52px rgba(190, 145, 210, 0.5), 0 3px 12px
+      rgba(160, 120, 200, 0.28), inset 0 1px 2px rgba(255, 248, 220, 0.3);
+  }
+
+  .shadow-candlelight {
+    box-shadow: 0 0 64px rgba(250, 200, 90, 0.5), 0 6px 20px
+      rgba(160, 110, 45, 0.3);
+  }
+
+  .shadow-spine {
+    box-shadow: inset -3px 0 14px rgba(60, 40, 20, 0.35), inset 2px 0 6px
+      rgba(255, 240, 180, 0.22);
+  }
+
+  .shadow-wax-seal {
+    box-shadow: 0 6px 22px rgba(120, 72, 14, 0.42), 0 2px 6px
+      rgba(120, 72, 14, 0.28), inset 0 1px 0 rgba(255, 248, 200, 0.36), inset 0
+      -1px 0 rgba(0, 0, 0, 0.14);
+  }
+
+  .shadow-rainbow-glow {
+    box-shadow: 0 0 32px oklch(0.78 0.34 54 / 0.6), 0 0 64px
+      oklch(0.62 0.3 268 / 0.35), 0 0 96px oklch(0.65 0.28 340 / 0.22);
+  }
+
+  .shadow-divine-gold {
+    box-shadow: 0 0 0 1px oklch(0.78 0.34 54 / 0.4), 0 0 24px
+      oklch(0.78 0.34 54 / 0.6), 0 0 56px oklch(0.78 0.34 54 / 0.25), 0 6px 24px
+      rgba(0, 0, 0, 0.18);
+  }
+
+  /* === GRADIENTS === */
+  .gradient-warm {
+    background: linear-gradient(
+      135deg,
+      oklch(0.78 0.34 54) 0%,
+      oklch(0.7 0.3 50) 100%
+    );
+  }
+
+  .gradient-manuscript-border {
+    background: linear-gradient(
+      90deg,
+      oklch(0.72 0.26 52) 0%,
+      oklch(0.86 0.4 54) 30%,
+      oklch(0.76 0.32 300) 50%,
+      oklch(0.86 0.4 54) 70%,
+      oklch(0.72 0.26 52) 100%
+    );
+  }
+
+  .gradient-parchment {
+    background: radial-gradient(
+        ellipse at 15% 10%,
+        oklch(0.9 0.09 72 / 0.85) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        ellipse at 85% 90%,
+        oklch(0.88 0.1 70 / 0.75) 0%,
+        transparent 50%
+      ),
+      linear-gradient(
+        160deg,
+        oklch(0.97 0.04 74) 0%,
+        oklch(0.94 0.06 70) 40%,
+        oklch(0.91 0.07 66) 100%
+      );
+    position: relative;
+  }
+
+  .gradient-parchment::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23grain)' opacity='0.06'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  .gradient-sacred {
+    background: linear-gradient(
+      135deg,
+      oklch(var(--sacred) / 0.12) 0%,
+      oklch(var(--accent) / 0.08) 100%
+    );
+  }
+
+  /* === KURUKSHETRA GLOBAL BACKGROUND — sacred image background for all non-reading pages === */
+  .kurukshetra-bg {
+    background-image: url("/assets/generated/home-hero-kurukshetra.dim_1200x600.jpg");
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+
+  /* Spiritual overlay for Kurukshetra background — soft warm haze, not black */
+  .kurukshetra-overlay {
+    position: fixed;
+    inset: 0;
+    background: linear-gradient(
+      160deg,
+      oklch(0.92 0.08 60 / 0.55) 0%,
+      oklch(0.88 0.1 56 / 0.5) 30%,
+      oklch(0.86 0.08 268 / 0.45) 65%,
+      oklch(0.9 0.09 60 / 0.55) 100%
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Sacred overlay — warm amber/cream haze over Kurukshetra image */
+  .sacred-overlay {
+    background: linear-gradient(
+      160deg,
+      oklch(0.14 0.09 32 / 0.62) 0%,
+      oklch(0.16 0.08 36 / 0.58) 50%,
+      oklch(0.14 0.09 32 / 0.62) 100%
+    );
+    pointer-events: none;
+  }
+
+  /* Sacred glass morphism — warm parchment-tinted glass card for use over Kurukshetra background */
+  .sacred-glass {
+    background: linear-gradient(
+      160deg,
+      oklch(0.97 0.07 68 / 0.93) 0%,
+      oklch(0.95 0.08 64 / 0.92) 100%
+    );
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1.5px solid oklch(0.78 0.28 54 / 0.5);
+    box-shadow: 0 4px 30px rgba(180, 130, 45, 0.22), inset 0 1px 0
+      rgba(255, 248, 210, 0.65);
+  }
+
+  /* === SPIRITUAL BACKGROUND UTILITIES — Amber, Gold, Saffron, Lapis === */
+
+  .rainbow-bg-home {
+    background: linear-gradient(
+      135deg,
+      oklch(0.96 0.1 60) 0%,
+      oklch(0.93 0.12 52) 33%,
+      oklch(0.9 0.1 46) 66%,
+      oklch(0.96 0.1 60) 100%
+    );
+    background-size: 300% 300%;
+    animation: rainbow-shift-home 10s ease-in-out infinite;
+  }
+
+  .rainbow-bg-guidance {
+    background: linear-gradient(
+      135deg,
+      oklch(0.88 0.1 268) 0%,
+      oklch(0.82 0.14 268) 33%,
+      oklch(0.9 0.1 280) 66%,
+      oklch(0.88 0.1 268) 100%
+    );
+    background-size: 300% 300%;
+    animation: rainbow-shift-guidance 9s ease-in-out infinite;
+  }
+
+  .rainbow-bg-emergency {
+    background: linear-gradient(
+      160deg,
+      oklch(0.24 0.2 18) 0%,
+      oklch(0.18 0.18 14) 33%,
+      oklch(0.28 0.22 20) 66%,
+      oklch(0.22 0.2 16) 100%
+    );
+    background-size: 300% 300%;
+    animation: rainbow-shift-emergency 10s ease-in-out infinite;
+  }
+
+  .rainbow-bg-garbha {
+    background: linear-gradient(
+      135deg,
+      oklch(0.94 0.14 340) 0%,
+      oklch(0.92 0.16 32) 33%,
+      oklch(0.9 0.14 350) 66%,
+      oklch(0.94 0.14 340) 100%
+    );
+    background-size: 300% 300%;
+    animation: rainbow-shift-garbha 9s ease-in-out infinite;
+  }
+
+  .rainbow-bg-temple {
+    background: linear-gradient(
+      135deg,
+      oklch(0.92 0.14 54) 0%,
+      oklch(0.86 0.18 46) 33%,
+      oklch(0.8 0.2 40) 66%,
+      oklch(0.9 0.16 52) 100%
+    );
+    background-size: 300% 300%;
+    animation: rainbow-shift-temple 10s ease-in-out infinite;
+  }
+
+  .rainbow-bg-nature {
+    background: linear-gradient(
+      135deg,
+      oklch(0.86 0.16 160) 0%,
+      oklch(0.8 0.18 155) 33%,
+      oklch(0.88 0.14 165) 66%,
+      oklch(0.84 0.16 158) 100%
+    );
+    background-size: 300% 300%;
+    animation: rainbow-shift-nature 9s ease-in-out infinite;
+  }
+
+  /* Spiritual card — rich amber/gold parchment — high opacity for image bg readability */
+  .rainbow-card {
+    background: linear-gradient(
+      135deg,
+      oklch(0.97 0.1 60 / 0.96) 0%,
+      oklch(0.95 0.12 52 / 0.94) 33%,
+      oklch(0.93 0.1 48 / 0.94) 66%,
+      oklch(0.97 0.1 60 / 0.96) 100%
+    );
+    background-size: 300% 300%;
+    animation: rainbow-shift-home 12s ease-in-out infinite;
+  }
+
+  /* === LUXURY TILE / JEWEL CARD UTILITIES === */
+
+  .luxury-border {
+    position: relative;
+    border: 0 solid transparent;
+    background-clip: padding-box;
+  }
+
+  .luxury-border::before {
+    content: "";
+    position: absolute;
+    inset: -2.5px;
+    border-radius: inherit;
+    background: linear-gradient(
+      135deg,
+      oklch(0.9 0.42 54) 0%,
+      oklch(0.78 0.34 268) 25%,
+      oklch(0.86 0.4 54) 50%,
+      oklch(0.72 0.3 268) 75%,
+      oklch(0.9 0.42 54) 100%
+    );
+    background-size: 200% 200%;
+    animation: luxury-border-shift 6s linear infinite;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  .luxury-border::after {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    box-shadow: 0 0 28px oklch(0.78 0.34 54 / 0.65), 0 0 56px
+      oklch(0.62 0.28 268 / 0.3), inset 0 1px 0 rgba(255, 248, 220, 0.5);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* Jewel card — spiritual amber/gold/lapis palette — high opacity for readability over image bg */
+  .jewel-card {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: linear-gradient(
+      135deg,
+      oklch(0.97 0.1 60 / 0.96) 0%,
+      oklch(0.95 0.12 52 / 0.94) 33%,
+      oklch(0.93 0.1 48 / 0.94) 66%,
+      oklch(0.97 0.1 60 / 0.96) 100%
+    );
+    background-size: 200% 200%;
+    animation: rainbow-shift-home 10s ease-in-out infinite;
+    border: 2px solid oklch(0.84 0.3 54 / 0.65);
+    box-shadow: 0 8px 40px rgba(0, 0, 0, 0.42), 0 3px 10px rgba(0, 0, 0, 0.28),
+      inset 0 1px 0 rgba(255, 248, 220, 0.7), inset 0 0 50px
+      rgba(255, 220, 120, 0.08);
+  }
+
+  .jewel-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* === DIVINE GLOW === */
+  .divine-glow {
+    filter: drop-shadow(0 0 14px oklch(0.78 0.38 54 / 0.8))
+      drop-shadow(0 0 32px oklch(0.62 0.3 268 / 0.4))
+      drop-shadow(0 0 60px oklch(0.78 0.34 54 / 0.22));
+  }
+
+  .divine-glow-pulse {
+    animation: divine-glow-breathe 3s ease-in-out infinite;
+  }
+
+  /* === LOTUS BORDER — decorative lotus petal border pattern === */
+  .lotus-border {
+    border: 2px solid oklch(var(--accent) / 0.45);
+    border-radius: 8px;
+    box-shadow: 0 0 0 4px oklch(var(--accent) / 0.1), 0 0 0 8px
+      oklch(var(--accent) / 0.05);
+    position: relative;
+  }
+  .lotus-border::before {
+    content: "❀ ✦ ❀ ✦ ❀ ✦ ❀";
+    position: absolute;
+    top: -1.1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
+    letter-spacing: 0.4em;
+    color: oklch(0.72 0.28 52 / 0.65);
+    white-space: nowrap;
+    pointer-events: none;
+    line-height: 1;
+  }
+
+  /* === TEMPLE ARCH HEADER === */
+  .temple-arch-header {
+    position: relative;
+    padding-top: 1rem;
+    text-align: center;
+  }
+  .temple-arch-header::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    height: 3px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      oklch(0.78 0.34 54 / 0.8),
+      oklch(0.66 0.28 268 / 0.5),
+      oklch(0.78 0.34 54 / 0.8),
+      transparent
+    );
+    border-radius: 2px;
+    box-shadow: 0 0 10px oklch(0.78 0.34 54 / 0.4);
+  }
+
+  /* Ticker scroll animation — 75s for comfortable reading */
+  @keyframes tickerScroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  /* === LOTUS CARD — warm soft pink for pregnancy/maternal sections === */
+  .lotus-card {
+    background: linear-gradient(
+      160deg,
+      oklch(0.97 0.08 340 / 0.96) 0%,
+      oklch(0.95 0.1 335 / 0.96) 100%
+    );
+    border: 1.5px solid oklch(0.76 0.22 340 / 0.5);
+    border-radius: 8px;
+    box-shadow: 0 4px 24px rgba(255, 182, 193, 0.3), inset 0 1px 0
+      rgba(255, 240, 245, 0.7);
+  }
+  .lotus-petal {
+    width: 8px;
+    height: 14px;
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    background: linear-gradient(
+      180deg,
+      oklch(0.87 0.24 340),
+      oklch(0.77 0.3 300)
+    );
+    opacity: 0.7;
+    transform-origin: center bottom;
+  }
+
+  /* Glitter star */
+  .glitter-star {
+    display: inline-block;
+    width: 0;
+    height: 0;
+    position: relative;
+  }
+
+  .glitter-star::before,
+  .glitter-star::after {
+    content: "✦";
+    position: absolute;
+    color: oklch(0.84 0.38 54);
+    font-size: 6px;
+    line-height: 1;
+    animation: glitter-twinkle 2s ease-in-out infinite;
+  }
+
+  /* === TYPOGRAPHY === */
+  .text-sanskrit {
+    font-family: var(--font-body);
+    font-size: 1.5rem;
+    line-height: 2.1;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: oklch(var(--foreground));
+    margin-bottom: 1.25rem;
+  }
+
+  .text-translation {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.85;
+    color: oklch(var(--muted-foreground));
+  }
+
+  .text-verse-number {
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: oklch(var(--accent));
+  }
+
+  /* Sacred quote text — glowing gold, large */
+  .text-sacred-quote {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 700;
+    color: oklch(var(--accent));
+    text-shadow: 0 0 20px oklch(var(--accent) / 0.6), 0 0 40px
+      oklch(var(--accent) / 0.3), 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Gold shimmer text — sacred golden glow */
+  .rainbow-shimmer-text {
+    background: linear-gradient(
+      90deg,
+      oklch(0.84 0.38 54),
+      oklch(0.76 0.32 46),
+      oklch(0.68 0.3 32),
+      oklch(0.76 0.32 52),
+      oklch(0.86 0.4 56),
+      oklch(0.84 0.38 54)
+    );
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: rainbow-text-scroll 5s ease infinite;
+  }
+
+  /* === MANUSCRIPT PAGE === */
+  .manuscript-page {
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='500' height='500' filter='url(%23p)' opacity='0.055'/%3E%3C/svg%3E"),
+      radial-gradient(
+        ellipse at 0% 0%,
+        oklch(0.8 0.18 54 / 0.65) 0%,
+        transparent 38%
+      ),
+      radial-gradient(
+        ellipse at 100% 0%,
+        oklch(0.78 0.17 52 / 0.55) 0%,
+        transparent 35%
+      ),
+      radial-gradient(
+        ellipse at 0% 100%,
+        oklch(0.76 0.18 50 / 0.6) 0%,
+        transparent 38%
+      ),
+      radial-gradient(
+        ellipse at 100% 100%,
+        oklch(0.74 0.17 48 / 0.55) 0%,
+        transparent 38%
+      ),
+      linear-gradient(
+        175deg,
+        oklch(0.97 0.05 74) 0%,
+        oklch(0.94 0.06 70) 35%,
+        oklch(0.91 0.07 66) 70%,
+        oklch(0.89 0.08 62) 100%
+      );
+    box-shadow: inset 0 0 100px oklch(0.22 0.08 46 / 0.12), inset -5px 0 80px
+      oklch(0.22 0.08 46 / 0.08), 0 0 56px rgba(230, 190, 100, 0.09);
+    position: relative;
+  }
+
+  .manuscript-page::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 32px;
+    background: linear-gradient(
+      270deg,
+      oklch(0.62 0.18 50 / 0.45) 0%,
+      oklch(0.68 0.14 52 / 0.24) 50%,
+      transparent 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* === PAGE TRANSITION === */
+  @keyframes page-fade-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .page-enter {
+    animation: page-fade-in 0.4s ease-out forwards;
+  }
+
+  /* Golden flash page transition overlay */
+  @keyframes golden-flash {
+    0% {
+      opacity: 0;
+    }
+    10% {
+      opacity: 0.45;
+    }
+    100% {
+      opacity: 0;
+    }
+  }
+
+  .golden-flash-overlay {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(
+      ellipse at center,
+      oklch(0.82 0.36 54 / 0.7) 0%,
+      oklch(0.78 0.34 54 / 0.3) 50%,
+      transparent 80%
+    );
+    pointer-events: none;
+    z-index: 9999;
+    animation: golden-flash 0.6s ease-out forwards;
+  }
+
+  /* === BOOK BINDING SPINE — deep mahogany/gold gradient === */
+  .book-spine {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 18px;
+    z-index: 100;
+    background: linear-gradient(
+      180deg,
+      oklch(0.38 0.18 40) 0%,
+      oklch(0.28 0.14 36) 25%,
+      oklch(0.32 0.16 38) 50%,
+      oklch(0.26 0.14 34) 75%,
+      oklch(0.38 0.18 40) 100%
+    );
+    background-size: 100% 300%;
+    animation: rainbow-shift-spine 8s ease-in-out infinite;
+    box-shadow:
+      inset -2px 0 8px rgba(0, 0, 0, 0.4),
+      inset 1px 0 4px rgba(255, 230, 160, 0.22),
+      2px 0 18px rgba(0, 0, 0, 0.3),
+      4px 0 28px oklch(0.78 0.34 54 / 0.28);
+  }
+
+  .book-spine::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 10%;
+    bottom: 10%;
+    width: 2px;
+    background: repeating-linear-gradient(
+      180deg,
+      oklch(0.92 0.22 54 / 0.65) 0px,
+      oklch(0.92 0.22 54 / 0.65) 4px,
+      transparent 4px,
+      transparent 11px
+    );
+  }
+
+  /* === MANUSCRIPT VERSE BLOCK === */
+  .verse-block {
+    position: relative;
+    padding: 2rem 1.5rem 1.75rem 1.5rem;
+    border-bottom: 1px solid oklch(var(--border) / 0.5);
+    background: transparent;
+    transition: background 0.3s ease;
+  }
+
+  .verse-block:hover {
+    background: oklch(var(--accent) / 0.04);
+  }
+
+  .verse-block:last-child {
+    border-bottom: none;
+  }
+
+  .verse-number-margin {
+    position: absolute;
+    left: -2.5rem;
+    top: 2.25rem;
+    font-family: var(--font-display);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: oklch(var(--accent) / 0.7);
+    writing-mode: horizontal-tb;
+    white-space: nowrap;
+  }
+
+  /* === CHAPTER HEADER === */
+  .chapter-header {
+    font-family: var(--font-display);
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    font-style: italic;
+    font-weight: 700;
+    line-height: 1.1;
+    color: oklch(var(--primary));
+    text-shadow: 0 4px 20px rgba(150, 108, 44, 0.32), 0 0 70px
+      rgba(230, 170, 65, 0.2), 0 0 40px rgba(230, 170, 65, 0.1);
+    letter-spacing: -0.01em;
+    margin-bottom: 1.25rem;
+  }
+
+  /* === ORNATE INITIAL DROP CAP === */
+  .ornate-initial {
+    font-size: 5.5rem;
+    line-height: 3.5rem;
+    float: left;
+    margin-right: 0.65rem;
+    margin-bottom: -0.8rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: oklch(var(--accent));
+    text-shadow: 1.5px 1.5px 0 oklch(var(--primary) / 0.38), 0 4px 16px
+      oklch(var(--accent) / 0.55), 0 0 40px oklch(var(--accent) / 0.3);
+    filter: drop-shadow(0 2px 8px oklch(var(--accent) / 0.4));
+  }
+
+  /* === PARCHMENT SECTION === */
+  .parchment-section {
+    background: radial-gradient(
+        ellipse at 0% 50%,
+        oklch(0.84 0.12 56 / 0.45) 0%,
+        transparent 55%
+      ), linear-gradient(180deg, oklch(0.93 0.09 70) 0%, oklch(0.9 0.1 66) 100%);
+    border-top: 1px solid oklch(var(--border) / 0.58);
+    border-bottom: 1px solid oklch(var(--border) / 0.58);
+  }
+
+  /* === MANUSCRIPT DECORATIVE ELEMENTS === */
+  .ornate-rule {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: oklch(var(--accent) / 0.9);
+    margin: 2rem 0;
+    font-family: var(--font-display);
+    font-size: 1rem;
+  }
+
+  .ornate-rule::before,
+  .ornate-rule::after {
+    content: "";
+    flex: 1;
+    height: 1.5px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      oklch(var(--accent) / 0.5),
+      oklch(var(--accent) / 0.8),
+      oklch(var(--accent) / 0.5),
+      transparent
+    );
+  }
+
+  .divider-ornate {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    color: oklch(var(--accent) / 0.85);
+    margin: 1.75rem 0;
+    text-align: center;
+    font-size: 0.85rem;
+  }
+
+  .divider-ornate::before,
+  .divider-ornate::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      oklch(var(--accent) / 0.55),
+      transparent
+    );
+  }
+
+  .page-break {
+    height: 3rem;
+    margin: 2rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: oklch(var(--accent) / 0.7);
+    font-family: var(--font-display);
+    font-size: 1.4rem;
+    letter-spacing: 0.5em;
+  }
+
+  .chapter-separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin: 2.5rem 0;
+    color: oklch(var(--accent) / 0.8);
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    letter-spacing: 0.3em;
+  }
+
+  .chapter-separator::before,
+  .chapter-separator::after {
+    content: "";
+    width: 60px;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      oklch(var(--accent) / 0.7),
+      transparent
+    );
+  }
+
+  /* === OM SYMBOL — radiant, still, sacred (NO rotation) === */
+  .om-symbol {
+    font-family: var(--font-display);
+    font-size: 6.5rem;
+    line-height: 1;
+    color: oklch(var(--accent));
+    text-shadow: 0 4px 20px oklch(var(--accent) / 0.55), 0 0 60px
+      oklch(var(--accent) / 0.35), 0 0 100px oklch(var(--accent) / 0.18);
+    font-weight: 700;
+    filter: drop-shadow(0 0 16px oklch(var(--accent) / 0.45));
+  }
+
+  /* === OM LOADING — ONLY glow pulse, NO rotation === */
+  @keyframes om-pulse {
+    0%,
+    100% {
+      text-shadow: 0 0 24px oklch(0.72 0.32 52 / 0.6), 0 0 48px
+        oklch(0.68 0.28 50 / 0.3);
+      filter: drop-shadow(0 0 10px oklch(0.68 0.28 50 / 0.45));
+    }
+    50% {
+      text-shadow: 0 0 48px oklch(0.78 0.36 52 / 0.85), 0 0 96px
+        oklch(0.72 0.32 50 / 0.5), 0 0 140px oklch(0.68 0.3 52 / 0.22);
+      filter: drop-shadow(0 0 28px oklch(0.74 0.34 50 / 0.75))
+        drop-shadow(0 0 56px oklch(0.52 0.26 268 / 0.35));
+    }
+  }
+
+  .om-loading {
+    font-family: var(--font-display);
+    font-size: 4.5rem;
+    color: oklch(0.52 0.24 46);
+    display: inline-block;
+    animation: om-pulse 3s ease-in-out infinite;
+    user-select: none;
+    font-weight: 700;
+  }
+
+  /* === MORNING GREETING === */
+  .morning-banner {
+    background: linear-gradient(
+      135deg,
+      oklch(var(--primary) / 0.09) 0%,
+      oklch(var(--accent) / 0.14) 100%
+    );
+    border: 1px solid oklch(var(--accent) / 0.4);
+    border-radius: var(--radius);
+    padding: 0.85rem 1.35rem;
+  }
+
+  /* === TOC === */
+  .toc-item {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-family: var(--font-body);
+    color: oklch(var(--muted-foreground));
+    transition: color 0.2s ease, background 0.2s ease;
+    border-radius: 2px;
+    position: relative;
+  }
+
+  .toc-item:hover {
+    color: oklch(var(--foreground));
+    background: oklch(var(--accent) / 0.09);
+  }
+
+  .toc-item.active {
+    color: oklch(var(--primary));
+    font-weight: 600;
+  }
+
+  .toc-item::after {
+    content: "";
+    flex: 1;
+    min-width: 12px;
+    height: 1px;
+    border-bottom: 1px dotted oklch(var(--border) / 0.9);
+    margin: 0 0.35rem;
+    align-self: center;
+  }
+
+  /* === SACRED CARDS === */
+  .sacred-card {
+    @apply border border-border p-6 shadow-sacred;
+    background: oklch(var(--card) / 0.94);
+    border-radius: var(--radius);
+    border-color: oklch(var(--accent) / 0.42);
+  }
+
+  .sacred-card-hover {
+    @apply border p-5 shadow-sacred transition-smooth cursor-pointer;
+    background: oklch(var(--card) / 0.92);
+    border-color: oklch(var(--accent) / 0.38);
+    border-radius: var(--radius);
+  }
+
+  .sacred-card-hover:hover {
+    @apply shadow-warm-glow;
+    border-color: oklch(var(--accent) / 0.75);
+    background: oklch(var(--card) / 0.98);
+  }
+
+  /* === MANUSCRIPT CARD === */
+  .manuscript-card {
+    background: linear-gradient(
+      160deg,
+      oklch(0.96 0.06 72 / 0.97) 0%,
+      oklch(0.93 0.07 68 / 0.97) 100%
+    );
+    border: 2px solid oklch(var(--accent) / 0.55);
+    border-radius: 4px;
+    box-shadow: 0 6px 28px rgba(0, 0, 0, 0.38), inset 0 1px 0
+      rgba(255, 248, 220, 0.6), inset 0 0 60px rgba(240, 200, 110, 0.09);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .manuscript-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+  }
+
+  /* === WAX SEAL BUTTON === */
+  .wax-seal-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.8rem 2rem;
+    font-family: var(--font-display);
+    font-size: 0.95rem;
+    font-weight: 700;
+    font-style: italic;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    color: oklch(0.1 0.09 28);
+    background: linear-gradient(
+      145deg,
+      oklch(0.86 0.4 54) 0%,
+      oklch(0.78 0.34 52) 50%,
+      oklch(0.82 0.38 53) 100%
+    );
+    border: 2.5px solid oklch(0.72 0.32 50);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 8px 32px rgba(230, 172, 65, 0.52), 0 3px 8px
+      rgba(150, 108, 44, 0.32), inset 0 1px 0 rgba(255, 248, 220, 0.5), inset 0
+      -2px 0 rgba(0, 0, 0, 0.14);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .wax-seal-btn::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 250, 220, 0.3) 0%,
+      transparent 60%
+    );
+    pointer-events: none;
+  }
+
+  .wax-seal-btn::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      oklch(0.9 0.22 54 / 0.12) 0%,
+      transparent 55%
+    );
+    pointer-events: none;
+  }
+
+  .wax-seal-btn:hover {
+    background: linear-gradient(
+      145deg,
+      oklch(0.9 0.44 54) 0%,
+      oklch(0.84 0.38 52) 50%,
+      oklch(0.88 0.42 53) 100%
+    );
+    box-shadow: 0 12px 44px rgba(240, 185, 75, 0.65), 0 5px 14px
+      rgba(165, 122, 48, 0.4), inset 0 1px 0 rgba(255, 248, 220, 0.55), inset 0
+      -2px 0 rgba(0, 0, 0, 0.12);
+    transform: translateY(-2px);
+  }
+
+  .wax-seal-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 3px 14px rgba(150, 108, 44, 0.4), inset 0 1px 3px
+      rgba(0, 0, 0, 0.2);
+  }
+
+  /* Wax seal saffron variant */
+  .wax-seal-btn-saffron {
+    background: linear-gradient(
+      145deg,
+      oklch(0.75 0.32 32) 0%,
+      oklch(0.65 0.28 28) 50%,
+      oklch(0.7 0.3 30) 100%
+    );
+    border-color: oklch(0.6 0.26 26);
+    color: oklch(0.97 0.04 70);
+  }
+
+  .wax-seal-btn-saffron:hover {
+    background: linear-gradient(
+      145deg,
+      oklch(0.8 0.34 34) 0%,
+      oklch(0.7 0.3 30) 50%,
+      oklch(0.75 0.32 32) 100%
+    );
+    box-shadow: 0 12px 40px rgba(195, 130, 55, 0.58), 0 5px 14px
+      rgba(130, 88, 34, 0.38), inset 0 1px 0 rgba(255, 248, 220, 0.45), inset 0
+      -2px 0 rgba(0, 0, 0, 0.12);
+  }
+
+  /* === ORNATE HEADER === */
+  .ornate-header {
+    text-align: center;
+    padding: 2.25rem 0 1.75rem;
+    position: relative;
+  }
+
+  .ornate-header h1,
+  .ornate-header h2 {
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 700;
+    font-size: clamp(2.2rem, 5.5vw, 4.5rem);
+    color: oklch(var(--primary));
+    text-shadow: 0 4px 14px rgba(150, 108, 44, 0.28), 0 0 50px
+      rgba(230, 170, 65, 0.18);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+  }
+
+  .ornate-header::before {
+    content: "✦ ॐ ✦";
+    display: block;
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    letter-spacing: 0.7em;
+    color: oklch(var(--accent) / 0.9);
+    margin-bottom: 1rem;
+    text-shadow: 0 0 28px oklch(var(--accent) / 0.5);
+  }
+
+  .ornate-header::after {
+    content: "";
+    display: block;
+    height: 3px;
+    margin-top: 1.4rem;
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      oklch(var(--accent) / 0.5) 15%,
+      oklch(0.7 0.28 268 / 0.5) 35%,
+      oklch(var(--accent) / 0.9) 50%,
+      oklch(0.65 0.28 32 / 0.6) 70%,
+      oklch(var(--accent) / 0.5) 88%,
+      transparent 100%
+    );
+    border-radius: 2px;
+    box-shadow: 0 0 24px oklch(var(--accent) / 0.45);
+  }
+
+  /* Verse Display */
+  .verse-display {
+    text-align: center;
+    padding: 2.25rem 1.25rem;
+    background: linear-gradient(
+      160deg,
+      oklch(0.93 0.09 68 / 0.65) 0%,
+      oklch(0.9 0.1 64 / 0.55) 100%
+    );
+    border: 1.5px solid oklch(var(--accent) / 0.32);
+    border-left: 4px solid oklch(var(--accent) / 0.75);
+    border-radius: 0 3px 3px 0;
+    position: relative;
+  }
+
+  .verse-display .verse-sanskrit {
+    font-family: var(--font-body);
+    font-size: 1.4rem;
+    line-height: 2;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: oklch(var(--foreground));
+    margin-bottom: 1rem;
+  }
+
+  .verse-display .verse-translation {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.8;
+    font-style: italic;
+    color: oklch(var(--muted-foreground));
+  }
+
+  /* === MANUSCRIPT INPUT === */
+  .manuscript-input {
+    width: 100%;
+    background: linear-gradient(
+      160deg,
+      oklch(0.94 0.07 68) 0%,
+      oklch(0.92 0.08 65) 100%
+    );
+    border: 1.5px solid oklch(var(--accent) / 0.38);
+    border-bottom: 2.5px solid oklch(var(--accent) / 0.55);
+    border-radius: 3px;
+    padding: 0.8rem 1.1rem;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: oklch(var(--foreground));
+    outline: none;
+    transition: all 0.25s ease;
+    box-shadow: inset 0 2px 7px rgba(110, 78, 22, 0.09);
+    resize: vertical;
+  }
+
+  .manuscript-input::placeholder {
+    color: oklch(var(--muted-foreground) / 0.65);
+    font-style: italic;
+  }
+
+  .manuscript-input:focus {
+    border-color: oklch(var(--accent) / 0.75);
+    border-bottom-color: oklch(var(--accent));
+    box-shadow: inset 0 2px 7px rgba(110, 78, 22, 0.09), 0 0 0 2.5px
+      oklch(var(--accent) / 0.18);
+    background: oklch(0.96 0.06 70);
+  }
+
+  /* === PARCHMENT GRID === */
+  .parchment-grid {
+    display: grid;
+    gap: 1.35rem;
+    position: relative;
+  }
+
+  .parchment-grid::before {
+    content: "";
+    position: absolute;
+    inset: -10px;
+    border: 1.5px solid oklch(var(--accent) / 0.14);
+    border-radius: 4px;
+    pointer-events: none;
+  }
+
+  /* === QUICK ACTION === */
+  .quick-action-card {
+    @apply sacred-card-hover flex flex-col items-center justify-center gap-3 text-center min-h-[120px];
+  }
+
+  /* === MALA === */
+  .mala-bead {
+    @apply w-12 h-12 rounded-full bg-accent flex items-center justify-center text-accent-foreground font-bold text-sm hover:shadow-elevated transition-smooth;
+  }
+
+  .mala-bead-inactive {
+    @apply w-10 h-10 rounded-full border-2 border-border bg-muted/50 transition-smooth cursor-pointer;
+  }
+
+  .mala-bead-active {
+    @apply w-10 h-10 rounded-full bg-primary border-2 border-primary shadow-sacred transition-smooth;
+  }
+
+  /* === STREAK & POINTS === */
+  .streak-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: oklch(var(--accent) / 0.18);
+    border: 1.5px solid oklch(var(--accent) / 0.45);
+    border-radius: 9999px;
+    padding: 0.3rem 0.85rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: oklch(var(--accent));
+  }
+
+  /* === KRISHNA AI CHAT === */
+  .ai-bubble {
+    background: linear-gradient(
+      135deg,
+      oklch(var(--sacred) / 0.12) 0%,
+      oklch(var(--sacred) / 0.06) 100%
+    );
+    border: 1.5px solid oklch(var(--sacred) / 0.28);
+    border-radius: 0 0.75rem 0.75rem 0.75rem;
+    padding: 1.1rem 1.35rem;
+  }
+
+  .user-bubble {
+    background: oklch(var(--primary) / 0.1);
+    border: 1.5px solid oklch(var(--primary) / 0.22);
+    border-radius: 0.75rem 0 0.75rem 0.75rem;
+    padding: 1.1rem 1.35rem;
+  }
+
+  /* === ACCENT LINE === */
+  .accent-line {
+    @apply h-0.5 w-16 mb-4;
+    background: linear-gradient(
+      90deg,
+      oklch(var(--accent)),
+      oklch(0.62 0.26 268),
+      oklch(var(--accent))
+    );
+  }
+
+  .separator-sacred {
+    @apply border-t my-6;
+    border-color: oklch(var(--accent) / 0.45);
+  }
+
+  /* === MANUSCRIPT HEADER BORDER — gold/saffron/lapis === */
+  .manuscript-header-border {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      oklch(0.62 0.26 268 / 0.45) 10%,
+      oklch(0.68 0.28 32 / 0.6) 30%,
+      oklch(var(--accent) / 0.95) 50%,
+      oklch(0.64 0.28 46 / 0.6) 70%,
+      oklch(0.58 0.26 268 / 0.45) 90%,
+      transparent 100%
+    );
+    height: 2.5px;
+    box-shadow: 0 0 16px oklch(var(--accent) / 0.45);
+  }
+
+  /* === SACRED BORDER LINE — animated gold/saffron/amber === */
+  .rainbow-border-line {
+    background: linear-gradient(
+      90deg,
+      oklch(0.75 0.34 54) 0%,
+      oklch(0.68 0.3 46) 20%,
+      oklch(0.6 0.28 32) 40%,
+      oklch(0.52 0.26 268) 60%,
+      oklch(0.68 0.3 46) 80%,
+      oklch(0.75 0.34 54) 100%
+    );
+    background-size: 200% 100%;
+    animation: rainbow-border-scroll 5s linear infinite;
+    height: 4px;
+    box-shadow: 0 0 24px oklch(0.75 0.34 54 / 0.65), 0 0 48px
+      oklch(0.6 0.28 46 / 0.3);
+  }
+
+  .rainbow-border-line-vertical {
+    background: linear-gradient(
+      180deg,
+      oklch(0.75 0.34 54) 0%,
+      oklch(0.68 0.3 46) 20%,
+      oklch(0.6 0.28 32) 40%,
+      oklch(0.52 0.26 268) 60%,
+      oklch(0.68 0.3 46) 80%,
+      oklch(0.75 0.34 54) 100%
+    );
+    background-size: 100% 200%;
+    animation: rainbow-border-scroll-v 5s linear infinite;
+    width: 4px;
+    box-shadow: -2px 0 24px oklch(0.75 0.34 54 / 0.55), -4px 0 44px
+      oklch(0.6 0.28 46 / 0.28);
+  }
+
+  /* === KRISHNA BUTTON PULSE === */
+  @keyframes krishna-pulse {
+    0%,
+    100% {
+      box-shadow: 0 8px 36px rgba(230, 172, 65, 0.52), 0 0 0 0
+        oklch(var(--accent) / 0.6);
+    }
+    50% {
+      box-shadow: 0 10px 48px rgba(230, 172, 65, 0.68), 0 0 0 14px
+        oklch(var(--accent) / 0);
+    }
+  }
+
+  @keyframes krishna-rainbow-pulse {
+    0%,
+    100% {
+      box-shadow: 0 8px 40px oklch(0.7 0.3 32 / 0.75), 0 0 0 0
+        oklch(0.7 0.3 32 / 0.55), 0 0 24px oklch(0.75 0.34 54 / 0.35);
+    }
+    33% {
+      box-shadow: 0 8px 40px oklch(0.58 0.28 268 / 0.7), 0 0 0 10px
+        oklch(0.58 0.28 268 / 0), 0 0 28px oklch(0.64 0.28 52 / 0.42);
+    }
+    66% {
+      box-shadow: 0 8px 40px oklch(0.64 0.28 46 / 0.7), 0 0 0 10px
+        oklch(0.64 0.28 46 / 0), 0 0 24px oklch(0.7 0.3 32 / 0.35);
+    }
+  }
+
+  .krishna-need-btn {
+    animation: krishna-pulse 2.5s ease-in-out infinite;
+  }
+
+  .krishna-rainbow-glow {
+    animation: krishna-rainbow-pulse 3s ease-in-out infinite;
+  }
+
+  /* === SACRED FREQUENCY QUOTE TICKER === */
+  @keyframes ticker-scroll {
+    from {
+      transform: translateX(0);
+    }
+    to {
+      transform: translateX(-50%);
+    }
+  }
+
+  .sacred-ticker-track {
+    animation: ticker-scroll 90s linear infinite;
+    white-space: nowrap;
+    display: inline-block;
+  }
+
+  .sacred-ticker-track:hover {
+    animation-play-state: paused;
+  }
+
+  /* === MODULE CARD HOVER SHIMMER === */
+  @keyframes card-shimmer {
+    0% {
+      background-position: -200% center;
+    }
+    100% {
+      background-position: 200% center;
+    }
+  }
+
+  .card-shimmer-hover {
+    background: linear-gradient(
+      90deg,
+      transparent 0%,
+      rgba(255, 248, 200, 0.18) 50%,
+      transparent 100%
+    );
+    background-size: 200% 100%;
+  }
+
+  /* Module card rainbow border animation on hover */
+  .module-card-glow:hover {
+    box-shadow: 0 0 0 2px oklch(0.78 0.34 54 / 0.75), 0 8px 32px
+      oklch(0.72 0.3 54 / 0.4), 0 0 20px oklch(0.72 0.3 54 / 0.25);
+  }
+
+  /* === ALL KEYFRAME ANIMATIONS === */
+
+  @keyframes rainbow-shift-home {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  @keyframes rainbow-shift-guidance {
+    0%,
+    100% {
+      background-position: 0% 0%;
+    }
+    50% {
+      background-position: 100% 100%;
+    }
+  }
+
+  @keyframes rainbow-shift-emergency {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  @keyframes rainbow-shift-garbha {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  @keyframes rainbow-shift-temple {
+    0%,
+    100% {
+      background-position: 0% 0%;
+    }
+    50% {
+      background-position: 100% 100%;
+    }
+  }
+
+  @keyframes rainbow-shift-nature {
+    0%,
+    100% {
+      background-position: 50% 0%;
+    }
+    50% {
+      background-position: 50% 100%;
+    }
+  }
+
+  @keyframes rainbow-shift-spine {
+    0%,
+    100% {
+      background-position: 0% 0%;
+    }
+    50% {
+      background-position: 0% 100%;
+    }
+  }
+
+  @keyframes rainbow-border-scroll {
+    from {
+      background-position: 0% 0%;
+    }
+    to {
+      background-position: 200% 0%;
+    }
+  }
+
+  @keyframes rainbow-border-scroll-v {
+    from {
+      background-position: 0% 0%;
+    }
+    to {
+      background-position: 0% 200%;
+    }
+  }
+
+  @keyframes luxury-border-shift {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  @keyframes rainbow-text-scroll {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  /* Glitter particle twinkling */
+  @keyframes glitter-twinkle {
+    0%,
+    100% {
+      opacity: 0;
+      transform: scale(0.5) translateY(0px);
+    }
+    20% {
+      opacity: 1.0;
+      transform: scale(1.35) translateY(-2px);
+    }
+    50% {
+      opacity: 0.65;
+      transform: scale(0.9) translateY(-5px);
+    }
+    80% {
+      opacity: 1.0;
+      transform: scale(1.2) translateY(-1px);
+    }
+  }
+
+  @keyframes sparkle-burst {
+    0% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(0) translateY(-22px);
+    }
+  }
+
+  /* Divine glow breathing */
+  @keyframes divine-glow-breathe {
+    0%,
+    100% {
+      filter: drop-shadow(0 0 10px oklch(0.78 0.34 54 / 0.6))
+        drop-shadow(0 0 24px oklch(0.62 0.3 268 / 0.24));
+    }
+    50% {
+      filter: drop-shadow(0 0 24px oklch(0.86 0.4 54 / 1.0))
+        drop-shadow(0 0 48px oklch(0.62 0.3 268 / 0.58))
+        drop-shadow(0 0 72px oklch(0.75 0.32 54 / 0.35));
+    }
+  }
+
+  @keyframes sacred-float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-9px);
+    }
+  }
+
+  .sacred-float {
+    animation: sacred-float 4s ease-in-out infinite;
+  }
+
+  /* Diya flame glow — only pulsing glow, NO rotation */
+  @keyframes diya-glow {
+    0%,
+    100% {
+      filter: drop-shadow(0 0 6px oklch(0.78 0.36 48 / 0.7))
+        drop-shadow(0 0 14px oklch(0.72 0.34 36 / 0.45));
+    }
+    50% {
+      filter: drop-shadow(0 0 18px oklch(0.84 0.4 52 / 0.95))
+        drop-shadow(0 0 36px oklch(0.76 0.38 40 / 0.65))
+        drop-shadow(0 0 56px oklch(0.82 0.36 54 / 0.35));
+    }
+  }
+
+  .diya-glow {
+    animation: diya-glow 2.2s ease-in-out infinite;
+  }
+
+  /* === GLOBAL READABILITY — text shadow on all content over dark backgrounds === */
+  .page-content,
+  .tile-card,
+  .feature-card,
+  .info-text {
+    text-shadow: none;
+  }
+
+  /* === REMOVE all black tile backgrounds — replace with sacred light glass === */
+  .pathway-tile-dark {
+    background: oklch(0.96 0.07 68 / 0.93) !important;
+    backdrop-filter: blur(10px);
+  }
+
+  /* No black background on general tiles — only warm light parchment glass */
+  .tile,
+  .pathway-tile,
+  .feature-tile {
+    background: oklch(0.96 0.07 68 / 0.92) !important;
+  }
+
+  /* === GLOBAL FLOWER PETAL ANIMATION (replaces all glitter) === */
+  @keyframes petal-fall {
+    0% {
+      opacity: 0;
+      transform: translateY(-20px) rotate(0deg);
+    }
+    10% {
+      opacity: 0.8;
+    }
+    90% {
+      opacity: 0.4;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(110vh) rotate(720deg) translateX(30px);
+    }
+  }
+
+  @keyframes petal-sway {
+    0%,
+    100% {
+      margin-left: 0;
+    }
+    25% {
+      margin-left: 12px;
+    }
+    75% {
+      margin-left: -8px;
+    }
+  }
+
+  .flower-petal {
+    position: fixed;
+    width: 12px;
+    height: 18px;
+    border-radius: 50% 50% 40% 40%;
+    pointer-events: none;
+    z-index: 5;
+    animation: petal-fall 8s ease-in forwards, petal-sway 2s ease-in-out
+      infinite;
+  }
+
+  /* === GLOBAL READABILITY for Kurukshetra background === */
+  .kurukshetra-text-safe {
+    text-shadow: 0 1px 2px rgba(150, 100, 20, 0.3), 0 2px 6px
+      rgba(180, 140, 60, 0.15);
+  }
+
+  /* === TEMPLE ARCH DECORATION === */
+  .temple-arch {
+    position: relative;
+    overflow: visible;
+  }
+  .temple-arch::before {
+    content: "✦ ॐ ✦  ❀  ✦ ॐ ✦  ❀  ✦ ॐ ✦  ❀  ✦ ॐ ✦";
+    display: block;
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 0.7rem;
+    letter-spacing: 0.5em;
+    color: oklch(0.68 0.28 52 / 0.65);
+    padding: 0.4rem 0;
+    text-shadow: 0 0 12px oklch(0.78 0.34 54 / 0.35);
+  }
+
+  /* === SACRED TEXT GRADIENT — gold to saffron on headings === */
+  .text-gradient-sacred {
+    background: linear-gradient(
+      90deg,
+      oklch(0.82 0.38 54) 0%,
+      oklch(0.74 0.32 46) 30%,
+      oklch(0.68 0.3 32) 55%,
+      oklch(0.78 0.34 52) 80%,
+      oklch(0.86 0.4 56) 100%
+    );
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    animation: rainbow-text-scroll 6s ease infinite;
+  }
+
+  /* === SACRED SHIMMER PULSE — golden glow for important elements === */
+  @keyframes sacred-shimmer {
+    0%,
+    100% {
+      box-shadow: 0 0 18px oklch(0.82 0.36 54 / 0.35), 0 0 36px
+        oklch(0.78 0.34 54 / 0.18), inset 0 1px 0 rgba(255, 248, 220, 0.55);
+    }
+    50% {
+      box-shadow: 0 0 36px oklch(0.88 0.42 54 / 0.7), 0 0 72px
+        oklch(0.8 0.36 54 / 0.38), 0 0 100px oklch(0.7 0.3 46 / 0.2), inset 0
+        1px 0 rgba(255, 248, 220, 0.7);
+    }
+  }
+
+  .sacred-shimmer {
+    animation: sacred-shimmer 3.5s ease-in-out infinite;
+  }
+
+  /* === RANGOLI BORDER — animated spinning colour ring for section dividers === */
+  @keyframes rangoli-spin {
+    0% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+    100% {
+      background-position: 0% 50%;
+    }
+  }
+
+  .rangoli-border {
+    position: relative;
+    border-radius: 8px;
+  }
+  .rangoli-border::before {
+    content: "";
+    position: absolute;
+    inset: -2px;
+    border-radius: inherit;
+    background: linear-gradient(
+      90deg,
+      oklch(0.88 0.4 54),
+      oklch(0.78 0.34 32),
+      oklch(0.62 0.28 268),
+      oklch(0.72 0.28 340),
+      oklch(0.8 0.32 54),
+      oklch(0.88 0.4 54)
+    );
+    background-size: 300% 100%;
+    animation: rangoli-spin 5s ease-in-out infinite;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* === MARIGOLD GARLAND DIVIDER === */
+  .marigold-garland {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1.5rem 0;
+    text-align: center;
+  }
+  .marigold-garland::before,
+  .marigold-garland::after {
+    content: "❁ ❀ ✿ ❀ ❁ ❀ ✿ ❀ ❁";
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    color: oklch(0.74 0.3 52 / 0.65);
+    text-shadow: 0 0 8px oklch(0.8 0.34 54 / 0.3);
+    flex: 1;
+  }
+
+  /* === EXTRA PETAL SIZES — various floating petal variants === */
+  .flower-petal-sm {
+    position: fixed;
+    width: 8px;
+    height: 12px;
+    border-radius: 50% 50% 40% 40%;
+    pointer-events: none;
+    z-index: 5;
+    animation: petal-fall 6s ease-in forwards, petal-sway 1.8s ease-in-out
+      infinite;
+  }
+
+  .flower-petal-lg {
+    position: fixed;
+    width: 16px;
+    height: 24px;
+    border-radius: 50% 50% 40% 40%;
+    pointer-events: none;
+    z-index: 5;
+    animation: petal-fall 11s ease-in forwards, petal-sway 2.5s ease-in-out
+      infinite;
+  }
+
+  .flower-petal-marigold {
+    position: fixed;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 5;
+    animation: petal-fall 9s ease-in forwards, petal-sway 2s ease-in-out
+      infinite;
+  }
+
+  /* Sacred lotus divider */
+  .lotus-divider {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: oklch(0.68 0.26 52 / 0.7);
+    font-size: 1rem;
+    margin: 1.5rem 0;
+    letter-spacing: 0.3em;
+  }
+  .lotus-divider::before,
+  .lotus-divider::after {
+    content: "";
+    flex: 1;
+    height: 1.5px;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      oklch(0.72 0.28 52 / 0.55),
+      oklch(0.78 0.34 54 / 0.85),
+      oklch(0.72 0.28 52 / 0.55),
+      transparent
+    );
+  }
+
+  /* === CONTENT CARD — warm parchment for all content panels === */
+  .content-card {
+    background: linear-gradient(
+      160deg,
+      oklch(0.97 0.07 68 / 0.96) 0%,
+      oklch(0.95 0.09 64 / 0.95) 100%
+    );
+    border: 1.5px solid oklch(0.76 0.26 54 / 0.38);
+    border-radius: 6px;
+    box-shadow: 0 6px 28px rgba(180, 130, 45, 0.18), inset 0 1px 0
+      rgba(255, 248, 210, 0.65);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  /* Corner ornament — decorative lotus corner for cards */
+  .corner-ornament {
+    position: relative;
+  }
+  .corner-ornament::before {
+    content: "❀";
+    position: absolute;
+    top: -0.25rem;
+    left: -0.25rem;
+    font-size: 0.7rem;
+    color: oklch(0.72 0.3 52 / 0.55);
+    line-height: 1;
+  }
+  .corner-ornament::after {
+    content: "❀";
+    position: absolute;
+    top: -0.25rem;
+    right: -0.25rem;
+    font-size: 0.7rem;
+    color: oklch(0.72 0.3 52 / 0.55);
+    line-height: 1;
+  }
+
+  /* === SCROLLBAR === */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: oklch(var(--muted) / 0.25);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(
+      180deg,
+      oklch(0.78 0.34 54 / 0.6),
+      oklch(0.6 0.26 268 / 0.5)
+    );
+    border-radius: 3px;
+    border: 1px solid oklch(var(--accent) / 0.18);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(
+      180deg,
+      oklch(0.84 0.4 54 / 0.85),
+      oklch(0.66 0.28 268 / 0.7)
+    );
+  }
+  ::-webkit-scrollbar-corner {
+    background: oklch(var(--muted) / 0.15);
+  }
+
+  /* === FOCUS === */
+  *:focus-visible {
+    outline: 2.5px solid oklch(var(--ring));
+    outline-offset: 2px;
+    border-radius: calc(var(--radius) - 2px);
+  }
+
+  /* === SELECTION === */
+  ::selection {
+    background: oklch(var(--accent) / 0.32);
+    color: oklch(var(--foreground));
+  }
+
+  /* Ticker scroll defined above */
+
+  /* Reduce motion */
+  @media (prefers-reduced-motion: reduce) {
+    .rainbow-bg-home,
+    .rainbow-bg-guidance,
+    .rainbow-bg-emergency,
+    .rainbow-bg-garbha,
+    .rainbow-bg-temple,
+    .rainbow-bg-nature,
+    .rainbow-card,
+    .book-spine,
+    .luxury-border::before,
+    .jewel-card,
+    .rainbow-border-line,
+    .rainbow-border-line-vertical,
+    .glitter-particle,
+    .sacred-ticker-track {
+      animation: none !important;
+    }
+  }
+}

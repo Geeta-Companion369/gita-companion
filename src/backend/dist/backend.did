@@ -1,0 +1,117 @@
+type VerseCommentary = 
+ record {
+   ramanuja: text;
+   shankaracharya: text;
+   tilak: text;
+   verseId: text;
+ };
+type Verse = 
+ record {
+   chapterId: nat;
+   englishTranslation: text;
+   id: nat;
+   sanskritText: text;
+   transliteration: text;
+   verseNumber: text;
+ };
+type SatsangMessage = 
+ record {
+   authorName: text;
+   circleId: text;
+   message: text;
+   timestamp: int;
+ };
+type MantraEntry = 
+ record {
+   benefit: text;
+   category: text;
+   id: text;
+   meaning: text;
+   name: text;
+   "text": text;
+ };
+type JournalEntry = 
+ record {
+   createdAt: int;
+   id: text;
+   mood: text;
+   principalId: text;
+   "text": text;
+   updatedAt: int;
+   verseId: text;
+ };
+type HeatmapEntry = 
+ record {
+   allGoalsMet: bool;
+   chaptersRead: nat;
+   date: text;
+   principalId: text;
+   versesRead: nat;
+ };
+type GuidanceResult = 
+ record {
+   chapter: nat;
+   guidanceText: text;
+   keyword: text;
+   verse: nat;
+ };
+type Festival = 
+ record {
+   dateStr: text;
+   mantraName: text;
+   meaning: text;
+   name: text;
+   recommendedVerse: text;
+ };
+type DailyChallenge = 
+ record {
+   action: text;
+   date: text;
+   points: nat;
+   task: text;
+ };
+type ConcentrationSession = 
+ record {
+   completedAt: int;
+   durationMinutes: nat;
+   id: text;
+   principalId: text;
+   sessionType: text;
+ };
+type Chapter = 
+ record {
+   id: nat;
+   name: text;
+   summary: text;
+   verseCount: nat;
+ };
+service : {
+  clearOldMessages: () -> ();
+  createJournalEntry: (verseId: text, "text": text, mood: text) ->
+   (JournalEntry);
+  deleteJournalEntry: (id: text) -> (bool);
+  getChapter: (chapterId: nat) -> (opt Chapter) query;
+  getCircleMessages: (circleId: text) -> (vec SatsangMessage) query;
+  getConcentrationHistory: (limit: nat) -> (vec ConcentrationSession) query;
+  getDailyChallenge: (dateKey: text) -> (opt DailyChallenge) query;
+  getFestivals: () -> (vec Festival) query;
+  getGuidanceByCategory: (category: text) -> (opt GuidanceResult) query;
+  getHeatmapData: (days: nat) -> (vec HeatmapEntry) query;
+  getJournalEntries: () -> (vec JournalEntry) query;
+  getKrishnaGuidance: (keyword: text) -> (opt GuidanceResult) query;
+  getMantras: () -> (vec MantraEntry) query;
+  getReadingStreak: () -> (nat) query;
+  getVerse: (chapterId: nat, verseId: nat) -> (opt Verse) query;
+  getVerseCommentary: (verseId: text) -> (opt VerseCommentary) query;
+  listChapters: () -> (vec Chapter) query;
+  listSatsangCircles: () -> (vec text) query;
+  listVerses: (chapterId: nat) -> (vec Verse) query;
+  postCircleMessage: (circleId: text, authorName: text, message: text) -> ();
+  recordConcentrationSession: (durationMinutes: nat, sessionType: text) ->
+   (ConcentrationSession);
+  recordDailyReading: (date: text, versesRead: nat, chaptersRead: nat,
+   allGoalsMet: bool) -> (HeatmapEntry);
+  searchJournalEntries: (searchText: text) -> (vec JournalEntry) query;
+  updateJournalEntry: (id: text, "text": text, mood: text) ->
+   (opt JournalEntry);
+}

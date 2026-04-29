@@ -1,0 +1,138 @@
+// Version: 1.0.0
+type Chapter__619322844 =
+  {id : Nat; name : Text; summary : Text; verseCount : Nat};
+type ConcentrationSession__1033370166 =
+  {
+    completedAt : Int;
+    durationMinutes : Nat;
+    id : Text;
+    principalId : Text;
+    sessionType : Text
+  };
+type DailyChallenge__158827138 =
+  {action : Text; date : Text; points : Nat; task : Text};
+type Data__791452850<K, V> =
+  {var count : Nat__490723111; kvs : [var ?(K, V)]};
+type Festival__383627026 =
+  {
+    dateStr : Text;
+    mantraName : Text;
+    meaning : Text;
+    name : Text;
+    recommendedVerse : Text
+  };
+type GuidanceResult__838316807 =
+  {chapter : Nat; guidanceText : Text; keyword : Text; verse : Nat};
+type HeatmapEntry__780806870 =
+  {
+    allGoalsMet : Bool;
+    chaptersRead : Nat;
+    date : Text;
+    principalId : Text;
+    versesRead : Nat
+  };
+type Internal__8484328<K, V> =
+  {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
+type JournalEntry__1056400789 =
+  {
+    createdAt : Int;
+    id : Text;
+    mood : Text;
+    principalId : Text;
+    text : Text;
+    updatedAt : Int;
+    verseId : Text
+  };
+type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
+type List__415060402<T> = List__790383201<T>;
+type List__790383201<T> =
+  {
+    var blockIndex : Nat__490723111;
+    var blocks : [var [var ?T]];
+    var elementIndex : Nat__490723111
+  };
+type MantraEntry__490268718 =
+  {
+    benefit : Text;
+    category : Text;
+    id : Text;
+    meaning : Text;
+    name : Text;
+    text : Text
+  };
+type Nat__490723111 = Nat__920180692;
+type Nat__920180692 = Nat;
+type Node__46230540<K, V> =
+  {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
+type SatsangMessage__974733064 =
+  {authorName : Text; circleId : Text; message : Text; timestamp : Int};
+type VerseCommentary__49421114 =
+  {ramanuja : Text; shankaracharya : Text; tilak : Text; verseId : Text};
+type Verse__273208861 =
+  {
+    chapterId : Nat;
+    englishTranslation : Text;
+    id : Nat;
+    sanskritText : Text;
+    transliteration : Text;
+    verseNumber : Text
+  };
+actor {
+  stable challenges :
+    {
+      var root : Node__46230540<Text, DailyChallenge__158827138>;
+      var size : Nat__490723111
+    };
+  stable chapters :
+    {
+      var root : Node__46230540<Nat, Chapter__619322844>;
+      var size : Nat__490723111
+    };
+  stable circleMessages :
+    {
+      var root :
+        Node__46230540<Text, List__415060402<SatsangMessage__974733064>>;
+      var size : Nat__490723111
+    };
+  stable commentaries :
+    {
+      var root : Node__46230540<Text, VerseCommentary__49421114>;
+      var size : Nat__490723111
+    };
+  stable festivals :
+    {
+      var root : Node__46230540<Text, Festival__383627026>;
+      var size : Nat__490723111
+    };
+  stable guidanceMap :
+    {
+      var root : Node__46230540<Text, GuidanceResult__838316807>;
+      var size : Nat__490723111
+    };
+  stable heatmap :
+    {
+      var root : Node__46230540<Text, HeatmapEntry__780806870>;
+      var size : Nat__490723111
+    };
+  stable journal :
+    {
+      var root : Node__46230540<Text, JournalEntry__1056400789>;
+      var size : Nat__490723111
+    };
+  stable mantras :
+    {
+      var root : Node__46230540<Text, MantraEntry__490268718>;
+      var size : Nat__490723111
+    };
+  stable sessions :
+    {
+      var blockIndex : Nat__490723111;
+      var blocks : [var [var ?ConcentrationSession__1033370166]];
+      var elementIndex : Nat__490723111
+    };
+  stable verses :
+    {
+      var root : Node__46230540<(Nat, Nat), Verse__273208861>;
+      var size : Nat__490723111
+    }
+};
