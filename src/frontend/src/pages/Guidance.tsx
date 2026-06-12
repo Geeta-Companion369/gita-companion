@@ -17,6 +17,64 @@ interface GuidanceEntry {
   verse: Verse;
   krishnaMessage: string;
   context: string;
+  // Source citation — always shown as a sacred badge
+  sourceScripture?: string; // e.g. "Bhagavad Gita" — defaults computed from chapterId
+  sourceReference?: string; // e.g. "Chapter 2, Verse 47" — computed if not set
+  crossRef?: {
+    // optional secondary source from Vedas/Puranas
+    scripture: string;
+    reference: string;
+    teaching: string;
+  };
+}
+
+// Out-of-scope detection — topics not from Gita/Vedas/Puranas
+const OUT_OF_SCOPE_KEYWORDS = [
+  "weather",
+  "sports",
+  "cricket",
+  "football",
+  "movies",
+  "bollywood",
+  "recipe",
+  "cooking",
+  "technology",
+  "computer",
+  "phone",
+  "politics",
+  "news",
+  "stock",
+  "investment",
+  "fashion",
+  "celebrity",
+  "entertainment",
+  "gaming",
+  "video game",
+  "netflix",
+  "youtube",
+  "instagram",
+  "tiktok",
+  "science",
+  "physics",
+  "chemistry",
+  "math",
+  "history",
+  "geography",
+  "travel",
+  "hotel",
+  "flight",
+  "shopping",
+  "discount",
+];
+
+function isOutOfScope(query: string): boolean {
+  const lower = query.toLowerCase();
+  return (
+    OUT_OF_SCOPE_KEYWORDS.some((kw) => lower.includes(kw)) &&
+    !lower.match(
+      /dharma|karma|soul|god|krishna|gita|veda|purana|meditation|peace|suffering|death|life|purpose|duty|faith/,
+    )
+  );
 }
 
 // ─── SCRIPTURAL REFERENCE — Library-linked verse ──────────────────────────────
@@ -628,6 +686,14 @@ const GITA_AI_CORE: GuidanceEntry[] = [
     chapterId: 2,
     context:
       "On the eternal nature of the soul — the foundation of fearlessness",
+    sourceScripture: "Bhagavad Gita",
+    sourceReference: "Chapter 2, Verse 20",
+    crossRef: {
+      scripture: "Rig Veda",
+      reference: "Mandala 10, Hymn 18",
+      teaching:
+        "Fear not death, O soul — the Devas protect the departed. The eternal cosmic fire purifies all fear.",
+    },
     krishnaMessage:
       "Hare Krishna, Arjun 🙏 — Dear one, fear arises when we forget our true eternal nature. You are not this body — you are the undying soul, ancient and imperishable. The Gita reveals in Chapter 2 verse 20 that this soul is never born, never dies, and cannot be harmed by fire, water, weapons, or time. Release your grip on the impermanent body, and rest in your own eternal being. Nothing in creation can truly destroy who you are at your deepest core.",
     verse: {
@@ -658,6 +724,14 @@ const GITA_AI_CORE: GuidanceEntry[] = [
     ],
     chapterId: 6,
     context: "On steadying the restless mind through meditation",
+    sourceScripture: "Bhagavad Gita",
+    sourceReference: "Chapter 6, Verse 26",
+    crossRef: {
+      scripture: "Sama Veda",
+      reference: "Udgitha — OM as Cosmic Sound",
+      teaching:
+        "Chant OM — the primordial sound that settles all agitation. 'Sarvam Khalvidam Brahma' — All this is Brahman, and in that recognition, the mind finds rest.",
+    },
     krishnaMessage:
       "Hare Krishna, Arjun 🙏 — Your mind is like a flame caught in the wind, flickering with every passing thought and demand. Krishna teaches in Chapter 6 that through patient, gentle practice the mind can become still — not by forcing silence, but by lovingly returning, again and again, to the peace that lives within you. You do not need to solve everything at once. Take one breath, one moment. Even a small step toward inner stillness is progress on this divine path.",
     verse: {
@@ -692,6 +766,14 @@ const GITA_AI_CORE: GuidanceEntry[] = [
     ],
     chapterId: 2,
     context: "The most sacred teaching — act without attachment to outcomes",
+    sourceScripture: "Bhagavad Gita",
+    sourceReference: "Chapter 2, Verse 47",
+    crossRef: {
+      scripture: "Yajur Veda",
+      reference: "Ishavasya Upanishad — Verse 2",
+      teaching:
+        "Perform your actions thus — live a hundred years here. There is no other way than this by which karma shall not adhere to you. (Karma done without attachment leaves no bondage — the foundation of Nishkama Karma.)",
+    },
     krishnaMessage:
       "Hare Krishna, Arjun 🙏 — You have come to this moment with a sacred purpose. The Bhagavad Gita's supreme teaching, given in Chapter 2, is this: perform your duty with full sincerity and complete heart — but release all attachment to whether the fruits come as you desire. The action belongs to you; the result belongs to the Divine. This is not indifference — it is the highest form of trust. In this surrender of outcomes while fully engaging in effort, you discover true inner freedom.",
     verse: {
@@ -757,6 +839,14 @@ const GITA_AI_CORE: GuidanceEntry[] = [
     ],
     chapterId: 18,
     context: "The final and supreme teaching of the Gita — total surrender",
+    sourceScripture: "Bhagavad Gita",
+    sourceReference: "Chapter 18, Verse 66",
+    crossRef: {
+      scripture: "Bhagavata Purana",
+      reference: "Canto 11, Chapter 29",
+      teaching:
+        "Dharmo Rakshati Rakshitah — protect Dharma and Dharma protects you. Complete surrender to the Lord removes all sins. Bhakti is the highest path — the Bhagavata Purana proclaims devotion as the supreme means of liberation.",
+    },
     krishnaMessage:
       "Hare Krishna, Arjun 🙏 — This is the highest wisdom I can offer you in this sacred scripture: let go completely. Surrender not just your burdens, but your very sense of being the doer. When you offer everything to the Divine — your fears, hopes, confusion, mistakes, and desires — they are all received with infinite compassion. Chapter 18, verse 66 is Krishna's final promise: I will liberate you from every form of sin and suffering. You need not fear. The arms of grace are always open.",
     verse: {
@@ -792,6 +882,14 @@ const GITA_AI_CORE: GuidanceEntry[] = [
     ],
     chapterId: 2,
     context: "Krishna's counsel to Arjuna in his hour of deepest grief",
+    sourceScripture: "Bhagavad Gita",
+    sourceReference: "Chapter 2, Verse 11",
+    crossRef: {
+      scripture: "Garuda Purana",
+      reference: "Preta Khanda — Chapter 1",
+      teaching:
+        "The soul is eternal; it is only the body that is mortal. Therefore the wise person does not grieve. The Garuda Purana describes the soul's complete journey after death — the 13 days of mourning, the soul's ascent, and the ultimate liberation.",
+    },
     krishnaMessage:
       "Hare Krishna, Arjun 🙏 — Grief is the language of love meeting impermanence. Krishna does not ask you to deny or suppress your pain — he asks you to see through it to the deeper truth. What you love most deeply can never truly be lost, for the soul is eternal. At the very start of the Gita, Krishna addresses Arjuna's grief not with dismissal but with the highest wisdom: those who are wise do not mourn, for they understand that all souls continue eternally. Let this sorrow become the doorway that opens you to wisdom.",
     verse: {
@@ -825,6 +923,14 @@ const GITA_AI_CORE: GuidanceEntry[] = [
     ],
     chapterId: 4,
     context: "Krishna's promise to arise whenever goodness needs protection",
+    sourceScripture: "Bhagavad Gita",
+    sourceReference: "Chapter 4, Verse 7",
+    crossRef: {
+      scripture: "Markandeya Purana",
+      reference: "Devi Mahatmya — Chapter 1",
+      teaching:
+        "When darkness seemed to conquer all, the Divine Mother arose — the supreme power of the universe — and destroyed every demon of delusion. No darkness lasts forever. Divine power always arises to restore light.",
+    },
     krishnaMessage:
       "Hare Krishna, Arjun 🙏 — Even in the darkest age, I come. This world has never been abandoned — not once in all of creation's vast history. The Gita, in Chapter 4, carries this sacred promise: whenever dharma weakens and darkness grows, the Divine sends itself forth. When you feel crushed under the weight of hopelessness, know that divine grace is already moving toward you right now. You are not alone. The light within you is the same light that holds this entire universe together. Reach toward it.",
     verse: {
@@ -884,6 +990,14 @@ const GITA_AI_CORE: GuidanceEntry[] = [
     ],
     chapterId: 9,
     context: "Krishna's unwavering presence for devoted souls",
+    sourceScripture: "Bhagavad Gita",
+    sourceReference: "Chapter 9, Verse 22",
+    crossRef: {
+      scripture: "Vishnu Purana",
+      reference: "Book 1, Chapter 19",
+      teaching:
+        "Vishnu dwells in the heart of every being as Antaryami — the inner controller. No soul is ever truly alone. The Lord's compassion pervades all creation — reach inward, and you reach the infinite.",
+    },
     krishnaMessage:
       "Hare Krishna, Arjun 🙏 — You are never truly alone. I am the witness dwelling in every heart, the silence that underlies every sound, the warmth hidden in every act of love. Chapter 9, verse 22 carries one of the most intimate promises in all of scripture: for those who turn toward me with devotion, I personally carry what they lack and preserve what they have. Even when no human presence can reach you, I am here — closer than your own breath. Turn inward even now, and you will find me waiting.",
     verse: {
@@ -1224,6 +1338,14 @@ const GITA_AI_CORE: GuidanceEntry[] = [
     ],
     chapterId: 4,
     context: "On performing action with divine knowledge — nishkama karma",
+    sourceScripture: "Bhagavad Gita",
+    sourceReference: "Chapter 4, Verse 18",
+    crossRef: {
+      scripture: "Brahmanda Purana",
+      reference: "Cosmic Creation and Karma",
+      teaching:
+        "As you sow, so shall you reap across lifetimes — cosmic duty and karma consequences are woven into the very fabric of creation. Every soul progresses through dharmic actions offered to the Divine.",
+    },
     krishnaMessage:
       "Hare Krishna, Arjun 🙏 — The Gita does not teach that karma is punishment — it reveals karma as the sacred law of divine mathematics, perfectly just and compassionate in the long arc of eternity. Chapter 4 teaches that action performed without selfish desire, in a spirit of offering to the Divine, creates no binding karma. This is the path of liberation through action itself. You need not retreat from the world — transform how you act within it. Offer every action as worship.",
     verse: {
@@ -1255,6 +1377,14 @@ const GITA_AI_CORE: GuidanceEntry[] = [
     ],
     chapterId: 5,
     context: "On the liberated soul — brahma-nirvana",
+    sourceScripture: "Bhagavad Gita",
+    sourceReference: "Chapter 5, Verse 24",
+    crossRef: {
+      scripture: "Narada Purana",
+      reference: "On Bhakti as the Highest Path",
+      teaching:
+        "Bhakti — pure loving devotion — is the most direct path to liberation. Narada declares: by constant remembrance of the Lord, by chanting His name, the soul attains liberation even while living in the body (jivanmukti).",
+    },
     krishnaMessage:
       "Hare Krishna, Arjun 🙏 — Liberation is not a distant destination at the end of many lives — it is your own nature, temporarily obscured. The Gita describes the liberated soul in Chapter 5: one who finds happiness within, delight within, and inner illumination — such a yogi attains brahma-nirvana, the peace of the Absolute. Liberation begins the moment the mind rests, even briefly, in its own natural silence. Every moment of genuine inner stillness is a taste of moksha.",
     verse: {
@@ -1285,6 +1415,14 @@ const GITA_AI_CORE: GuidanceEntry[] = [
     ],
     chapterId: 6,
     context: "On the practice of dhyana yoga — meditation",
+    sourceScripture: "Bhagavad Gita",
+    sourceReference: "Chapter 6, Verse 10",
+    crossRef: {
+      scripture: "Sama Veda",
+      reference: "Chandogya Upanishad 3.14.1",
+      teaching:
+        "Sarvam khalv idam brahma — All this is Brahman. In meditation, the meditator, the act of meditation, and the object of meditation merge into one. The Sama Veda's sacred melodies are themselves a form of moving meditation that leads the soul to divine unity.",
+    },
     krishnaMessage:
       "Hare Krishna, Arjun 🙏 — Chapter 6 is Krishna's complete manual of meditation. The practice is deceptively simple: find a clean, quiet place; sit still with spine erect; single-point the mind on the Divine; and when the mind wanders — and it will, this is natural — gently bring it back. The key is consistency over intensity. Daily practice of even ten minutes, done with sincere love, builds the inner stillness that gradually transforms every moment of life into a kind of continuous meditation.",
     verse: {
@@ -2013,6 +2151,14 @@ const GITA_AI_CORE: GuidanceEntry[] = [
     ],
     chapterId: 2,
     context: "On death as the gateway — the soul's passage",
+    sourceScripture: "Bhagavad Gita",
+    sourceReference: "Chapter 2, Verse 27",
+    crossRef: {
+      scripture: "Garuda Purana",
+      reference: "Preta Khanda — Complete Death Rituals",
+      teaching:
+        "The Garuda Purana provides the most detailed Vedic account of the soul's journey after death — the 13 days of rituals, the soul's passage through different planes, the importance of Shradh, and the path to liberation. Death is a sacred doorway, not an ending.",
+    },
     krishnaMessage:
       "Hare Krishna, Arjun 🙏 — The Bhagavad Gita was spoken on a battlefield where death was imminent on all sides — and yet it carries the most fearless teaching about death in all of human literature. For the soul, there is no death. What we call death is the discarding of one body and the continuation of the eternal journey. Chapter 2 asks you to see with the eyes of the wise, who do not mourn for either the living or the dead, because they understand the imperishable nature of the atman. Death is not an ending — it is a transformation.",
     verse: {
@@ -2884,11 +3030,242 @@ const GITA_AI_CORE: GuidanceEntry[] = [
         "By keeping your mind fixed on me, you will, by my grace, overcome all obstacles. — BG 18.58",
     },
   },
+  // ── RIG VEDA — NOBLE THOUGHTS / WISDOM ───────────────────────────────────────
+  {
+    keywords: [
+      "rig veda",
+      "vedic wisdom",
+      "noble thoughts",
+      "gayatri",
+      "divine light",
+      "cosmic order",
+      "rita",
+      "ancient wisdom",
+      "vedic knowledge",
+    ],
+    chapterId: 7,
+    context: "From the Rig Veda — the oldest wisdom in human history",
+    sourceScripture: "Rig Veda",
+    sourceReference: "Mandala 1, Hymn 89, Verse 1",
+    krishnaMessage:
+      "Hare Krishna, Arjun 🙏 — The Rig Veda, the oldest scripture of humanity, opens with a sacred prayer: 'May noble thoughts come to us from all directions.' This is not a passive wish — it is a declaration that the awakened soul is always open, always receptive, always growing. The Vedas are not merely rituals — they are the very breath of the cosmos encoded in sound. When you chant the Gayatri Mantra — Om Bhur Bhuvaḥ Svaḥ Tat Savitur Vareṇyam — you are asking the divine solar intelligence to illuminate your mind. Light purifies all darkness. Wisdom dissolves all ignorance.",
+    verse: {
+      id: "rv-1-89-1",
+      chapterId: 7,
+      verseNumber: 1,
+      sanskritText: "आ नो भद्राः क्रतवो यन्तु विश्वतः ||",
+      transliteration: "ā no bhadrāḥ kratavo yantu viśhvataḥ",
+      englishTranslation:
+        "May noble thoughts come to us from all directions. — Rig Veda 1.89.1",
+    },
+  },
+  // ── ATHARVA VEDA — HEALING / PROTECTION ───────────────────────────────────────
+  {
+    keywords: [
+      "atharva veda",
+      "healing prayer",
+      "protection mantra",
+      "ward off evil",
+      "home protection",
+      "family protection",
+      "negative energy",
+      "evil eye",
+      "household harmony",
+      "blessings for family",
+    ],
+    chapterId: 17,
+    context: "From the Atharva Veda — daily life guidance and protection",
+    sourceScripture: "Atharva Veda",
+    sourceReference: "Kanda 6, Sukta 23",
+    crossRef: {
+      scripture: "Bhagavad Gita",
+      reference: "Chapter 17, Verse 14–15",
+      teaching:
+        "Purity of body, speech, and mind — the three sattvic austerities — naturally create a protective spiritual field around the practitioner and their home.",
+    },
+    krishnaMessage:
+      "Hare Krishna, Arjun 🙏 — The Atharva Veda is the Veda of daily life — it carries mantras for healing the body, protecting the home, harmonising family relationships, and warding off negative influences. It teaches that the home is a sacred temple; when it is filled with prayer, mantra, and love, no darkness can enter. Begin your day with the sacred fire of intention: 'May my home be a place of peace, my family a place of love, my heart a place of God.' The Atharva Veda's healing mantras, when chanted with faith, carry the power of divine protection.",
+    verse: {
+      id: "av-6-23",
+      chapterId: 17,
+      verseNumber: 14,
+      sanskritText:
+        "देवद्विजगुरुप्राज्ञपूजनं शौचमार्जवम् |\nब्रह्मचर्यमहिंसा च शारीरं तप उच्यते ||",
+      transliteration:
+        "deva-dvija-guru-prājña-pūjanaṁ śhaucham ārjavam\nbrahmacharya m ahiṁsā cha śhārīraṁ tapa uchyate",
+      englishTranslation:
+        "Worship of the Divine, the learned, the guru, and the wise; cleanliness, straightforwardness, celibacy, and non-violence — these are the austerities of the body. — BG 17.14",
+    },
+  },
+  // ── YAJUR VEDA — HARD WORK / EFFORT ───────────────────────────────────────────
+  {
+    keywords: [
+      "yajur veda",
+      "shram eva jayate",
+      "hard work",
+      "effort",
+      "dedication",
+      "laboring",
+      "perseverance",
+      "discipline",
+      "ritual work",
+      "sacred action",
+    ],
+    chapterId: 3,
+    context: "From the Yajur Veda — sacred action and disciplined effort",
+    sourceScripture: "Yajur Veda",
+    sourceReference: "Ishavasya Upanishad — Verse 1–2",
+    crossRef: {
+      scripture: "Bhagavad Gita",
+      reference: "Chapter 3, Verse 19",
+      teaching:
+        "Perform your duty always without attachment. By performing action without attachment, a person achieves the supreme. — The Yajur Veda and Gita together declare: work itself is worship.",
+    },
+    krishnaMessage:
+      "Hare Krishna, Arjun 🙏 — The Yajur Veda teaches the profound principle: Shram Eva Jayate — hard work alone triumphs. Every sincere effort made in the right spirit is sacred. The Ishavasya Upanishad, embedded in the Yajur Veda, teaches that this entire universe is pervaded by the Lord — offer every action as a sacrifice to the divine. Work done with this sacred awareness is no longer mere labour — it becomes yajna, a sacred offering. The one who works this way never burns out, never despairs — because they are not working for themselves alone, but as an instrument of the divine will.",
+    verse: {
+      id: "yv-isha-2",
+      chapterId: 3,
+      verseNumber: 19,
+      sanskritText:
+        "तस्मादसक्तः सततं कार्यं कर्म समाचर |\nअसक्तो ह्याचरन्कर्म परमाप्नोति पूरुषः ||",
+      transliteration:
+        "tasmād asaktaḥ satataṁ kāryaṁ karma samāchara\nasakto hy ācharan karma param āpnoti pūruṣhaḥ",
+      englishTranslation:
+        "Therefore, always perform your duty without attachment, for by performing action without attachment, one achieves the supreme. — BG 3.19",
+    },
+  },
+  // ── BHAGAVATA PURANA — DEVOTION / BHAKTI ─────────────────────────────────────
+  {
+    keywords: [
+      "bhagavata purana",
+      "bhakti yoga",
+      "pure devotion",
+      "krishna love",
+      "radha krishna",
+      "unconditional love for god",
+      "prema",
+      "highest love",
+      "spiritual love",
+    ],
+    chapterId: 12,
+    context: "From the Bhagavata Purana — the supreme path of devotion",
+    sourceScripture: "Bhagavata Purana",
+    sourceReference: "Canto 1, Chapter 2, Verse 6",
+    crossRef: {
+      scripture: "Bhagavad Gita",
+      reference: "Chapter 12, Verse 8",
+      teaching:
+        "Fix your mind on Me alone, direct your intellect to Me. You will then live in Me always — of this there is no doubt. — BG 12.8",
+    },
+    krishnaMessage:
+      "Hare Krishna, Arjun 🙏 — The Bhagavata Purana declares: 'The highest dharma for all humanity is that through which supreme devotion to the Lord arises.' Dharmo Rakshati Rakshitah — protect Dharma and Dharma protects you. The Bhagavata describes nine forms of Bhakti: hearing, chanting, remembering, serving the Lord's feet, worshipping, praying, serving as a servant, making friends, and complete surrender. Begin with just one of these — chanting His name — and all the others will naturally flower. The Bhagavata assures us: even one sincere utterance of Krishna's name destroys the sins of many lifetimes.",
+    verse: {
+      id: "bp-1-2-6",
+      chapterId: 12,
+      verseNumber: 8,
+      sanskritText:
+        "मय्येव मन आधत्स्व मयि बुद्धिं निवेशय |\nनिवसिष्यसि मय्येव अत ऊर्ध्वं न संशयः ||",
+      transliteration:
+        "mayy eva mana ādhatsva mayi buddhiṁ niveśhaya\nnivasisyasi mayy eva ata ūrdhvaṁ na sanśhayaḥ",
+      englishTranslation:
+        "Fix your mind on me alone, direct your intellect to me. You will then live in me always — of this there is no doubt. — BG 12.8",
+    },
+  },
+  // ── SHIVA PURANA — EGO / DETACHMENT / COSMIC DANCE ───────────────────────────
+  {
+    keywords: [
+      "shiva purana",
+      "shiva",
+      "mahadev",
+      "cosmic dance",
+      "nataraja",
+      "destroyer of ego",
+      "transcendence",
+      "beyond the world",
+      "tapasya",
+      "inner fire",
+    ],
+    chapterId: 16,
+    context:
+      "From the Shiva Purana — Shiva's grace, detachment, overcoming ego",
+    sourceScripture: "Shiva Purana",
+    sourceReference: "Vidyeshvara Samhita — Chapter 1",
+    crossRef: {
+      scripture: "Bhagavad Gita",
+      reference: "Chapter 16, Verse 3",
+      teaching:
+        "Splendor, forgiveness, fortitude, cleanliness, absence of pride — these divine qualities are the qualities of Lord Shiva himself. — BG 16.3",
+    },
+    krishnaMessage:
+      "Hare Krishna, Arjun 🙏 — The Shiva Purana reveals the deepest teaching of detachment: Shiva, the Mahadeva, sits in perfect stillness even while the entire universe dances around him. The cosmic dance of Nataraja represents the continuous creation and destruction of the universe — and at the centre of that dance is perfect, undisturbed awareness. This is the invitation to you: become the stillness at the centre of your life's dance. All that arises — good and bad, pleasure and pain — let it dance around you while you remain the unwavering witness. This is Shiva's gift: the fire of inner transformation that burns the ego and reveals the pure gold of the atman within.",
+    verse: {
+      id: "sp-ego",
+      chapterId: 16,
+      verseNumber: 3,
+      sanskritText:
+        "तेजः क्षमा धृतिः शौचमद्रोहो नातिमानिता |\nभवन्ति सम्पदं दैवीमभिजातस्य भारत ||",
+      transliteration:
+        "tejaḥ kṣhamā dhṛitiḥ śhaucham adroho nāti-mānitā\nbhavanti sampadaṁ daivīm abhijātasya bhārata",
+      englishTranslation:
+        "Splendor, forgiveness, fortitude, cleanliness, bearing no malice, and absence of pride — these are the qualities of those endowed with divine virtues. — BG 16.3",
+    },
+  },
+  // ── GARUDA PURANA — AFTERLIFE / SOUL JOURNEY ─────────────────────────────────
+  {
+    keywords: [
+      "garuda purana",
+      "what happens after death",
+      "soul journey after death",
+      "shradh",
+      "pind daan",
+      "ancestors",
+      "pitru",
+      "moksha after death",
+      "heaven",
+    ],
+    chapterId: 8,
+    context: "From the Garuda Purana — the soul's complete journey after death",
+    sourceScripture: "Garuda Purana",
+    sourceReference: "Preta Khanda — Chapter 1–10",
+    crossRef: {
+      scripture: "Bhagavad Gita",
+      reference: "Chapter 8, Verse 5",
+      teaching:
+        "Whoever, at the time of death, gives up the body while remembering Me alone, reaches My state. Of this there is no doubt. — BG 8.5",
+    },
+    krishnaMessage:
+      "Hare Krishna, Arjun 🙏 — The Garuda Purana describes in sacred detail the journey of the soul after it leaves the body. The soul travels through different planes, guided by its accumulated karma and the prayers of loved ones. The 13 days of mourning rituals are not mere tradition — they actively help the departing soul navigate its journey. Most importantly: the final thought at the moment of death shapes the soul's next destination. This is why the Gita instructs us to fill our daily life with the Lord's name — so that at the most important moment, the name of the Divine arises naturally. Those who performed Shradh, chanted the Mahamrityunjaya Mantra, and prayed sincerely are supported by grace.",
+    verse: {
+      id: "gp-preta-1",
+      chapterId: 8,
+      verseNumber: 5,
+      sanskritText:
+        "अन्तकाले च मामेव स्मरन्मुक्त्वा कलेवरम् |\nयः प्रयाति स मद्भावं याति नास्त्यत्र संशयः ||",
+      transliteration:
+        "anta-kāle cha mām eva smaran muktvā kalevaram\nyaḥ prayāti sa mad-bhāvaṁ yāti nāsty atra sanśhayaḥ",
+      englishTranslation:
+        "Whoever, at the time of death, gives up the body while remembering Me alone, reaches My state. Of this there is no doubt. — BG 8.5",
+    },
+  },
 ];
+
+// ─── ENRICH ENTRY — compute source citation if not explicitly set ────────────
+
+function enrichEntry(entry: GuidanceEntry): GuidanceEntry {
+  return {
+    ...entry,
+    sourceScripture: entry.sourceScripture ?? "Bhagavad Gita",
+    sourceReference:
+      entry.sourceReference ??
+      `Chapter ${entry.chapterId}, Verse ${entry.verse.verseNumber}`,
+  };
+}
 
 // ─── KEYWORD MATCHING — improved scoring ───────────────────────────────────────
 
 function findGuidance(query: string): GuidanceEntry | null {
+  if (isOutOfScope(query)) return null;
   const lower = query.toLowerCase().trim();
   if (!lower) return null;
 
@@ -2914,7 +3291,7 @@ function findGuidance(query: string): GuidanceEntry | null {
     }
   }
 
-  return bestScore > 0 ? bestEntry : null;
+  return bestScore > 0 ? enrichEntry(bestEntry!) : null;
 }
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
@@ -2923,6 +3300,7 @@ interface ChatItem {
   id: string;
   query: string;
   result: GuidanceEntry | null;
+  outOfScope: boolean;
   timestamp: number;
 }
 
@@ -3247,11 +3625,13 @@ export function GuidancePage() {
   const handleAsk = (q: string) => {
     if (!q.trim()) return;
     unlockAudio(); // unlock TTS on first user interaction
-    const result = findGuidance(q);
+    const oos = isOutOfScope(q);
+    const result = oos ? null : findGuidance(q);
     const item: ChatItem = {
       id: Date.now().toString(),
       query: q,
       result,
+      outOfScope: oos,
       timestamp: Date.now(),
     };
     setHistory((prev) => [item, ...prev].slice(0, 10));
@@ -3830,9 +4210,9 @@ export function GuidancePage() {
                           Kurukshetra. He guides you through your life.
                         </p>
 
-                        {/* Read in Library */}
+                        {/* Read Gita */}
                         <div className="flex justify-center">
-                          <Link to="/library">
+                          <Link to="/gita">
                             <button
                               type="button"
                               className="inline-flex items-center gap-2 px-4 py-2 font-display text-xs tracking-widest uppercase border transition-smooth hover:shadow-sacred"
@@ -3845,9 +4225,9 @@ export function GuidancePage() {
                                 boxShadow:
                                   "0 3px 12px oklch(0.78 0.28 54 / 0.30)",
                               }}
-                              data-ocid="guidance.dilemma.read-in-library"
+                              data-ocid="guidance.dilemma.read-gita"
                             >
-                              📖 Open Library for Full Scripture →
+                              📖 Read Bhagavad Gita →
                             </button>
                           </Link>
                         </div>
@@ -4028,6 +4408,75 @@ export function GuidancePage() {
                       † Chapter {latestItem.result.chapterId} ·{" "}
                       {latestItem.result.context}
                     </p>
+
+                    {/* ─── SOURCE CITATION BADGE ─── */}
+                    <div
+                      className="flex flex-col gap-2"
+                      data-ocid="guidance.source-badge"
+                    >
+                      {/* Primary source */}
+                      <div
+                        className="inline-flex items-center gap-2.5 px-4 py-2.5 rounded self-start"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, oklch(0.84 0.36 54 / 0.18) 0%, oklch(0.72 0.30 48 / 0.12) 100%)",
+                          border: "1.5px solid oklch(0.78 0.28 54 / 0.65)",
+                          boxShadow:
+                            "0 0 16px oklch(0.78 0.28 54 / 0.22), inset 0 1px 0 rgba(255,248,220,0.5)",
+                        }}
+                      >
+                        <span style={{ fontSize: "1rem" }}>📖</span>
+                        <div>
+                          <span
+                            className="font-display text-[10px] font-bold tracking-[0.16em] uppercase block"
+                            style={{ color: "oklch(0.46 0.20 46)" }}
+                          >
+                            Sacred Source
+                          </span>
+                          <span
+                            className="font-display text-sm font-bold italic"
+                            style={{ color: "oklch(0.24 0.12 36)" }}
+                          >
+                            {latestItem.result.sourceScripture}
+                          </span>
+                          <span
+                            className="font-body text-xs ml-2 italic"
+                            style={{ color: "oklch(0.48 0.18 44)" }}
+                          >
+                            — {latestItem.result.sourceReference}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Cross-reference from Vedas/Puranas */}
+                      {latestItem.result.crossRef && (
+                        <div
+                          className="px-4 py-3 rounded"
+                          style={{
+                            background:
+                              "linear-gradient(135deg, oklch(0.56 0.24 268 / 0.10) 0%, oklch(0.52 0.22 268 / 0.06) 100%)",
+                            border: "1px solid oklch(0.56 0.24 268 / 0.35)",
+                          }}
+                        >
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span style={{ fontSize: "0.9rem" }}>📜</span>
+                            <span
+                              className="font-display text-[10px] font-bold tracking-[0.14em] uppercase"
+                              style={{ color: "oklch(0.50 0.22 268)" }}
+                            >
+                              Also from: {latestItem.result.crossRef.scripture}{" "}
+                              — {latestItem.result.crossRef.reference}
+                            </span>
+                          </div>
+                          <p
+                            className="font-body text-xs italic leading-relaxed"
+                            style={{ color: "oklch(0.32 0.14 46)" }}
+                          >
+                            {latestItem.result.crossRef.teaching}
+                          </p>
+                        </div>
+                      )}
+                    </div>
 
                     {/* TTS — Hear Krishna button */}
                     <button
@@ -4247,7 +4696,7 @@ export function GuidancePage() {
                             </p>
 
                             {/* Read in Library button */}
-                            <Link to="/library">
+                            <Link to="/gita">
                               <button
                                 type="button"
                                 className="mt-1 inline-flex items-center gap-2 px-4 py-2 font-display text-xs tracking-widest uppercase border transition-smooth hover:shadow-sacred"
@@ -4260,9 +4709,9 @@ export function GuidancePage() {
                                   boxShadow:
                                     "0 3px 12px oklch(0.78 0.28 54 / 0.35)",
                                 }}
-                                data-ocid={`guidance.read-in-library.${ref.libraryId}`}
+                                data-ocid={`guidance.read-in-gita.${ref.libraryId}`}
                               >
-                                📖 Read in Library →
+                                📖 Read Bhagavad Gita →
                               </button>
                             </Link>
                           </div>
@@ -4345,7 +4794,7 @@ export function GuidancePage() {
                           Read Adhyāya {latestItem.result.chapterId} →
                         </button>
                       </Link>
-                      <Link to="/library">
+                      <Link to="/gita">
                         <button
                           type="button"
                           className="px-5 py-2 font-display text-xs tracking-widest uppercase border transition-smooth hover:shadow-sacred"
@@ -4356,9 +4805,9 @@ export function GuidancePage() {
                             borderColor: "oklch(0.78 0.28 54 / 0.45)",
                             borderRadius: "2px",
                           }}
-                          data-ocid="goto-library"
+                          data-ocid="goto-gita"
                         >
-                          📖 Open Library →
+                          📖 Read Gita →
                         </button>
                       </Link>
                       <Link to="/guidance/life">
@@ -4412,66 +4861,132 @@ export function GuidancePage() {
                   className="px-6 py-8 text-center space-y-4"
                   data-ocid="guidance-not-found"
                 >
-                  <p className="text-4xl">🦚</p>
-                  <p
-                    className="font-display text-xl font-semibold italic"
-                    style={{ color: "oklch(var(--foreground))" }}
-                  >
-                    Arjun, bring me your question.
-                  </p>
-                  <p
-                    className="font-body text-sm leading-relaxed max-w-xs mx-auto italic"
-                    style={{ color: "oklch(var(--muted-foreground))" }}
-                  >
-                    No question is too small or too deep for the Gita. Type what
-                    is in your heart, and I will find Krishna's answer for you.
-                  </p>
-                  <p
-                    className="font-display text-xs tracking-widest uppercase mt-2"
-                    style={{ color: "oklch(var(--accent) / 0.8)" }}
-                  >
-                    — You might be asking about —
-                  </p>
-                  <div className="flex flex-wrap gap-2 justify-center">
-                    {[
-                      {
-                        label: "Fear & Anxiety",
-                        query: "I feel afraid and anxious about the future",
-                      },
-                      {
-                        label: "Purpose & Duty",
-                        query: "I don't know my purpose in life or my dharma",
-                      },
-                      {
-                        label: "Grief & Loss",
-                        query:
-                          "I am grieving deeply after losing someone I loved",
-                      },
-                      {
-                        label: "Relationship Pain",
-                        query:
-                          "My relationship is broken and my heart is in pain",
-                      },
-                      {
-                        label: "Surrender to God",
-                        query:
-                          "I want to surrender completely to Krishna and let go",
-                      },
-                    ].map((t) => (
-                      <Badge
-                        key={t.label}
-                        variant="outline"
-                        className="cursor-pointer hover:bg-muted transition-smooth text-xs font-body italic px-3 py-1.5"
-                        onClick={() => handleAsk(t.query)}
-                        data-ocid={`guidance.fallback-suggestion.${t.label
-                          .toLowerCase()
-                          .replace(/\s+/g, "-")
-                          .replace(/[^\w-]/g, "")}`}
+                  {latestItem.outOfScope ? (
+                    /* Out-of-scope — warm Krishna response */
+                    <>
+                      <p className="text-4xl">🙏</p>
+                      <div
+                        className="mx-auto max-w-sm px-5 py-5 rounded text-center space-y-3"
+                        style={{
+                          background:
+                            "linear-gradient(135deg, oklch(0.96 0.10 60 / 0.95) 0%, oklch(0.93 0.12 52 / 0.93) 100%)",
+                          border: "1.5px solid oklch(0.78 0.28 54 / 0.50)",
+                          boxShadow: "0 4px 20px oklch(0.78 0.28 54 / 0.18)",
+                        }}
                       >
-                        {t.label}
-                      </Badge>
-                    ))}
-                  </div>
+                        <p
+                          className="font-display text-xl font-bold italic"
+                          style={{ color: "oklch(var(--accent))" }}
+                        >
+                          🙏 Hare Krishna, Arjun 🙏
+                        </p>
+                        <p
+                          className="font-body text-sm leading-relaxed italic"
+                          style={{
+                            color: "oklch(0.22 0.10 32)",
+                            lineHeight: "1.8",
+                          }}
+                        >
+                          "Beloved devotee, I can only guide you from the sacred
+                          wisdom of the <strong>Bhagavad Gita</strong>, the{" "}
+                          <strong>four Vedas</strong> (Rig, Sama, Yajur,
+                          Atharva), and the <strong>eighteen Puranas</strong>.
+                          Please ask me about dharma, life challenges, spiritual
+                          practice, relationships, karma, or the eternal truths
+                          of the universe — and I shall answer you from the
+                          sacred scriptures."
+                        </p>
+                        <div
+                          className="inline-flex items-center gap-2 px-3 py-1.5 rounded"
+                          style={{
+                            background: "oklch(0.78 0.28 54 / 0.15)",
+                            border: "1px solid oklch(0.78 0.28 54 / 0.30)",
+                          }}
+                        >
+                          <span style={{ fontSize: "0.85rem" }}>📖</span>
+                          <span
+                            className="font-display text-[10px] font-bold tracking-wide uppercase"
+                            style={{ color: "oklch(0.42 0.18 46)" }}
+                          >
+                            Bhagavad Gita · 4 Vedas · 18 Puranas
+                          </span>
+                        </div>
+                        <p
+                          className="font-display text-xs italic"
+                          style={{ color: "oklch(0.50 0.20 46)" }}
+                        >
+                          — Try asking about fear, grief, purpose, dharma,
+                          karma, or devotion
+                        </p>
+                      </div>
+                    </>
+                  ) : (
+                    /* No match found — suggest related topics */
+                    <>
+                      <p className="text-4xl">🦚</p>
+                      <p
+                        className="font-display text-xl font-semibold italic"
+                        style={{ color: "oklch(var(--foreground))" }}
+                      >
+                        Arjun, bring me your question.
+                      </p>
+                      <p
+                        className="font-body text-sm leading-relaxed max-w-xs mx-auto italic"
+                        style={{ color: "oklch(var(--muted-foreground))" }}
+                      >
+                        No question is too small or too deep for the Gita. Type
+                        what is in your heart, and I will find Krishna's answer
+                        for you.
+                      </p>
+                      <p
+                        className="font-display text-xs tracking-widest uppercase mt-2"
+                        style={{ color: "oklch(var(--accent) / 0.8)" }}
+                      >
+                        — You might be asking about —
+                      </p>
+                      <div className="flex flex-wrap gap-2 justify-center">
+                        {[
+                          {
+                            label: "Fear & Anxiety",
+                            query: "I feel afraid and anxious about the future",
+                          },
+                          {
+                            label: "Purpose & Duty",
+                            query:
+                              "I don't know my purpose in life or my dharma",
+                          },
+                          {
+                            label: "Grief & Loss",
+                            query:
+                              "I am grieving deeply after losing someone I loved",
+                          },
+                          {
+                            label: "Relationship Pain",
+                            query:
+                              "My relationship is broken and my heart is in pain",
+                          },
+                          {
+                            label: "Surrender to God",
+                            query:
+                              "I want to surrender completely to Krishna and let go",
+                          },
+                        ].map((t) => (
+                          <Badge
+                            key={t.label}
+                            variant="outline"
+                            className="cursor-pointer hover:bg-muted transition-smooth text-xs font-body italic px-3 py-1.5"
+                            onClick={() => handleAsk(t.query)}
+                            data-ocid={`guidance.fallback-suggestion.${t.label
+                              .toLowerCase()
+                              .replace(/\s+/g, "-")
+                              .replace(/[^\w-]/g, "")}`}
+                          >
+                            {t.label}
+                          </Badge>
+                        ))}
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
             </motion.div>

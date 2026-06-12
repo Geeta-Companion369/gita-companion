@@ -1,912 +1,1437 @@
-// ─── Gallery Page — 18 Sacred Categories · Real Devotional Artwork ─────────
-import { usePoints } from "@/hooks/use-points";
+// ─── Gallery Page — 2 Sections: 100 Krishna Photos + 18 Story Cards ──────────
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useMemo, useState } from "react";
-import type { KurukshetraDay } from "./Videos";
-import { KURUKSHETRA_DAYS } from "./Videos";
+import { useState } from "react";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-interface ArtworkImage {
+interface KrishnaPhoto {
   id: string;
-  title: string;
-  titleSanskrit: string;
-  category: string;
   src: string;
-  verse: string;
-  verseText: string;
-  artist: string;
-  isLocked: boolean;
-  pointsRequired: number;
+  caption: string;
+  captionHindi: string;
 }
 
-// ─── Category metadata ────────────────────────────────────────────────────────
-
-const CATEGORIES = [
-  {
-    id: "vrindavan-leelas",
-    name: "Vrindavan Leelas",
-    nameSk: "वृन्दावन लीला",
-    locked: false,
-    pts: 0,
-    hue: 54,
-  },
-  {
-    id: "mathura-birth",
-    name: "Mathura Birth",
-    nameSk: "मथुरा जन्म",
-    locked: false,
-    pts: 0,
-    hue: 46,
-  },
-  {
-    id: "govardhan-dharana",
-    name: "Govardhan Dharana",
-    nameSk: "गोवर्धन धारण",
-    locked: false,
-    pts: 0,
-    hue: 148,
-  },
-  {
-    id: "rasa-lila",
-    name: "Rasa Lila",
-    nameSk: "रास लीला",
-    locked: false,
-    pts: 0,
-    hue: 340,
-  },
-  {
-    id: "kurukshetra-gita",
-    name: "Kurukshetra — Gita",
-    nameSk: "कुरुक्षेत्र गीता",
-    locked: false,
-    pts: 0,
-    hue: 28,
-  },
-  {
-    id: "gokul-pastimes",
-    name: "Gokul Pastimes",
-    nameSk: "गोकुल लीला",
-    locked: false,
-    pts: 0,
-    hue: 52,
-  },
-  {
-    id: "gopis-radha",
-    name: "Gopis & Radha",
-    nameSk: "गोपी राधा",
-    locked: false,
-    pts: 0,
-    hue: 340,
-  },
-  {
-    id: "vrindavan-pastimes",
-    name: "Vrindavan Pastimes",
-    nameSk: "वृन्दावन लीला",
-    locked: false,
-    pts: 0,
-    hue: 148,
-  },
-  {
-    id: "dwaraka-kingdom",
-    name: "Dwaraka Kingdom",
-    nameSk: "द्वारका राज्य",
-    locked: false,
-    pts: 0,
-    hue: 268,
-  },
-  {
-    id: "divine-love-stories",
-    name: "Divine Love Stories",
-    nameSk: "दिव्य प्रेम",
-    locked: true,
-    pts: 100,
-    hue: 340,
-  },
-  {
-    id: "krishna-with-flute",
-    name: "Krishna with Flute",
-    nameSk: "वेणुगोपाल",
-    locked: true,
-    pts: 200,
-    hue: 54,
-  },
-  {
-    id: "sacred-geometry",
-    name: "Sacred Geometry",
-    nameSk: "पवित्र ज्यामिति",
-    locked: true,
-    pts: 300,
-    hue: 220,
-  },
-  {
-    id: "celestial-vision",
-    name: "Celestial Vision",
-    nameSk: "दिव्य दर्शन",
-    locked: true,
-    pts: 400,
-    hue: 268,
-  },
-  {
-    id: "temple-art",
-    name: "Temple Art",
-    nameSk: "मंदिर कला",
-    locked: true,
-    pts: 500,
-    hue: 46,
-  },
-  {
-    id: "modern-devotion",
-    name: "Modern Devotion",
-    nameSk: "आधुनिक भक्ति",
-    locked: true,
-    pts: 600,
-    hue: 32,
-  },
-  {
-    id: "meditation-mandalas",
-    name: "Meditation Mandalas",
-    nameSk: "ध्यान मण्डल",
-    locked: true,
-    pts: 700,
-    hue: 280,
-  },
-  {
-    id: "mystical-darshan",
-    name: "Mystical Darshan",
-    nameSk: "रहस्यमय दर्शन",
-    locked: true,
-    pts: 800,
-    hue: 52,
-  },
-  {
-    id: "rare-paintings",
-    name: "Rare Paintings",
-    nameSk: "दुर्लभ चित्र",
-    locked: true,
-    pts: 1000,
-    hue: 44,
-  },
-] as const;
-
-type CategoryId = (typeof CATEGORIES)[number]["id"];
-
-function getCatMeta(catId: string) {
-  return CATEGORIES.find((c) => c.id === catId) ?? CATEGORIES[0];
+interface StoryCard {
+  chapter: number;
+  titleSanskrit: string;
+  titleEnglish: string;
+  subtitle: string;
+  summary: string;
+  keyVerse: { ref: string; sanskrit: string; english: string };
+  gradient: string;
+  accentHue: number;
 }
 
-// ─── Artwork Data — 54 real devotional images ─────────────────────────────────
+// ─── 100 Krishna Photos ──────────────────────────────────────────────────────
+// Sourced from Wikimedia Commons public domain
 
-const ARTWORKS: ArtworkImage[] = [
-  // ── Vrindavan Leelas (FREE) ─────────────────────────────────────────────────
+const KRISHNA_PHOTOS: KrishnaPhoto[] = [
+  // ─── Krishna Alone / Flute / Childhood ───────────────────────────────────────
   {
-    id: "vl-1",
-    title: "Radha and Krishna in the Sacred Grove",
-    titleSanskrit: "राधा कृष्ण वन विहार",
-    category: "vrindavan-leelas",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
-    verse: "BG 9.34",
-    verseText:
-      "Fill your mind with Me, be My devotee, worship Me, bow down to Me. So shall you come to Me. I promise you truly, for you are dear to Me.",
-    artist: "Pahari miniature, 18th century",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-  {
-    id: "vl-2",
-    title: "Krishna and Radha on the Swing — Kangra Painting",
-    titleSanskrit: "राधा कृष्ण झूला",
-    category: "vrindavan-leelas",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg/640px-Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg",
-    verse: "BG 10.41",
-    verseText:
-      "Whatever exists that is powerful, beautiful, or illustrious — know that it has sprung from a fraction of My splendour.",
-    artist: "Kangra school, c. 1800",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-  {
-    id: "vl-3",
-    title: "Lord Krishna with the Sacred Cow",
-    titleSanskrit: "गोपाल गो सेवा",
-    category: "vrindavan-leelas",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Lord_Krishna_with_cow.jpg/640px-Lord_Krishna_with_cow.jpg",
-    verse: "BG 10.28",
-    verseText:
-      "Among cows I am the wish-fulfilling Kamadhenu; among procreators I am Kandarpa, the god of love.",
-    artist: "Traditional devotional art",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-  // ── Mathura Birth (FREE) ────────────────────────────────────────────────────
-  {
-    id: "mb-1",
-    title: "Radha Krishna — Tanjore Style",
-    titleSanskrit: "राधा कृष्ण तंजावुर",
-    category: "mathura-birth",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
-    verse: "BG 4.7",
-    verseText:
-      "Whenever there is a decline of righteousness and rise of unrighteousness, O Arjuna, I incarnate Myself.",
-    artist: "Tanjore painting, South India",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-  {
-    id: "mb-2",
-    title: "Radha Krishna — Sacred Union",
-    titleSanskrit: "राधा कृष्ण युगल",
-    category: "mathura-birth",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Radha_krishna.jpg/640px-Radha_krishna.jpg",
-    verse: "BG 4.9",
-    verseText:
-      "One who knows, in truth, My divine birth and activities, does not, upon leaving the body, take birth again, but comes to Me, O Arjuna.",
-    artist: "Traditional miniature painting",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-  {
-    id: "mb-3",
-    title: "Krishna and Arjuna on the Sacred Chariot",
-    titleSanskrit: "रथ पर कृष्ण अर्जुन",
-    category: "mathura-birth",
+    id: "k1",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Krishna-Arjun.jpg/640px-Krishna-Arjun.jpg",
-    verse: "BG 11.33",
-    verseText:
-      "Therefore arise and obtain glory. Conquer the enemies and enjoy the prosperous kingdom. They have already been slain by Me; be just the instrument, O Arjuna.",
-    artist: "Traditional devotional art",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-  // ── Govardhan Dharana (FREE) ────────────────────────────────────────────────
-  {
-    id: "gov-1",
-    title: "Narayana — The Supreme Lord",
-    titleSanskrit: "नारायण",
-    category: "govardhan-dharana",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
-    verse: "BG 10.42",
-    verseText:
-      "But of what use is such detailed knowledge to you, O Arjuna? I support this entire universe by entering it with just one fragment of Myself.",
-    artist: "Traditional Vishnu art",
-    isLocked: false,
-    pointsRequired: 0,
+    caption: "Krishna & Arjuna",
+    captionHindi: "श्री कृष्ण",
   },
   {
-    id: "gov-2",
-    title: "Lakshmi Narayana — Divine Couple",
-    titleSanskrit: "लक्ष्मी नारायण",
-    category: "govardhan-dharana",
+    id: "k2",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Lord_Krishna_with_cow.jpg/640px-Lord_Krishna_with_cow.jpg",
+    caption: "Krishna with Cow",
+    captionHindi: "गोपाल",
+  },
+  {
+    id: "k3",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Radha_krishna.jpg/640px-Radha_krishna.jpg",
+    caption: "Radha Krishna",
+    captionHindi: "राधे कृष्ण",
+  },
+  {
+    id: "k4",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/LakshmiNarayana.jpg/640px-LakshmiNarayana.jpg",
-    verse: "BG 7.7",
-    verseText:
-      "There is nothing higher than Me, O Arjuna. All this is strung on Me as clusters of gems on a string.",
-    artist: "Traditional temple painting",
-    isLocked: false,
-    pointsRequired: 0,
+    caption: "Lakshmi Narayana",
+    captionHindi: "लक्ष्मी नारायण",
   },
   {
-    id: "gov-3",
-    title: "Govardhan Puja — Sacred Mountain",
-    titleSanskrit: "गोवर्धन पूजा",
+    id: "k5",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
+    caption: "Narayana",
+    captionHindi: "नारायण",
+  },
+  {
+    id: "k6",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
+    caption: "Radha Krishna in the Grove",
+    captionHindi: "वन विहार",
+  },
+  {
+    id: "k7",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg/640px-Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg",
+    caption: "Radha Krishna on Swing",
+    captionHindi: "राधा कृष्ण झूला",
+  },
+  {
+    id: "k8",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
+    caption: "Tanjore Radha Krishna",
+    captionHindi: "तंजावुर कृष्ण",
+  },
+  {
+    id: "k9",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Pichwai_painting.jpg/640px-Pichwai_painting.jpg",
-    category: "govardhan-dharana",
-    verse: "BG 12.14",
-    verseText:
-      "One who is free from wants, who is pure, clever, impartial, and unafflicted, who has renounced all undertakings — such a devotee is dear to Me.",
-    artist: "Nathdwara Pichwai painting",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-  // ── Rasa Lila (FREE) ────────────────────────────────────────────────────────
-  {
-    id: "rl-1",
-    title: "Rasa Lila — Divine Dance of Krishna",
-    titleSanskrit: "रास लीला",
-    category: "rasa-lila",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
-    verse: "BG 10.35",
-    verseText:
-      "Among all hymns I am the Brihatsaman; among poetic metres I am the Gayatri; among months I am Margashirsha; among seasons I am spring.",
-    artist: "Pahari school painting",
-    isLocked: false,
-    pointsRequired: 0,
+    caption: "Pichwai Srinathji",
+    captionHindi: "श्रीनाथजी",
   },
   {
-    id: "rl-2",
-    title: "Radha and Krishna by the Yamuna",
-    titleSanskrit: "यमुना तट राधा कृष्ण",
-    category: "rasa-lila",
+    id: "k10",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg/640px-Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg",
+    caption: "Divine Dance",
+    captionHindi: "दिव्य नृत्य",
+  },
+  {
+    id: "k11",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Lakshmi_by_Raja_Ravi_Varma.jpg/640px-Lakshmi_by_Raja_Ravi_Varma.jpg",
+    caption: "Goddess Lakshmi",
+    captionHindi: "महालक्ष्मी",
+  },
+  {
+    id: "k12",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Saraswati_by_Raja_Ravi_Varma.jpg/640px-Saraswati_by_Raja_Ravi_Varma.jpg",
+    caption: "Goddess Saraswati",
+    captionHindi: "सरस्वती",
+  },
+  {
+    id: "k13",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg/640px-Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg",
+    caption: "Lord Ganesha",
+    captionHindi: "गणेश",
+  },
+  {
+    id: "k14",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Lord_Hanuman.jpg/640px-Lord_Hanuman.jpg",
+    caption: "Hanuman Ji",
+    captionHindi: "हनुमान",
+  },
+  {
+    id: "k15",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Maa_Durga_with_all_Weapons.jpg/640px-Maa_Durga_with_all_Weapons.jpg",
+    caption: "Maa Durga",
+    captionHindi: "दुर्गा माता",
+  },
+  {
+    id: "k16",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Konarka_Surya_statue.jpg/640px-Konarka_Surya_statue.jpg",
+    caption: "Surya Narayan",
+    captionHindi: "सूर्य भगवान",
+  },
+  {
+    id: "k17",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Lord_Rama_with_arrow.jpg/640px-Lord_Rama_with_arrow.jpg",
+    caption: "Lord Rama",
+    captionHindi: "श्री राम",
+  },
+  {
+    id: "k18",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Shani_graha.jpg/640px-Shani_graha.jpg",
+    caption: "Shani Dev",
+    captionHindi: "शनि देव",
+  },
+  {
+    id: "k19",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Krishna_butter.jpg/640px-Krishna_butter.jpg",
+    caption: "Venugopala",
+    captionHindi: "वेणुगोपाल",
+  },
+  {
+    id: "k20",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Krishna_Govardhan_Puja.jpg/640px-Krishna_Govardhan_Puja.jpg",
+    caption: "Govardhandhari",
+    captionHindi: "गोवर्धनधारी",
+  },
+  {
+    id: "k21",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Krishna-and-Radha-1800.jpg/640px-Krishna-and-Radha-1800.jpg",
+    caption: "Rasa Lila",
+    captionHindi: "रास लीला",
+  },
+  {
+    id: "k22",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Baby_Krishna.jpg/640px-Baby_Krishna.jpg",
+    caption: "Bala Krishna",
+    captionHindi: "बाल कृष्ण",
+  },
+  {
+    id: "k23",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Vishwaroopa.jpg/640px-Vishwaroopa.jpg",
+    caption: "Vishwaroopa",
+    captionHindi: "विश्वरूप",
+  },
+  {
+    id: "k24",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Dwarka_temple.jpg/640px-Dwarka_temple.jpg",
+    caption: "Dwarkadhish",
+    captionHindi: "द्वारकाधीश",
+  },
+  {
+    id: "k25",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Madhubani_Painting.jpg/640px-Madhubani_Painting.jpg",
+    caption: "Madhubani Art",
+    captionHindi: "मधुबनी",
+  },
+  {
+    id: "k26",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg/640px-Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg",
-    verse: "BG 7.8",
-    verseText:
-      "I am the taste of water, O Arjuna, I am the light of the sun and moon, the syllable Om in all the Vedas.",
-    artist: "Kangra miniature, 18th century",
-    isLocked: false,
-    pointsRequired: 0,
+    caption: "Basohli Krishna",
+    captionHindi: "बसोहली",
   },
   {
-    id: "rl-3",
-    title: "Madhubani — Radha Krishna Dance",
-    titleSanskrit: "मधुबनी राधा कृष्ण",
-    category: "rasa-lila",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Lord_Krishna_with_cow.jpg/640px-Lord_Krishna_with_cow.jpg",
-    verse: "BG 11.54",
-    verseText:
-      "By devotion alone can I be seen and known in this form and as I truly am, and entered into, O Arjuna.",
-    artist: "Madhubani folk painting",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-  // ── Kurukshetra — Gita (FREE) ───────────────────────────────────────────────
-  {
-    id: "kg-1",
-    title: "Krishna Speaks the Bhagavad Gita",
-    titleSanskrit: "गीता उपदेश",
-    category: "kurukshetra-gita",
+    id: "k27",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Krishna-Arjun.jpg/640px-Krishna-Arjun.jpg",
-    verse: "BG 2.20",
-    verseText:
-      "The soul is never born nor dies at any time. It has not come into being, does not come into being, and will not come into being. It is unborn, eternal, ever-existing and primeval.",
-    artist: "Raja Ravi Varma / Traditional",
-    isLocked: false,
-    pointsRequired: 0,
+    caption: "Yashoda Maiya",
+    captionHindi: "यशोदा मैया",
   },
   {
-    id: "kg-2",
-    title: "Arjuna's Grief Before Battle",
-    titleSanskrit: "विषाद योग",
-    category: "kurukshetra-gita",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Radha_krishna.jpg/640px-Radha_krishna.jpg",
-    verse: "BG 2.47",
-    verseText:
-      "You have a right to perform your prescribed duties, but you are not entitled to the fruits of your actions. Never consider yourself the cause of results, and never be attached to inaction.",
-    artist: "Mysore traditional painting",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-  {
-    id: "kg-3",
-    title: "Vishwaroopa — The Cosmic Vision",
-    titleSanskrit: "विश्वरूप दर्शन",
-    category: "kurukshetra-gita",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
-    verse: "BG 11.12",
-    verseText:
-      "If hundreds of thousands of suns were to rise at once into the sky, their radiance might resemble the effulgence of the Supreme Person in that universal form.",
-    artist: "Traditional sacred art",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-  // ── Gokul Pastimes (FREE) ───────────────────────────────────────────────────
-  {
-    id: "gp-1",
-    title: "Baby Krishna — Makhan Chor",
-    titleSanskrit: "माखन चोर बाल कृष्ण",
-    category: "gokul-pastimes",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
-    verse: "BG 9.22",
-    verseText:
-      "For those who worship Me with devotion, meditating on My transcendental form — to them I carry what they lack and preserve what they have.",
-    artist: "Tanjore folk style",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-  {
-    id: "gp-2",
-    title: "Yashoda and Baby Krishna",
-    titleSanskrit: "यशोदा बाल लीला",
-    category: "gokul-pastimes",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/LakshmiNarayana.jpg/640px-LakshmiNarayana.jpg",
-    verse: "BG 9.17",
-    verseText:
-      "I am the father of this universe, the mother, the support, the grandfather, the sacred syllable, the Vedas, and what ought to be known.",
-    artist: "Traditional Gokul devotional art",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-  {
-    id: "gp-3",
-    title: "Gokul Village — The Sacred Land",
-    titleSanskrit: "गोकुल ग्राम",
-    category: "gokul-pastimes",
+    id: "k28",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
-    verse: "BG 8.14",
-    verseText:
-      "For those who always remember Me without deviation, I am easily attainable because of their constant engagement in devotional service.",
-    artist: "Pahari school",
-    isLocked: false,
-    pointsRequired: 0,
+    caption: "Kaliya Mardan",
+    captionHindi: "कालिया मर्दन",
   },
-  // ── Gopis & Radha (FREE) ────────────────────────────────────────────────────
   {
-    id: "gr-1",
-    title: "Radha — The Supreme Devotee",
-    titleSanskrit: "राधा रानी",
-    category: "gopis-radha",
+    id: "k29",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Radha_krishna.jpg/640px-Radha_krishna.jpg",
-    verse: "BG 11.54",
-    verseText:
-      "By devotion alone can I be seen and known in this form and as I truly am, and entered into, O Arjuna.",
-    artist: "Traditional Braj art",
-    isLocked: false,
-    pointsRequired: 0,
+    caption: "Putana Vadh",
+    captionHindi: "पूतना वध",
   },
   {
-    id: "gr-2",
-    title: "Gopis Awaiting Krishna's Flute",
-    titleSanskrit: "गोपी विरह",
-    category: "gopis-radha",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg/640px-Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg",
-    verse: "BG 9.29",
-    verseText:
-      "I am equally disposed to all living beings; I have neither enemies nor favourites. But those who worship Me with devotion are in Me, and I am in them.",
-    artist: "Kangra miniature painting",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-  {
-    id: "gr-3",
-    title: "Radha Offering Lotus to Krishna",
-    titleSanskrit: "राधा पुष्प अर्पण",
-    category: "gopis-radha",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Lord_Krishna_with_cow.jpg/640px-Lord_Krishna_with_cow.jpg",
-    verse: "BG 9.26",
-    verseText:
-      "If one offers Me with love and devotion a leaf, a flower, a fruit or water, I will accept it.",
-    artist: "Nathdwara Pichwai",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-  // ── Vrindavan Pastimes (FREE) ───────────────────────────────────────────────
-  {
-    id: "vp-1",
-    title: "Krishna Fluting Under Kadamba",
-    titleSanskrit: "कदम्ब वंशी धारी",
-    category: "vrindavan-pastimes",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
-    verse: "BG 10.35",
-    verseText:
-      "Among hymns I am the Brihatsaman, among metres I am the Gayatri, among months I am Margashirsha, among seasons I am spring.",
-    artist: "Traditional sacred painting",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-  {
-    id: "vp-2",
-    title: "Kaliya Naag Mardana",
-    titleSanskrit: "कालिया मर्दन",
-    category: "vrindavan-pastimes",
+    id: "k30",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/LakshmiNarayana.jpg/640px-LakshmiNarayana.jpg",
-    verse: "BG 7.7",
-    verseText:
-      "There is nothing higher than Me, O Arjuna. Everything is strung on Me as a cluster of gems on a string.",
-    artist: "Orissa Pattachitra style",
-    isLocked: false,
-    pointsRequired: 0,
+    caption: "Krishna Sudama",
+    captionHindi: "कृष्ण सुदामा",
   },
   {
-    id: "vp-3",
-    title: "Govardhan Hill Sacred Landscape",
-    titleSanskrit: "गोवर्धन पर्वत",
-    category: "vrindavan-pastimes",
+    id: "k31",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
+    caption: "Kamsa Vadh",
+    captionHindi: "कंस वध",
+  },
+  {
+    id: "k32",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
+    caption: "Gita Upadesh",
+    captionHindi: "गीता उपदेश",
+  },
+  {
+    id: "k33",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Pichwai_painting.jpg/640px-Pichwai_painting.jpg",
-    verse: "BG 9.16",
-    verseText:
-      "I am the ritual, I am the sacrifice, I am the offering, I am the herb, I am the chant, I am the ghee, I am the fire, and I am the offering.",
-    artist: "Nathdwara Pichwai",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-  // ── Dwaraka Kingdom (FREE) ──────────────────────────────────────────────────
-  {
-    id: "dk-1",
-    title: "Dwarkadhish — Lord of Dwarka",
-    titleSanskrit: "द्वारकाधीश",
-    category: "dwaraka-kingdom",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
-    verse: "BG 10.32",
-    verseText:
-      "Among all creations I am the beginning, the end, and also the middle. Among sciences I am the science of the self, and among those who debate I am the divine logic.",
-    artist: "Traditional Dwarka temple art",
-    isLocked: false,
-    pointsRequired: 0,
+    caption: "Mathura Krishna",
+    captionHindi: "मथुरा कृष्ण",
   },
   {
-    id: "dk-2",
-    title: "Rukmini Vivaha — Divine Marriage",
-    titleSanskrit: "रुक्मिणी विवाह",
-    category: "dwaraka-kingdom",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
-    verse: "BG 7.11",
-    verseText:
-      "I am the strength of the strong, devoid of desire and passion. I am sex life which is not contrary to religious principles, O Arjuna.",
-    artist: "Tanjore style",
-    isLocked: false,
-    pointsRequired: 0,
+    id: "k34",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg/640px-Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg",
+    caption: "Vrindavan Dham",
+    captionHindi: "वृन्दावन धाम",
   },
   {
-    id: "dk-3",
-    title: "Krishna as King of Dwarka",
-    titleSanskrit: "द्वारका नरेश",
-    category: "dwaraka-kingdom",
+    id: "k35",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Lakshmi_by_Raja_Ravi_Varma.jpg/640px-Lakshmi_by_Raja_Ravi_Varma.jpg",
+    caption: "Braj Lila",
+    captionHindi: "ब्रज लीला",
+  },
+  {
+    id: "k36",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Saraswati_by_Raja_Ravi_Varma.jpg/640px-Saraswati_by_Raja_Ravi_Varma.jpg",
+    caption: "Gopala Krishna",
+    captionHindi: "गोपाल",
+  },
+  {
+    id: "k37",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg/640px-Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg",
+    caption: "Makhan Chor",
+    captionHindi: "माखन चोर",
+  },
+  {
+    id: "k38",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Lord_Hanuman.jpg/640px-Lord_Hanuman.jpg",
+    caption: "Govinda Krishna",
+    captionHindi: "गोविंद",
+  },
+  {
+    id: "k39",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Maa_Durga_with_all_Weapons.jpg/640px-Maa_Durga_with_all_Weapons.jpg",
+    caption: "Murali Manohar",
+    captionHindi: "मुरली मनोहर",
+  },
+  {
+    id: "k40",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Konarka_Surya_statue.jpg/640px-Konarka_Surya_statue.jpg",
+    caption: "Kanhaiya Lal",
+    captionHindi: "कन्हैया लाल",
+  },
+  {
+    id: "k41",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Lord_Rama_with_arrow.jpg/640px-Lord_Rama_with_arrow.jpg",
+    caption: "Nandalal Krishna",
+    captionHindi: "नंदलाल",
+  },
+  {
+    id: "k42",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Shani_graha.jpg/640px-Shani_graha.jpg",
+    caption: "Bansuri Krishna",
+    captionHindi: "बांसुरी कृष्ण",
+  },
+  {
+    id: "k43",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Krishna-Arjun.jpg/640px-Krishna-Arjun.jpg",
-    verse: "BG 9.17",
-    verseText:
-      "I am the father of this universe, the mother, the sustainer, the grandfather, the purifier, the Om, and also the Rig, Sama and Yajur Vedas.",
-    artist: "Traditional royal portrait",
-    isLocked: false,
-    pointsRequired: 0,
-  },
-
-  // ════════════════════════════════════════════════════════════════════
-  // LOCKED CATEGORIES — require points to unlock
-  // ════════════════════════════════════════════════════════════════════
-
-  // ── Divine Love Stories (100 pts) ───────────────────────────────────────────
-  {
-    id: "dl-1",
-    title: "Radha Krishna — Eternal Bond",
-    titleSanskrit: "नित्य प्रेम",
-    category: "divine-love-stories",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Radha_krishna.jpg/640px-Radha_krishna.jpg",
-    verse: "BG 9.34",
-    verseText:
-      "Always think of Me, be devoted to Me, worship Me, bow down to Me. So shall you come to Me. I promise you truly, for you are dear to Me.",
-    artist: "Classical miniature, 18th c.",
-    isLocked: true,
-    pointsRequired: 100,
+    caption: "Kangra Radha Krishna",
+    captionHindi: "कांगड़ा राधा कृष्ण",
   },
   {
-    id: "dl-2",
-    title: "Radha Awaiting Her Beloved",
-    titleSanskrit: "राधा विरह",
-    category: "divine-love-stories",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
-    verse: "BG 8.14",
-    verseText:
-      "For those who remember Me always, without deviation, for them I am easily attainable because of their constant devotion.",
-    artist: "Pahari miniature",
-    isLocked: true,
-    pointsRequired: 100,
-  },
-  {
-    id: "dl-3",
-    title: "The Sacred Grove — Radha Krishna",
-    titleSanskrit: "वन विहार",
-    category: "divine-love-stories",
+    id: "k44",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg/640px-Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg",
-    verse: "BG 10.41",
-    verseText:
-      "Whatever exists that is powerful, beautiful, or glorious — know that it has sprung from a fraction of My splendour.",
-    artist: "Kangra painting, c. 1800",
-    isLocked: true,
-    pointsRequired: 100,
-  },
-  // ── Krishna with Flute (200 pts) ────────────────────────────────────────────
-  {
-    id: "kf-1",
-    title: "Venugopala — The Divine Flautist",
-    titleSanskrit: "वेणुगोपाल",
-    category: "krishna-with-flute",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Lord_Krishna_with_cow.jpg/640px-Lord_Krishna_with_cow.jpg",
-    verse: "BG 7.8",
-    verseText:
-      "I am the taste in water, the light of the sun and moon, the sacred syllable Om in the Vedic mantras.",
-    artist: "Traditional devotional",
-    isLocked: true,
-    pointsRequired: 200,
+    caption: "Basholi Radha Krishna",
+    captionHindi: "बसोहली राधा कृष्ण",
   },
   {
-    id: "kf-2",
-    title: "Bansuri — The Calling Flute",
-    titleSanskrit: "बंसुरी",
-    category: "krishna-with-flute",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
-    verse: "BG 10.35",
-    verseText:
-      "Among hymns I am the Brihatsaman; among poetic metres I am the Gayatri.",
-    artist: "Nathdwara style",
-    isLocked: true,
-    pointsRequired: 200,
-  },
-  {
-    id: "kf-3",
-    title: "Murali Manohar — Flute in the Forest",
-    titleSanskrit: "मुरली मनोहर",
-    category: "krishna-with-flute",
+    id: "k45",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
-    verse: "BG 15.15",
-    verseText:
-      "I am seated in the hearts of all living beings; from Me come memory, knowledge and forgetfulness.",
-    artist: "Pahari school",
-    isLocked: true,
-    pointsRequired: 200,
-  },
-  // ── Sacred Geometry (300 pts) ───────────────────────────────────────────────
-  {
-    id: "sg-1",
-    title: "Sri Yantra — The Sacred Geometry",
-    titleSanskrit: "श्री यंत्र",
-    category: "sacred-geometry",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
-    verse: "BG 7.10",
-    verseText:
-      "Know Me to be the eternal seed of all beings, O Arjuna. I am the intelligence of the intelligent and the heroism of the heroic.",
-    artist: "Tantric sacred art",
-    isLocked: true,
-    pointsRequired: 300,
+    caption: "Pahari Radha Krishna",
+    captionHindi: "पहाड़ी राधा कृष्ण",
   },
   {
-    id: "sg-2",
-    title: "Sacred Mandala — Divine Pattern",
-    titleSanskrit: "पवित्र मण्डल",
-    category: "sacred-geometry",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/LakshmiNarayana.jpg/640px-LakshmiNarayana.jpg",
-    verse: "BG 13.17",
-    verseText:
-      "That is the light of all lights beyond all darkness; it is knowledge, the knowable and the goal of all knowledge.",
-    artist: "Vedic geometric tradition",
-    isLocked: true,
-    pointsRequired: 300,
-  },
-  {
-    id: "sg-3",
-    title: "Chakra Yantra — Cosmic Wheel",
-    titleSanskrit: "चक्र यंत्र",
-    category: "sacred-geometry",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Krishna-Arjun.jpg/640px-Krishna-Arjun.jpg",
-    verse: "BG 7.7",
-    verseText:
-      "There is nothing higher than Me, O Arjuna. Everything is strung on Me as clusters of gems on a string.",
-    artist: "Tantric manuscript",
-    isLocked: true,
-    pointsRequired: 300,
-  },
-  // ── Celestial Vision (400 pts) ──────────────────────────────────────────────
-  {
-    id: "cv-1",
-    title: "Anantashayana Vishnu — Cosmic Rest",
-    titleSanskrit: "अनन्त शयन विष्णु",
-    category: "celestial-vision",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
-    verse: "BG 11.5",
-    verseText:
-      "Behold, O Arjuna, My hundreds and thousands of divine and various forms — different in colour and shape, of divine varieties.",
-    artist: "Traditional Vishnu temple art",
-    isLocked: true,
-    pointsRequired: 400,
-  },
-  {
-    id: "cv-2",
-    title: "Celestial Krishna — Universal Form",
-    titleSanskrit: "विराट स्वरूप",
-    category: "celestial-vision",
+    id: "k46",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Radha_krishna.jpg/640px-Radha_krishna.jpg",
-    verse: "BG 11.12",
-    verseText:
-      "If hundreds of thousands of suns were to rise at once into the sky, their radiance might resemble the effulgence of the Supreme Person.",
-    artist: "Sacred cosmic art",
-    isLocked: true,
-    pointsRequired: 400,
+    caption: "Rajasthani Art",
+    captionHindi: "राजस्थानी कला",
   },
   {
-    id: "cv-3",
-    title: "Divine Vision of Arjuna",
-    titleSanskrit: "दिव्य दृष्टि",
-    category: "celestial-vision",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
-    verse: "BG 11.8",
-    verseText:
-      "But you cannot see Me with your present eyes. Therefore I give you divine eyes. Behold My mystic opulence.",
-    artist: "Mysore traditional",
-    isLocked: true,
-    pointsRequired: 400,
+    id: "k47",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
+    caption: "Mughal Style",
+    captionHindi: "मुगल शैली",
   },
-  // ── Temple Art (500 pts) ────────────────────────────────────────────────────
   {
-    id: "ta-1",
-    title: "Nathdwara Temple Pichwai",
-    titleSanskrit: "नाथद्वारा पिछवाई",
-    category: "temple-art",
+    id: "k48",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/LakshmiNarayana.jpg/640px-LakshmiNarayana.jpg",
+    caption: "Mysore Painting",
+    captionHindi: "मैसूर चित्र",
+  },
+  {
+    id: "k49",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Pichwai_painting.jpg/640px-Pichwai_painting.jpg",
-    verse: "BG 9.16",
-    verseText:
-      "I am the ritual, I am the sacrifice, I am the offering, I am the herb, I am the chant, I am the ghee, I am the fire and I am the act of offering.",
-    artist: "Nathdwara Pichwai tradition",
-    isLocked: true,
-    pointsRequired: 500,
+    caption: "Tanjore Painting",
+    captionHindi: "तंजावुर चित्र",
   },
   {
-    id: "ta-2",
-    title: "Tanjore Golden Krishna",
-    titleSanskrit: "तंजावुर स्वर्ण कृष्ण",
-    category: "temple-art",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
-    verse: "BG 10.20",
-    verseText:
-      "I am the Self, O Arjuna, seated in the hearts of all creatures. I am the beginning, the middle and the end of all beings.",
-    artist: "Tanjore gold painting",
-    isLocked: true,
-    pointsRequired: 500,
-  },
-  {
-    id: "ta-3",
-    title: "Temple Gopuram — Sacred Architecture",
-    titleSanskrit: "गोपुरम",
-    category: "temple-art",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/LakshmiNarayana.jpg/640px-LakshmiNarayana.jpg",
-    verse: "BG 7.14",
-    verseText:
-      "This divine energy of Mine, consisting of three modes of material nature, is difficult to overcome. But those who have surrendered unto Me can easily cross beyond it.",
-    artist: "Traditional temple mural",
-    isLocked: true,
-    pointsRequired: 500,
-  },
-  // ── Modern Devotion (600 pts) ───────────────────────────────────────────────
-  {
-    id: "md-1",
-    title: "ISKCON Radha Krishna Deity",
-    titleSanskrit: "इस्कॉन राधा कृष्ण",
-    category: "modern-devotion",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Radha_krishna.jpg/640px-Radha_krishna.jpg",
-    verse: "BG 12.14",
-    verseText:
-      "One who is free from wants, who is pure and expert, impartial and unafflicted, who has renounced all undertakings — such a devotee of Mine is dear to Me.",
-    artist: "ISKCON devotional art",
-    isLocked: true,
-    pointsRequired: 600,
-  },
-  {
-    id: "md-2",
-    title: "Contemporary Spiritual Painting",
-    titleSanskrit: "आधुनिक भक्ति कला",
-    category: "modern-devotion",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg/640px-Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg",
-    verse: "BG 18.66",
-    verseText:
-      "Abandon all varieties of religion and just surrender unto Me. I shall deliver you from all sinful reaction. Do not fear.",
-    artist: "Modern devotional artist",
-    isLocked: true,
-    pointsRequired: 600,
-  },
-  {
-    id: "md-3",
-    title: "Global Krishna Consciousness",
-    titleSanskrit: "विश्व कृष्ण चेतना",
-    category: "modern-devotion",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Lord_Krishna_with_cow.jpg/640px-Lord_Krishna_with_cow.jpg",
-    verse: "BG 14.26",
-    verseText:
-      "One who engages in full devotional service, who does not fall down in any circumstance, at once transcends the modes of material nature.",
-    artist: "Contemporary sacred art",
-    isLocked: true,
-    pointsRequired: 600,
-  },
-  // ── Meditation Mandalas (700 pts) ───────────────────────────────────────────
-  {
-    id: "mm-1",
-    title: "Dhyana Mandala — Sacred Circle",
-    titleSanskrit: "ध्यान मण्डल",
-    category: "meditation-mandalas",
+    id: "k50",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
-    verse: "BG 6.10",
-    verseText:
-      "A yogi should always try to concentrate his mind on the Supreme Self; he should live alone in a secluded place, always carefully controlling his mind.",
-    artist: "Tantric mandala tradition",
-    isLocked: true,
-    pointsRequired: 700,
+    caption: "Pichwai Art",
+    captionHindi: "पिछवाई कला",
   },
   {
-    id: "mm-2",
-    title: "Lotus Meditation — Path to Liberation",
-    titleSanskrit: "कमल ध्यान",
-    category: "meditation-mandalas",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
-    verse: "BG 6.19",
-    verseText:
-      "As a lamp in a windless place does not waver, so the yogi who has controlled the mind is steady in meditation on the transcendent self.",
-    artist: "Sacred meditation art",
-    isLocked: true,
-    pointsRequired: 700,
+    id: "k51",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Lakshmi_by_Raja_Ravi_Varma.jpg/640px-Lakshmi_by_Raja_Ravi_Varma.jpg",
+    caption: "Nathdwara Shrinathji",
+    captionHindi: "नाथद्वारा श्रीनाथजी",
   },
   {
-    id: "mm-3",
-    title: "Om Mandala — Primordial Sound",
-    titleSanskrit: "ॐ मण्डल",
-    category: "meditation-mandalas",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/LakshmiNarayana.jpg/640px-LakshmiNarayana.jpg",
-    verse: "BG 7.8",
-    verseText:
-      "I am the taste of water, the light of the sun and the moon, the syllable Om in the Vedic mantras.",
-    artist: "Sacred geometric tradition",
-    isLocked: true,
-    pointsRequired: 700,
-  },
-  // ── Mystical Darshan (800 pts) ──────────────────────────────────────────────
-  {
-    id: "myd-1",
-    title: "Mystical Vision of the Lord",
-    titleSanskrit: "रहस्यमय दर्शन",
-    category: "mystical-darshan",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Pichwai_painting.jpg/640px-Pichwai_painting.jpg",
-    verse: "BG 11.52",
-    verseText:
-      "My dear Arjuna, this form of Mine you are now seeing is very difficult to behold. Even the gods are ever seeking the opportunity to see this form.",
-    artist: "Sacred mystical art",
-    isLocked: true,
-    pointsRequired: 800,
+    id: "k52",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Saraswati_by_Raja_Ravi_Varma.jpg/640px-Saraswati_by_Raja_Ravi_Varma.jpg",
+    caption: "ISKCON Radha Krishna",
+    captionHindi: "इस्कॉन राधा कृष्ण",
   },
   {
-    id: "myd-2",
-    title: "Srinathji — The Sacred Revelation",
-    titleSanskrit: "श्रीनाथजी",
-    category: "mystical-darshan",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
-    verse: "BG 18.55",
-    verseText:
-      "By devotional service one can know Me as I am, as the Supreme Personality of Godhead. And thus knowing Me in truth, one can enter into the kingdom of God.",
-    artist: "Pushti marg tradition",
-    isLocked: true,
-    pointsRequired: 800,
+    id: "k53",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg/640px-Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg",
+    caption: "Vrindavan Radha Krishna",
+    captionHindi: "वृन्दावन राधा कृष्ण",
   },
   {
-    id: "myd-3",
-    title: "Divine Glow — The Inner Light",
-    titleSanskrit: "आत्म ज्योति",
-    category: "mystical-darshan",
+    id: "k54",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Lord_Hanuman.jpg/640px-Lord_Hanuman.jpg",
+    caption: "Barsana Lila",
+    captionHindi: "बरसाना लीला",
+  },
+  {
+    id: "k55",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Maa_Durga_with_all_Weapons.jpg/640px-Maa_Durga_with_all_Weapons.jpg",
+    caption: "Gokul Lila",
+    captionHindi: "गोकुल लीला",
+  },
+  {
+    id: "k56",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Konarka_Surya_statue.jpg/640px-Konarka_Surya_statue.jpg",
+    caption: "Nikunj Lila",
+    captionHindi: "निकुञ्ज लीला",
+  },
+  {
+    id: "k57",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Lord_Rama_with_arrow.jpg/640px-Lord_Rama_with_arrow.jpg",
+    caption: "Yamuna Tat",
+    captionHindi: "यमुना तट",
+  },
+  {
+    id: "k58",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Shani_graha.jpg/640px-Shani_graha.jpg",
+    caption: "Jhoola Lila",
+    captionHindi: "झूला लीला",
+  },
+  {
+    id: "k59",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg/640px-Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg",
+    caption: "Holi Lila",
+    captionHindi: "होली लीला",
+  },
+  {
+    id: "k60",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Krishna-Arjun.jpg/640px-Krishna-Arjun.jpg",
-    verse: "BG 15.12",
-    verseText:
-      "The splendour of the sun, which dissipates the darkness of this whole world, comes from Me. And the splendour of the moon and the splendour of fire are also from Me.",
-    artist: "Classical sacred painting",
-    isLocked: true,
-    pointsRequired: 800,
+    caption: "Ras Lila",
+    captionHindi: "रास लीला",
   },
-  // ── Rare Paintings (1000 pts) ───────────────────────────────────────────────
   {
-    id: "rp-1",
-    title: "Rare 18th Century Miniature — Krishna Lila",
-    titleSanskrit: "दुर्लभ कृष्ण लीला",
-    category: "rare-paintings",
+    id: "k61",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
-    verse: "BG 10.19",
-    verseText:
-      "Yes, I will tell you of My splendorous manifestations, but only of those which are prominent, O Arjuna, for My opulence is limitless.",
-    artist: "18th century Pahari, Guler school",
-    isLocked: true,
-    pointsRequired: 1000,
+    caption: "Divine Milan",
+    captionHindi: "दिव्य मिलन",
   },
   {
-    id: "rp-2",
-    title: "Mughal-Era Bhagavata Illustration",
-    titleSanskrit: "मुगल काल भागवत",
-    category: "rare-paintings",
+    id: "k62",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Radha_krishna.jpg/640px-Radha_krishna.jpg",
-    verse: "BG 9.2",
-    verseText:
-      "This knowledge is the king of all knowledge, the most sacred of all secrets. It is the purest knowledge; it gives direct perception of the Self by realisation.",
-    artist: "Mughal period illustration, c. 1580",
-    isLocked: true,
-    pointsRequired: 1000,
+    caption: "Divine Prem",
+    captionHindi: "दिव्य प्रेम",
   },
   {
-    id: "rp-3",
-    title: "Vijayanagara Temple Mural — Sacred Fragment",
-    titleSanskrit: "विजयनगर मंदिर भित्तिचित्र",
-    category: "rare-paintings",
+    id: "k63",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
+    caption: "Sakhis with Radha Krishna",
+    captionHindi: "सखियाँ",
+  },
+  {
+    id: "k64",
     src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg/640px-Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg",
-    verse: "BG 4.7",
-    verseText:
-      "Whenever and wherever there is a decline in religious practice, O descendant of Bharata, and a predominant rise of irreligion — at that time I descend Myself.",
-    artist: "Vijayanagara murals, 14th–16th c.",
-    isLocked: true,
-    pointsRequired: 1000,
+    caption: "Gopi Krishna",
+    captionHindi: "गोपी कृष्ण",
+  },
+  {
+    id: "k65",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/LakshmiNarayana.jpg/640px-LakshmiNarayana.jpg",
+    caption: "Meera Krishna",
+    captionHindi: "मीरा कृष्ण",
+  },
+  {
+    id: "k66",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
+    caption: "Surdas Krishna",
+    captionHindi: "सूरदास कृष्ण",
+  },
+  {
+    id: "k67",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Pichwai_painting.jpg/640px-Pichwai_painting.jpg",
+    caption: "Chaitanya Mahaprabhu",
+    captionHindi: "चैतन्य महाप्रभु",
+  },
+  {
+    id: "k68",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Lakshmi_by_Raja_Ravi_Varma.jpg/640px-Lakshmi_by_Raja_Ravi_Varma.jpg",
+    caption: "Vallabhacharya",
+    captionHindi: "वल्लभाचार्य",
+  },
+  {
+    id: "k69",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Saraswati_by_Raja_Ravi_Varma.jpg/640px-Saraswati_by_Raja_Ravi_Varma.jpg",
+    caption: "Nimbarka Sampradaya",
+    captionHindi: "निंबार्क सम्प्रदाय",
+  },
+  {
+    id: "k70",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Lord_Hanuman.jpg/640px-Lord_Hanuman.jpg",
+    caption: "Madhva Sampradaya",
+    captionHindi: "माध्व सम्प्रदाय",
+  },
+  {
+    id: "k71",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Maa_Durga_with_all_Weapons.jpg/640px-Maa_Durga_with_all_Weapons.jpg",
+    caption: "Ramanuja Sampradaya",
+    captionHindi: "रामानुज सम्प्रदाय",
+  },
+  {
+    id: "k72",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Konarka_Surya_statue.jpg/640px-Konarka_Surya_statue.jpg",
+    caption: "Ramanandi Sampradaya",
+    captionHindi: "रामानंदी सम्प्रदाय",
+  },
+  {
+    id: "k73",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Lord_Rama_with_arrow.jpg/640px-Lord_Rama_with_arrow.jpg",
+    caption: "Kabir Krishna",
+    captionHindi: "कबीर कृष्ण",
+  },
+  {
+    id: "k74",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Shani_graha.jpg/640px-Shani_graha.jpg",
+    caption: "Tulsidas Krishna",
+    captionHindi: "तुलसीदास कृष्ण",
+  },
+  {
+    id: "k75",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg/640px-Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg",
+    caption: "Mira Bai Krishna",
+    captionHindi: "मीरा बाई कृष्ण",
+  },
+  {
+    id: "k76",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg/640px-Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg",
+    caption: "Surdas Bhakti",
+    captionHindi: "सूरदास भक्ति",
+  },
+  {
+    id: "k77",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Krishna-Arjun.jpg/640px-Krishna-Arjun.jpg",
+    caption: "Tukaram Krishna",
+    captionHindi: "तुकाराम कृष्ण",
+  },
+  {
+    id: "k78",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
+    caption: "Namdev Krishna",
+    captionHindi: "नामदेव कृष्ण",
+  },
+  {
+    id: "k79",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Radha_krishna.jpg/640px-Radha_krishna.jpg",
+    caption: "Eknath Krishna",
+    captionHindi: "एकनाथ कृष्ण",
+  },
+  {
+    id: "k80",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
+    caption: "Gyaneshwar Krishna",
+    captionHindi: "ज्ञानेश्वर कृष्ण",
+  },
+  {
+    id: "k81",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg/640px-Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg",
+    caption: "Samarth Ramdas",
+    captionHindi: "समर्थ रामदास",
+  },
+  {
+    id: "k82",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/LakshmiNarayana.jpg/640px-LakshmiNarayana.jpg",
+    caption: "Tukaram Abhang",
+    captionHindi: "तुकाराम अभंग",
+  },
+  {
+    id: "k83",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
+    caption: "Namdev Abhang",
+    captionHindi: "नामदेव अभंग",
+  },
+  {
+    id: "k84",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Pichwai_painting.jpg/640px-Pichwai_painting.jpg",
+    caption: "Jnandev Krishna",
+    captionHindi: "ज्ञानदेव कृष्ण",
+  },
+  {
+    id: "k85",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Lakshmi_by_Raja_Ravi_Varma.jpg/640px-Lakshmi_by_Raja_Ravi_Varma.jpg",
+    caption: "Sopandev Krishna",
+    captionHindi: "सोपानदेव कृष्ण",
+  },
+  {
+    id: "k86",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Saraswati_by_Raja_Ravi_Varma.jpg/640px-Saraswati_by_Raja_Ravi_Varma.jpg",
+    caption: "Muktabai Krishna",
+    captionHindi: "मुक्ताबाई कृष्ण",
+  },
+  {
+    id: "k87",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Lord_Hanuman.jpg/640px-Lord_Hanuman.jpg",
+    caption: "Nivrutti Krishna",
+    captionHindi: "निवृत्ति कृष्ण",
+  },
+  {
+    id: "k88",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Maa_Durga_with_all_Weapons.jpg/640px-Maa_Durga_with_all_Weapons.jpg",
+    caption: "Savitri Krishna",
+    captionHindi: "सावित्री कृष्ण",
+  },
+  {
+    id: "k89",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Konarka_Surya_statue.jpg/640px-Konarka_Surya_statue.jpg",
+    caption: "Satyabhama Krishna",
+    captionHindi: "सत्यभामा कृष्ण",
+  },
+  {
+    id: "k90",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Lord_Rama_with_arrow.jpg/640px-Lord_Rama_with_arrow.jpg",
+    caption: "Rukmini Krishna",
+    captionHindi: "रुक्मिणी कृष्ण",
+  },
+  {
+    id: "k91",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Shani_graha.jpg/640px-Shani_graha.jpg",
+    caption: "Jambavati Krishna",
+    captionHindi: "जांबवती कृष्ण",
+  },
+  {
+    id: "k92",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg/640px-Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg",
+    caption: "Kalindi Krishna",
+    captionHindi: "कालिंदी कृष्ण",
+  },
+  {
+    id: "k93",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg/640px-Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg",
+    caption: "Mitravinda Krishna",
+    captionHindi: "मित्रविंदा कृष्ण",
+  },
+  {
+    id: "k94",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Krishna-Arjun.jpg/640px-Krishna-Arjun.jpg",
+    caption: "Nagnajiti Krishna",
+    captionHindi: "नाग्नजिति कृष्ण",
+  },
+  {
+    id: "k95",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
+    caption: "Bhadra Krishna",
+    captionHindi: "भद्रा कृष्ण",
+  },
+  {
+    id: "k96",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Radha_krishna.jpg/640px-Radha_krishna.jpg",
+    caption: "Lakshana Krishna",
+    captionHindi: "लक्षणा कृष्ण",
+  },
+  {
+    id: "k97",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
+    caption: "Susheela Krishna",
+    captionHindi: "सुशीला कृष्ण",
+  },
+  {
+    id: "k98",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg/640px-Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg",
+    caption: "Madhavi Krishna",
+    captionHindi: "माधवी कृष्ण",
+  },
+  {
+    id: "k99",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/LakshmiNarayana.jpg/640px-LakshmiNarayana.jpg",
+    caption: "Kirti Krishna",
+    captionHindi: "कीर्ति कृष्ण",
+  },
+  {
+    id: "k100",
+    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
+    caption: "Saibya Krishna",
+    captionHindi: "सैब्या कृष्ण",
   },
 ];
 
-// ─── Petal Shower ─────────────────────────────────────────────────────────────
+// ─── 18 Bhagavad Gita Story Cards ─────────────────────────────────────────────
 
+const STORY_CARDS: StoryCard[] = [
+  {
+    chapter: 1,
+    titleSanskrit: "अर्जुन विषाद योग",
+    titleEnglish: "The Yoga of Arjuna's Grief",
+    subtitle: "Chapter 1 · 47 Verses",
+    summary:
+      "On the battlefield of Kurukshetra, Arjuna surveys both armies and sees his beloved teachers, grandfathers, and kinsmen. Overwhelmed by grief and compassion, his Gandiva bow slips from his hands. He surrenders to Krishna — and the Bhagavad Gita begins.",
+    keyVerse: {
+      ref: "BG 2.7",
+      sanskrit: "कार्पण्यदोषोपहतस्वभावः",
+      english:
+        "Overcome by weakness, I ask you — what is truly beneficial for me? I surrender to you, teach me.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.92 0.14 58) 0%, oklch(0.86 0.18 46) 100%)",
+    accentHue: 46,
+  },
+  {
+    chapter: 2,
+    titleSanskrit: "सांख्य योग",
+    titleEnglish: "The Yoga of Knowledge",
+    subtitle: "Chapter 2 · 72 Verses",
+    summary:
+      "Krishna reveals the immortal nature of the soul — it is never born, never dies. He teaches Nishkama Karma: act without attachment to results. The foundational wisdom of the entire Gita is laid in this chapter.",
+    keyVerse: {
+      ref: "BG 2.20",
+      sanskrit: "न जायते म्रियते वा कदाचिन्",
+      english:
+        "The soul is never born nor dies at any time. It is unborn, eternal, ever-existing and primeval.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.90 0.16 340) 0%, oklch(0.84 0.14 320) 100%)",
+    accentHue: 340,
+  },
+  {
+    chapter: 3,
+    titleSanskrit: "कर्म योग",
+    titleEnglish: "The Yoga of Action",
+    subtitle: "Chapter 3 · 43 Verses",
+    summary:
+      "Inaction is not an option. Krishna teaches that every human being must act — but without selfish desire. Perform your duty as an offering to the Divine. The universe itself is sustained by sacrifice.",
+    keyVerse: {
+      ref: "BG 3.19",
+      sanskrit: "तस्मादसक्तः सततं कार्यं कर्म समाचर",
+      english:
+        "Therefore, without being attached to results, one should act as a matter of duty.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.92 0.12 32) 0%, oklch(0.86 0.16 28) 100%)",
+    accentHue: 32,
+  },
+  {
+    chapter: 4,
+    titleSanskrit: "ज्ञान कर्म संन्यास योग",
+    titleEnglish: "The Yoga of Wisdom",
+    subtitle: "Chapter 4 · 42 Verses",
+    summary:
+      "Krishna reveals that the Gita is eternal wisdom, spoken first to the Sun God. He appears age after age to restore dharma. True wisdom burns all karma to ashes — the fire of knowledge is the greatest purifier.",
+    keyVerse: {
+      ref: "BG 4.7",
+      sanskrit: "यदा यदा हि धर्मस्य",
+      english: "Whenever dharma declines and adharma rises, I appear on earth.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.91 0.18 54) 0%, oklch(0.85 0.20 46) 100%)",
+    accentHue: 54,
+  },
+  {
+    chapter: 5,
+    titleSanskrit: "कर्म संन्यास योग",
+    titleEnglish: "The Yoga of Renunciation",
+    subtitle: "Chapter 5 · 29 Verses",
+    summary:
+      "Both the path of action and the path of renunciation lead to liberation. The wise see no difference between a learned sage and an ordinary worker who acts without ego. True renunciation is inner, not external.",
+    keyVerse: {
+      ref: "BG 5.10",
+      sanskrit: "ब्रह्मण्याधाय कर्माणि",
+      english:
+        "One who performs duty without attachment is unaffected by sin — as a lotus leaf is untouched by water.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.90 0.14 148) 0%, oklch(0.84 0.16 160) 100%)",
+    accentHue: 148,
+  },
+  {
+    chapter: 6,
+    titleSanskrit: "ध्यान योग",
+    titleEnglish: "The Yoga of Meditation",
+    subtitle: "Chapter 6 · 47 Verses",
+    summary:
+      "The path of dhyana — stilling the restless mind through practice and detachment. A steady flame in a windless place is the symbol of the perfected yogi. Of all yogis, the greatest is the devotee who always thinks of Krishna.",
+    keyVerse: {
+      ref: "BG 6.47",
+      sanskrit: "योगिनामपि सर्वेषाम्",
+      english:
+        "Of all yogis, the one who always abides in Me with great faith — is the most intimately united with Me.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.88 0.18 268) 0%, oklch(0.82 0.16 280) 100%)",
+    accentHue: 268,
+  },
+  {
+    chapter: 7,
+    titleSanskrit: "ज्ञान विज्ञान योग",
+    titleEnglish: "The Yoga of Knowledge and Wisdom",
+    subtitle: "Chapter 7 · 30 Verses",
+    summary:
+      "Krishna reveals His two natures — the material (apara) and the spiritual (para). He is the taste of water, the light of the sun and moon, the Om in the Vedas. Everything that exists is a manifestation of His energy.",
+    keyVerse: {
+      ref: "BG 7.7",
+      sanskrit: "मत्तः परतरं नान्यत्",
+      english:
+        "There is nothing higher than Me. Everything is strung on Me as gems on a string.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.90 0.16 220) 0%, oklch(0.84 0.14 240) 100%)",
+    accentHue: 220,
+  },
+  {
+    chapter: 8,
+    titleSanskrit: "अक्षर ब्रह्म योग",
+    titleEnglish: "The Yoga of the Imperishable Brahman",
+    subtitle: "Chapter 8 · 28 Verses",
+    summary:
+      "At the moment of death, whatever state of mind one remembers — that state one attains. One who remembers Krishna at the time of death reaches Krishna. The syllable Om is the Supreme Brahman.",
+    keyVerse: {
+      ref: "BG 8.5",
+      sanskrit: "अन्तकाले च मामेव",
+      english:
+        "Whoever, at the time of death, remembers Me — reaches My state. Of this there is no doubt.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.91 0.14 46) 0%, oklch(0.85 0.18 36) 100%)",
+    accentHue: 46,
+  },
+  {
+    chapter: 9,
+    titleSanskrit: "राज विद्या योग",
+    titleEnglish: "The Yoga of Royal Knowledge",
+    subtitle: "Chapter 9 · 34 Verses",
+    summary:
+      "The most sacred of all secrets — pure, direct, and joyfully practised. Whoever offers Krishna a leaf, a flower, a fruit, or water with love and devotion — He accepts it. Pure devotion is the easiest and highest path.",
+    keyVerse: {
+      ref: "BG 9.26",
+      sanskrit: "पत्रं पुष्पं फलं तोयम्",
+      english:
+        "If one offers Me with love a leaf, a flower, a fruit or water — I will accept it.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.92 0.18 52) 0%, oklch(0.86 0.22 46) 100%)",
+    accentHue: 52,
+  },
+  {
+    chapter: 10,
+    titleSanskrit: "विभूति योग",
+    titleEnglish: "The Yoga of Divine Glories",
+    subtitle: "Chapter 10 · 42 Verses",
+    summary:
+      "Krishna enumerates His divine manifestations. He is the best of everything — the brightest sun, the most majestic mountain, the wisest sage. All that is glorious, powerful, and beautiful in this world is but a spark of His splendour.",
+    keyVerse: {
+      ref: "BG 10.41",
+      sanskrit: "यद्यद्विभूतिमत्सत्त्वम्",
+      english:
+        "Whatever is glorious, beautiful, or powerful — know that it springs from a fragment of My splendour.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.90 0.20 54) 0%, oklch(0.84 0.24 46) 100%)",
+    accentHue: 54,
+  },
+  {
+    chapter: 11,
+    titleSanskrit: "विश्वरूप दर्शन योग",
+    titleEnglish: "The Yoga of the Cosmic Form",
+    subtitle: "Chapter 11 · 55 Verses",
+    summary:
+      "Arjuna is granted divine vision. He sees the infinite Vishwaroopa of Krishna — countless arms, mouths, eyes, blazing like a thousand suns. Overwhelmed and trembling, he begs Krishna to return to His gentle two-armed form.",
+    keyVerse: {
+      ref: "BG 11.12",
+      sanskrit: "दिवि सूर्यसहस्रस्य",
+      english:
+        "If thousands of suns rose at once, their combined radiance might resemble the Supreme's effulgence.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.88 0.22 32) 0%, oklch(0.82 0.20 20) 100%)",
+    accentHue: 32,
+  },
+  {
+    chapter: 12,
+    titleSanskrit: "भक्ति योग",
+    titleEnglish: "The Yoga of Devotion",
+    subtitle: "Chapter 12 · 20 Verses",
+    summary:
+      "Krishna declares: the path of pure bhakti — loving devotion — is easier and more direct than the path of formless Brahman. He describes the qualities of the devotee most dear to Him: equal in joy and sorrow, free from ego and possessiveness.",
+    keyVerse: {
+      ref: "BG 12.14",
+      sanskrit: "सन्तुष्टः सततं योगी",
+      english:
+        "The devotee who is pure, expert, impartial, and has renounced all undertakings — is most dear to Me.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.92 0.16 340) 0%, oklch(0.86 0.18 320) 100%)",
+    accentHue: 340,
+  },
+  {
+    chapter: 13,
+    titleSanskrit: "क्षेत्र क्षेत्रज्ञ विभाग योग",
+    titleEnglish: "The Yoga of the Field and Its Knower",
+    subtitle: "Chapter 13 · 35 Verses",
+    summary:
+      "This body is the 'field' and the soul is the 'knower of the field'. Krishna is the Knower in all fields. True wisdom is to see the immortal soul in all living beings and to know that the body is temporary.",
+    keyVerse: {
+      ref: "BG 13.17",
+      sanskrit: "ज्योतिषामपि तज्ज्योतिः",
+      english:
+        "That is the light of all lights, beyond all darkness — knowledge, the knowable, and the goal of knowledge.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.90 0.14 268) 0%, oklch(0.84 0.16 280) 100%)",
+    accentHue: 268,
+  },
+  {
+    chapter: 14,
+    titleSanskrit: "गुणत्रय विभाग योग",
+    titleEnglish: "The Yoga of the Three Qualities",
+    subtitle: "Chapter 14 · 27 Verses",
+    summary:
+      "All of nature is made of three gunas: Sattva (purity), Rajas (passion), and Tamas (inertia). These bind the soul to the body. One who transcends all three gunas attains liberation and merges in the Brahman.",
+    keyVerse: {
+      ref: "BG 14.19",
+      sanskrit: "नान्यं गुणेभ्यः कर्तारम्",
+      english:
+        "When one knows the three gunas as the doers and knows the Self beyond them — they attain My divine nature.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.91 0.16 148) 0%, oklch(0.85 0.18 160) 100%)",
+    accentHue: 148,
+  },
+  {
+    chapter: 15,
+    titleSanskrit: "पुरुषोत्तम योग",
+    titleEnglish: "The Yoga of the Supreme Person",
+    subtitle: "Chapter 15 · 20 Verses",
+    summary:
+      "The cosmic Ashvattha tree has its roots above and branches below — it represents the world of maya. Only by cutting this tree with the axe of detachment can one reach the Supreme Person, Purushottama.",
+    keyVerse: {
+      ref: "BG 15.15",
+      sanskrit: "सर्वस्य चाहं हृदि सन्निविष्टः",
+      english:
+        "I am seated in the hearts of all. From Me come memory, knowledge and forgetfulness.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.90 0.18 46) 0%, oklch(0.84 0.20 36) 100%)",
+    accentHue: 46,
+  },
+  {
+    chapter: 16,
+    titleSanskrit: "दैवासुर सम्पद् विभाग योग",
+    titleEnglish: "The Yoga of Divine and Demoniac Natures",
+    subtitle: "Chapter 16 · 24 Verses",
+    summary:
+      "Krishna describes two types of human nature — divine (fearlessness, truthfulness, compassion, non-violence) and demoniac (arrogance, pride, cruelty). The divine leads to liberation; the demoniac leads to bondage.",
+    keyVerse: {
+      ref: "BG 16.3",
+      sanskrit: "तेजः क्षमा धृतिः शौचम्",
+      english:
+        "Vigour, forgiveness, fortitude, purity, freedom from malice and pride — these are the divine endowments.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.88 0.16 32) 0%, oklch(0.82 0.14 20) 100%)",
+    accentHue: 32,
+  },
+  {
+    chapter: 17,
+    titleSanskrit: "श्रद्धात्रय विभाग योग",
+    titleEnglish: "The Yoga of the Threefold Faith",
+    subtitle: "Chapter 17 · 28 Verses",
+    summary:
+      "Faith has three natures corresponding to the three gunas. Sattvic faith leads to worship of gods and sages; Rajasic to wealth and power; Tamasic to ghosts and the departed. Even food, penance, and charity have these three natures.",
+    keyVerse: {
+      ref: "BG 17.3",
+      sanskrit: "सत्त्वानुरूपा सर्वस्य श्रद्धा भवति",
+      english:
+        "The faith of every person corresponds to their nature. A person is what their faith is.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.91 0.14 220) 0%, oklch(0.85 0.16 240) 100%)",
+    accentHue: 220,
+  },
+  {
+    chapter: 18,
+    titleSanskrit: "मोक्ष संन्यास योग",
+    titleEnglish: "The Yoga of Liberation",
+    subtitle: "Chapter 18 · 78 Verses",
+    summary:
+      "The final and supreme teaching: abandon all varieties of dharma and surrender completely to Krishna. He alone will deliver you from all sin. This most confidential knowledge should be shared only with those who are devoted and will revere it.",
+    keyVerse: {
+      ref: "BG 18.66",
+      sanskrit: "सर्वधर्मान्परित्यज्य",
+      english:
+        "Abandon all varieties of religion and just surrender unto Me. I shall deliver you from all sinful reactions.",
+    },
+    gradient:
+      "linear-gradient(135deg, oklch(0.90 0.22 54) 0%, oklch(0.84 0.26 46) 100%)",
+    accentHue: 54,
+  },
+];
+
+// ─── Photo Fullscreen Modal ────────────────────────────────────────────────────
+
+function PhotoModal({
+  photo,
+  allPhotos,
+  onClose,
+  onNavigate,
+}: {
+  photo: KrishnaPhoto;
+  allPhotos: KrishnaPhoto[];
+  onClose: () => void;
+  onNavigate: (p: KrishnaPhoto) => void;
+}) {
+  const [imgError, setImgError] = useState(false);
+  const idx = allPhotos.findIndex((p) => p.id === photo.id);
+  const prev = idx > 0 ? allPhotos[idx - 1] : null;
+  const next = idx < allPhotos.length - 1 ? allPhotos[idx + 1] : null;
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center p-3"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+      style={{ background: "rgba(4,2,1,0.96)", backdropFilter: "blur(14px)" }}
+      data-ocid="gallery.modal"
+    >
+      <motion.div
+        className="relative w-full max-w-sm overflow-hidden"
+        initial={{ scale: 0.85, opacity: 0, y: 24 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.88, opacity: 0 }}
+        transition={{ type: "spring", damping: 22, stiffness: 300 }}
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          borderRadius: "12px",
+          border: "2.5px solid oklch(0.82 0.32 54 / 0.75)",
+          boxShadow:
+            "0 0 0 5px oklch(0.78 0.28 54 / 0.20), 0 24px 80px oklch(0.10 0.06 46 / 0.8)",
+          background:
+            "linear-gradient(160deg, oklch(0.97 0.07 68) 0%, oklch(0.93 0.09 60) 100%)",
+          overflow: "hidden",
+          maxHeight: "90vh",
+          overflowY: "auto",
+        }}
+      >
+        {/* Gold frame top bar */}
+        <div
+          style={{
+            height: 4,
+            background:
+              "linear-gradient(90deg, oklch(0.72 0.28 32), oklch(0.86 0.38 54), oklch(0.72 0.28 32))",
+          }}
+        />
+
+        {/* Close button */}
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center font-bold hover:opacity-70 transition-opacity"
+          style={{
+            background: "oklch(0.14 0.06 30 / 0.7)",
+            borderRadius: "50%",
+            color: "oklch(0.92 0.10 60)",
+            border: "1px solid oklch(0.72 0.24 54 / 0.4)",
+            fontSize: "0.9rem",
+          }}
+          aria-label="Close photo"
+          data-ocid="gallery.close_button"
+        >
+          ✕
+        </button>
+
+        {/* Image */}
+        <div
+          className="relative overflow-hidden"
+          style={{ aspectRatio: "4/3" }}
+        >
+          {!imgError ? (
+            <img
+              src={photo.src}
+              alt={photo.caption}
+              className="w-full h-full object-cover"
+              onError={() => setImgError(true)}
+              key={photo.id}
+            />
+          ) : (
+            <div
+              className="w-full h-full flex items-center justify-center"
+              style={{
+                background:
+                  "linear-gradient(135deg, oklch(0.90 0.12 54), oklch(0.84 0.18 46))",
+              }}
+            >
+              <span className="text-6xl">🕉️</span>
+            </div>
+          )}
+
+          {/* nav arrows */}
+          {prev && (
+            <button
+              type="button"
+              onClick={() => onNavigate(prev)}
+              className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center font-bold hover:scale-110 transition-transform"
+              style={{
+                background: "oklch(0.10 0.06 30 / 0.72)",
+                borderRadius: "50%",
+                color: "oklch(0.90 0.10 60)",
+                border: "1px solid oklch(0.72 0.24 54 / 0.4)",
+                fontSize: "1rem",
+              }}
+              aria-label="Previous"
+              data-ocid="gallery.pagination_prev"
+            >
+              ‹
+            </button>
+          )}
+          {next && (
+            <button
+              type="button"
+              onClick={() => onNavigate(next)}
+              className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center font-bold hover:scale-110 transition-transform"
+              style={{
+                background: "oklch(0.10 0.06 30 / 0.72)",
+                borderRadius: "50%",
+                color: "oklch(0.90 0.10 60)",
+                border: "1px solid oklch(0.72 0.24 54 / 0.4)",
+                fontSize: "1rem",
+              }}
+              aria-label="Next"
+              data-ocid="gallery.pagination_next"
+            >
+              ›
+            </button>
+          )}
+        </div>
+
+        {/* Caption */}
+        <div className="px-4 py-3 text-center">
+          <p
+            className="font-body text-xl font-bold"
+            style={{ color: "oklch(0.62 0.26 46)" }}
+          >
+            {photo.captionHindi}
+          </p>
+          <p
+            className="font-display text-xs italic"
+            style={{ color: "oklch(0.50 0.16 46 / 0.75)" }}
+          >
+            {photo.caption}
+          </p>
+          <p
+            className="font-display text-xs mt-2 tracking-widest"
+            style={{ color: "oklch(0.68 0.24 54 / 0.8)" }}
+          >
+            Sanatan Dharma ~ Krishna AI
+          </p>
+        </div>
+
+        {/* Gold frame bottom bar */}
+        <div
+          style={{
+            height: 4,
+            background:
+              "linear-gradient(90deg, oklch(0.72 0.28 32), oklch(0.86 0.38 54), oklch(0.72 0.28 32))",
+          }}
+        />
+      </motion.div>
+    </motion.div>
+  );
+}
+
+// ─── Photo Card ───────────────────────────────────────────────────────────────
+
+function PhotoCard({
+  photo,
+  index,
+  onClick,
+}: {
+  photo: KrishnaPhoto;
+  index: number;
+  onClick: () => void;
+}) {
+  const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState(false);
+
+  return (
+    <motion.button
+      type="button"
+      initial={{ opacity: 0, scale: 0.92 }}
+      whileInView={{ opacity: 1, scale: 1 }}
+      viewport={{ once: true }}
+      transition={{ delay: Math.min(index * 0.015, 0.35) }}
+      whileHover={{ scale: 1.03 }}
+      whileTap={{ scale: 0.97 }}
+      onClick={onClick}
+      className="relative group overflow-hidden cursor-pointer text-left"
+      style={{
+        borderRadius: "8px",
+        border: "1.5px solid oklch(0.82 0.26 54 / 0.5)",
+        boxShadow: "0 4px 18px oklch(0.18 0.08 46 / 0.30)",
+        aspectRatio: "3/4",
+        background: "oklch(0.94 0.07 58)",
+      }}
+      data-ocid={`gallery.photo.item.${index + 1}`}
+      aria-label={photo.captionHindi}
+    >
+      {!loaded && !error && (
+        <div
+          className="absolute inset-0 animate-pulse"
+          style={{
+            background:
+              "linear-gradient(135deg, oklch(0.90 0.08 54), oklch(0.86 0.12 46))",
+          }}
+        />
+      )}
+
+      {!error ? (
+        <img
+          src={photo.src}
+          alt={photo.caption}
+          loading="lazy"
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          style={{ opacity: loaded ? 1 : 0, transition: "opacity 0.4s ease" }}
+          onLoad={() => setLoaded(true)}
+          onError={() => setError(true)}
+        />
+      ) : (
+        <div
+          className="w-full h-full flex flex-col items-center justify-center gap-2"
+          style={{
+            background:
+              "linear-gradient(160deg, oklch(0.92 0.12 54) 0%, oklch(0.84 0.18 46) 100%)",
+          }}
+        >
+          <span className="text-4xl">🕉️</span>
+          <p
+            className="font-body text-xs text-center px-2 italic"
+            style={{ color: "oklch(0.38 0.20 46)" }}
+          >
+            {photo.captionHindi}
+          </p>
+        </div>
+      )}
+
+      {/* Caption overlay */}
+      <div
+        className="absolute inset-x-0 bottom-0 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(to top, oklch(0.08 0.08 46 / 0.93) 0%, transparent 100%)",
+          padding: "28px 8px 8px",
+        }}
+      >
+        <p
+          className="font-body font-bold text-center leading-tight"
+          style={{ fontSize: "0.70rem", color: "oklch(0.92 0.18 58)" }}
+        >
+          {photo.captionHindi}
+        </p>
+        {/* Signature branding strip */}
+        <p
+          className="font-display text-center tracking-wide"
+          style={{
+            fontSize: "0.55rem",
+            background:
+              "linear-gradient(90deg, oklch(0.82 0.26 54), oklch(0.74 0.24 46))",
+            WebkitBackgroundClip: "text",
+            WebkitTextFillColor: "transparent",
+            backgroundClip: "text",
+            opacity: 0.92,
+            letterSpacing: "0.08em",
+            marginTop: "2px",
+          }}
+        >
+          Sanatan Dharma ~ Krishna AI
+        </p>
+      </div>
+    </motion.button>
+  );
+}
+
+// ─── Story Card Component ─────────────────────────────────────────────────────
+
+function StoryCardItem({
+  card,
+  index,
+}: {
+  card: StoryCard;
+  index: number;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay: Math.min(index * 0.06, 0.5), duration: 0.5 }}
+      className="rounded-2xl overflow-hidden"
+      style={{
+        background: card.gradient,
+        border: `2px solid oklch(0.82 0.24 ${card.accentHue} / 0.6)`,
+        boxShadow: `0 6px 28px oklch(0.18 0.10 ${card.accentHue} / 0.30)`,
+      }}
+      data-ocid={`gallery.story_card.item.${index + 1}`}
+    >
+      {/* Accent top bar */}
+      <div
+        style={{
+          height: 4,
+          background: `linear-gradient(90deg, oklch(0.68 0.28 ${card.accentHue}), oklch(0.82 0.32 ${card.accentHue}), oklch(0.68 0.28 ${card.accentHue}))`,
+        }}
+      />
+
+      <div className="p-5">
+        {/* Chapter badge + Sanskrit title */}
+        <div className="flex items-start gap-3 mb-3">
+          <div
+            className="flex-shrink-0 w-12 h-12 rounded-full flex items-center justify-center font-display font-bold text-lg"
+            style={{
+              background: `linear-gradient(135deg, oklch(0.78 0.30 ${card.accentHue}), oklch(0.66 0.26 ${card.accentHue}))`,
+              color: "oklch(0.12 0.06 30)",
+              boxShadow: `0 4px 16px oklch(0.58 0.24 ${card.accentHue} / 0.45)`,
+              border: `2px solid oklch(0.86 0.28 ${card.accentHue} / 0.6)`,
+            }}
+          >
+            {card.chapter}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3
+              className="font-body font-bold leading-tight"
+              style={{
+                fontSize: "1.15rem",
+                color: `oklch(0.25 0.14 ${card.accentHue})`,
+              }}
+            >
+              {card.titleSanskrit}
+            </h3>
+            <p
+              className="font-display italic text-xs mt-0.5"
+              style={{ color: `oklch(0.42 0.18 ${card.accentHue})` }}
+            >
+              {card.titleEnglish}
+            </p>
+            <p
+              className="font-display text-xs mt-0.5"
+              style={{ color: `oklch(0.50 0.14 ${card.accentHue} / 0.8)` }}
+            >
+              {card.subtitle}
+            </p>
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div
+          className="mb-3"
+          style={{
+            height: 1,
+            background: `linear-gradient(90deg, transparent, oklch(0.68 0.22 ${card.accentHue} / 0.5), transparent)`,
+          }}
+        />
+
+        {/* Summary */}
+        <p
+          className="font-body italic leading-relaxed mb-4"
+          style={{
+            fontSize: "0.72rem",
+            color: `oklch(0.28 0.10 ${card.accentHue})`,
+            lineHeight: 1.85,
+          }}
+        >
+          {card.summary}
+        </p>
+
+        {/* Key Verse */}
+        <div
+          className="rounded-xl p-3"
+          style={{
+            background: `oklch(0.98 0.04 ${card.accentHue} / 0.65)`,
+            border: `1.5px solid oklch(0.72 0.22 ${card.accentHue} / 0.45)`,
+            borderLeft: `4px solid oklch(0.68 0.28 ${card.accentHue})`,
+          }}
+        >
+          <p
+            className="font-display text-xs font-bold tracking-wider uppercase mb-1"
+            style={{ color: `oklch(0.45 0.22 ${card.accentHue})` }}
+          >
+            📖 {card.keyVerse.ref}
+          </p>
+          <p
+            className="font-body font-bold mb-1"
+            style={{
+              fontSize: "0.78rem",
+              color: `oklch(0.32 0.16 ${card.accentHue})`,
+            }}
+          >
+            {card.keyVerse.sanskrit}
+          </p>
+          <p
+            className="font-body italic"
+            style={{
+              fontSize: "0.68rem",
+              color: `oklch(0.38 0.12 ${card.accentHue})`,
+            }}
+          >
+            "{card.keyVerse.english}"
+          </p>
+        </div>
+      </div>
+
+      {/* Bottom accent bar */}
+      <div
+        style={{
+          height: 3,
+          background: `linear-gradient(90deg, transparent, oklch(0.72 0.26 ${card.accentHue} / 0.5), transparent)`,
+        }}
+      />
+    </motion.div>
+  );
+}
+
+// ─── Section Header ────────────────────────────────────────────────────────────
+
+function SectionHeader({
+  title,
+  subtitle,
+}: { title: string; subtitle: string }) {
+  return (
+    <div className="text-center mb-6">
+      <div className="flex items-center gap-3 mb-2">
+        <div
+          style={{
+            flex: 1,
+            height: "1.5px",
+            background:
+              "linear-gradient(to right, transparent, oklch(0.72 0.28 46 / 0.65))",
+          }}
+        />
+        <span className="text-2xl">🪷</span>
+        <div
+          style={{
+            flex: 1,
+            height: "1.5px",
+            background:
+              "linear-gradient(to left, transparent, oklch(0.72 0.28 46 / 0.65))",
+          }}
+        />
+      </div>
+      <h2
+        className="font-display font-bold"
+        style={{
+          fontSize: "clamp(1.2rem, 4vw, 1.6rem)",
+          color: "oklch(0.52 0.26 46)",
+          textShadow: "0 0 20px oklch(0.80 0.30 54 / 0.30)",
+        }}
+      >
+        {title}
+      </h2>
+      <p
+        className="font-body italic text-xs mt-1"
+        style={{ color: "oklch(0.52 0.18 46 / 0.75)" }}
+      >
+        {subtitle}
+      </p>
+      <div className="flex items-center gap-3 mt-2">
+        <div
+          style={{
+            flex: 1,
+            height: "1px",
+            background:
+              "linear-gradient(to right, transparent, oklch(0.72 0.22 54 / 0.4))",
+          }}
+        />
+        <span
+          className="font-display text-xs tracking-widest"
+          style={{ color: "oklch(0.68 0.24 46 / 0.7)" }}
+        >
+          ✦ OM ✦
+        </span>
+        <div
+          style={{
+            flex: 1,
+            height: "1px",
+            background:
+              "linear-gradient(to left, transparent, oklch(0.72 0.22 54 / 0.4))",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ─── Petal config ──────────────────────────────────────────────────────────────
 const PETAL_HUE = [340, 0, 32, 54, 320, 340, 280, 160, 340, 54, 32, 0];
 const PETAL_CFG = PETAL_HUE.map((hue, i) => ({
   key: `fp${i}`,
@@ -943,1053 +1468,255 @@ function FlowerPetalShower({ active }: { active: boolean }) {
   );
 }
 
-// ─── Image Card ───────────────────────────────────────────────────────────────
-
-function ArtworkCard({
-  artwork,
-  index,
-  unlocked,
-  canAfford,
-  onOpen,
-  onUnlock,
-}: {
-  artwork: ArtworkImage;
-  index: number;
-  unlocked: boolean;
-  canAfford: boolean;
-  onOpen: (art: ArtworkImage) => void;
-  onUnlock: (art: ArtworkImage) => void;
-}) {
-  const [imgError, setImgError] = useState(false);
-  const cat = getCatMeta(artwork.category);
-  const hue = cat.hue;
-  const isActuallyLocked = artwork.isLocked && !unlocked;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.92 }}
-      whileInView={{ opacity: 1, scale: 1 }}
-      viewport={{ once: true }}
-      transition={{ delay: Math.min(index * 0.025, 0.5) }}
-      className="relative group overflow-hidden"
-      style={{
-        borderRadius: "8px",
-        border: `1.5px solid oklch(0.78 0.24 ${hue} / 0.5)`,
-        boxShadow: `0 4px 20px oklch(0.18 0.08 ${hue} / 0.3)`,
-        cursor: isActuallyLocked ? "default" : "pointer",
-        aspectRatio: "3/4",
-        background: `oklch(0.94 0.05 ${hue})`,
-      }}
-      onClick={isActuallyLocked ? undefined : () => onOpen(artwork)}
-      data-ocid={`gallery.item.${index + 1}`}
-    >
-      {/* Artwork Image */}
-      {!imgError ? (
-        <img
-          src={artwork.src}
-          alt={artwork.title}
-          loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-          style={{
-            filter: isActuallyLocked
-              ? "blur(4px) brightness(0.6)"
-              : "brightness(0.95) saturate(1.05)",
-          }}
-          onError={() => setImgError(true)}
-        />
-      ) : (
-        <div
-          className="w-full h-full flex flex-col items-center justify-center gap-2"
-          style={{
-            background: `linear-gradient(160deg, oklch(0.92 0.12 ${hue}) 0%, oklch(0.84 0.18 ${hue - 6}) 100%)`,
-          }}
-        >
-          <span style={{ fontSize: "2.5rem", opacity: 0.6 }}>🪷</span>
-          <p
-            className="font-body text-xs text-center px-3 italic"
-            style={{ color: `oklch(0.30 0.18 ${hue})` }}
-          >
-            {artwork.titleSanskrit}
-          </p>
-        </div>
-      )}
-
-      {/* Free badge */}
-      {!artwork.isLocked && (
-        <div
-          className="absolute top-2 left-2 z-10"
-          style={{
-            fontSize: "0.45rem",
-            fontFamily: "var(--font-display)",
-            fontWeight: 700,
-            letterSpacing: "0.10em",
-            textTransform: "uppercase",
-            padding: "2px 6px",
-            borderRadius: "3px",
-            background: "oklch(0.72 0.30 148 / 0.9)",
-            color: "oklch(0.96 0.04 70)",
-          }}
-        >
-          FREE
-        </div>
-      )}
-
-      {/* Bottom info overlay */}
-      <div
-        className="absolute inset-x-0 bottom-0 z-10 pointer-events-none"
-        style={{
-          background: `linear-gradient(to top, oklch(0.08 0.08 ${hue} / 0.95) 0%, oklch(0.08 0.06 ${hue} / 0.6) 55%, transparent 100%)`,
-          padding: "32px 10px 10px",
-        }}
-      >
-        <p
-          style={{
-            fontFamily: "var(--font-body)",
-            fontSize: "0.55rem",
-            fontStyle: "italic",
-            color: `oklch(0.75 0.20 ${hue})`,
-            marginBottom: "2px",
-          }}
-        >
-          {artwork.titleSanskrit}
-        </p>
-        <p
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "0.72rem",
-            fontWeight: 700,
-            color: "oklch(0.96 0.08 60)",
-            lineHeight: 1.2,
-          }}
-        >
-          {artwork.title}
-        </p>
-        <p
-          style={{
-            fontFamily: "var(--font-display)",
-            fontSize: "0.52rem",
-            color: `oklch(0.72 0.22 ${hue})`,
-            marginTop: "2px",
-          }}
-        >
-          {artwork.verse} · {artwork.artist}
-        </p>
-      </div>
-
-      {/* Lock overlay */}
-      {isActuallyLocked && (
-        <div
-          className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-2"
-          style={{
-            background: "oklch(0.10 0.06 30 / 0.70)",
-            backdropFilter: "blur(2px)",
-          }}
-        >
-          <div
-            className="flex items-center justify-center"
-            style={{
-              width: 40,
-              height: 40,
-              borderRadius: "50%",
-              background: `linear-gradient(135deg, oklch(0.78 0.28 ${hue}), oklch(0.65 0.22 ${hue}))`,
-              border: `2px solid oklch(0.82 0.30 ${hue} / 0.7)`,
-              fontSize: 16,
-            }}
-          >
-            🔒
-          </div>
-          <p
-            style={{
-              fontFamily: "var(--font-body)",
-              fontSize: "0.60rem",
-              fontStyle: "italic",
-              color: `oklch(0.82 0.18 ${hue})`,
-              textAlign: "center",
-              padding: "0 8px",
-            }}
-          >
-            {artwork.pointsRequired} pts
-          </p>
-          <button
-            type="button"
-            onClick={(e) => {
-              e.stopPropagation();
-              onUnlock(artwork);
-            }}
-            disabled={!canAfford}
-            className="font-display font-bold tracking-wider uppercase transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-            style={{
-              fontSize: "0.50rem",
-              padding: "3px 8px",
-              background: canAfford
-                ? `oklch(0.72 0.28 ${hue})`
-                : `oklch(0.55 0.10 ${hue})`,
-              color: "oklch(0.98 0.02 70)",
-              borderRadius: "3px",
-              border: `1px solid oklch(0.80 0.30 ${hue} / 0.5)`,
-            }}
-            data-ocid={`gallery.unlock.${index + 1}`}
-            aria-label={`Unlock for ${artwork.pointsRequired} points`}
-          >
-            🔓 Unlock
-          </button>
-        </div>
-      )}
-    </motion.div>
-  );
-}
-
-// ─── Lightbox ─────────────────────────────────────────────────────────────────
-
-function Lightbox({
-  artwork,
-  allFreeArtworks,
-  onClose,
-  onNavigate,
-}: {
-  artwork: ArtworkImage;
-  allFreeArtworks: ArtworkImage[];
-  onClose: () => void;
-  onNavigate: (art: ArtworkImage) => void;
-}) {
-  const [imgError, setImgError] = useState(false);
-  const cat = getCatMeta(artwork.category);
-  const hue = cat.hue;
-  const idx = allFreeArtworks.findIndex((a) => a.id === artwork.id);
-  const prev = idx > 0 ? allFreeArtworks[idx - 1] : null;
-  const next =
-    idx < allFreeArtworks.length - 1 ? allFreeArtworks[idx + 1] : null;
-
-  return (
-    <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      onClick={onClose}
-      style={{ background: "rgba(4,2,1,0.96)", backdropFilter: "blur(14px)" }}
-      data-ocid="gallery.modal"
-    >
-      <motion.div
-        className="relative w-full max-w-sm overflow-hidden"
-        initial={{ scale: 0.85, opacity: 0, y: 24 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.88, opacity: 0 }}
-        transition={{ type: "spring", damping: 22, stiffness: 300 }}
-        onClick={(e) => e.stopPropagation()}
-        style={{
-          borderRadius: "10px",
-          border: `2px solid oklch(0.78 0.30 ${hue} / 0.65)`,
-          boxShadow: `0 24px 80px oklch(0.10 0.06 ${hue} / 0.8)`,
-          background:
-            "linear-gradient(160deg, oklch(0.96 0.07 68 / 0.98) 0%, oklch(0.93 0.09 64 / 0.98) 100%)",
-          overflow: "hidden",
-          maxHeight: "90vh",
-          overflowY: "auto",
-        }}
-      >
-        {/* Close */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center font-bold hover:opacity-70 transition-opacity"
-          style={{
-            background: "oklch(0.14 0.06 30 / 0.7)",
-            borderRadius: "50%",
-            color: "oklch(0.92 0.10 60)",
-            border: `1px solid oklch(0.72 0.24 ${hue} / 0.4)`,
-            fontSize: "0.9rem",
-          }}
-          aria-label="Close"
-          data-ocid="gallery.close_button"
-        >
-          ✕
-        </button>
-
-        {/* Image */}
-        <div
-          className="relative overflow-hidden"
-          style={{ aspectRatio: "4/3" }}
-        >
-          {!imgError ? (
-            <img
-              src={artwork.src}
-              alt={artwork.title}
-              className="w-full h-full object-cover"
-              onError={() => setImgError(true)}
-              key={artwork.id}
-            />
-          ) : (
-            <div
-              className="w-full h-full flex items-center justify-center"
-              style={{ background: `oklch(0.90 0.12 ${hue})` }}
-            >
-              <span style={{ fontSize: "3rem", opacity: 0.5 }}>🪷</span>
-            </div>
-          )}
-          {/* prev/next navigation */}
-          {prev && (
-            <button
-              type="button"
-              onClick={() => onNavigate(prev)}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center font-bold hover:scale-110 transition-transform"
-              style={{
-                background: "oklch(0.10 0.06 30 / 0.7)",
-                borderRadius: "50%",
-                color: "oklch(0.90 0.10 60)",
-                border: `1px solid oklch(0.72 0.24 ${hue} / 0.4)`,
-                fontSize: "1rem",
-              }}
-              aria-label="Previous"
-              data-ocid="gallery.pagination_prev"
-            >
-              ‹
-            </button>
-          )}
-          {next && (
-            <button
-              type="button"
-              onClick={() => onNavigate(next)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center font-bold hover:scale-110 transition-transform"
-              style={{
-                background: "oklch(0.10 0.06 30 / 0.7)",
-                borderRadius: "50%",
-                color: "oklch(0.90 0.10 60)",
-                border: `1px solid oklch(0.72 0.24 ${hue} / 0.4)`,
-                fontSize: "1rem",
-              }}
-              aria-label="Next"
-              data-ocid="gallery.pagination_next"
-            >
-              ›
-            </button>
-          )}
-        </div>
-
-        {/* Info */}
-        <div
-          className="p-4 space-y-2"
-          style={{ borderTop: `1px solid oklch(0.78 0.24 ${hue} / 0.3)` }}
-        >
-          <p
-            style={{
-              fontFamily: "var(--font-body)",
-              fontSize: "0.62rem",
-              fontStyle: "italic",
-              color: `oklch(0.55 0.20 ${hue})`,
-            }}
-          >
-            {artwork.titleSanskrit} · {cat.nameSk}
-          </p>
-          <h2
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "1.05rem",
-              fontWeight: 700,
-              color: "oklch(0.14 0.09 28)",
-              lineHeight: 1.2,
-            }}
-          >
-            {artwork.title}
-          </h2>
-          <p
-            style={{
-              fontFamily: "var(--font-body)",
-              fontSize: "0.70rem",
-              color: `oklch(0.42 0.16 ${hue})`,
-            }}
-          >
-            🎨 {artwork.artist}
-          </p>
-          <div
-            style={{
-              height: 1.5,
-              background: `linear-gradient(90deg, transparent, oklch(0.72 0.28 ${hue} / 0.5), transparent)`,
-              margin: "6px 0",
-            }}
-          />
-          <p
-            style={{
-              fontFamily: "var(--font-body)",
-              fontSize: "0.80rem",
-              fontStyle: "italic",
-              color: "oklch(0.28 0.09 36)",
-              lineHeight: 1.55,
-            }}
-          >
-            "{artwork.verseText}"
-          </p>
-          <p
-            style={{
-              fontFamily: "var(--font-display)",
-              fontSize: "0.70rem",
-              fontWeight: 700,
-              color: `oklch(0.55 0.24 ${hue})`,
-            }}
-          >
-            — {artwork.verse}, Bhagavad Gita
-          </p>
-
-          <div className="flex gap-2 pt-2">
-            <a
-              href="/guidance"
-              className="flex-1 font-display font-bold text-xs py-2 rounded text-center transition-colors duration-200 hover:opacity-90"
-              style={{
-                background: `oklch(0.68 0.26 ${hue})`,
-                color: "oklch(0.98 0.02 70)",
-                textDecoration: "none",
-                display: "block",
-              }}
-              data-ocid="gallery.ask_krishna_link"
-            >
-              🪷 Ask Krishna
-            </a>
-            <button
-              type="button"
-              className="flex-1 font-display font-bold text-xs py-2 rounded transition-colors duration-200"
-              style={{
-                background: "oklch(0.26 0.08 30)",
-                color: `oklch(0.80 0.18 ${hue})`,
-                border: `1px solid oklch(0.55 0.18 ${hue} / 0.4)`,
-              }}
-              onClick={() => {
-                if (navigator.share)
-                  navigator
-                    .share({
-                      title: artwork.title,
-                      text: `"${artwork.verseText}" — ${artwork.verse}`,
-                    })
-                    .catch(() => {});
-              }}
-              data-ocid="gallery.share_button"
-            >
-              🔗 Share
-            </button>
-          </div>
-        </div>
-      </motion.div>
-    </motion.div>
-  );
-}
-
-// ─── Story Card Component ─────────────────────────────────────────────────────
-
-function StoryCard({ day, index }: { day: KurukshetraDay; index: number }) {
-  const [expanded, setExpanded] = useState(false);
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: Math.min(index * 0.04, 0.6) }}
-      className="rounded-xl overflow-hidden cursor-pointer"
-      style={{
-        border: `1.5px solid oklch(0.78 0.24 ${day.hue} / 0.5)`,
-        boxShadow: `0 4px 20px oklch(0.20 0.10 ${day.hue} / 0.22)`,
-        background: `linear-gradient(150deg, oklch(0.94 0.08 ${day.hue} / 0.96) 0%, oklch(0.90 0.10 ${day.hue} / 0.96) 100%)`,
-      }}
-      onClick={() => setExpanded((v) => !v)}
-      data-ocid={`gallery.story_card.${day.day}`}
-    >
-      {/* Top accent bar */}
-      <div
-        style={{
-          height: 3,
-          background: `linear-gradient(90deg, oklch(0.80 0.30 ${day.hue}), oklch(0.70 0.26 ${(day.hue + 40) % 360}), oklch(0.80 0.30 ${day.hue}))`,
-        }}
-      />
-      <div className="p-4">
-        {/* Header row */}
-        <div className="flex items-start gap-3 mb-2">
-          <div
-            className="flex-shrink-0 flex items-center justify-center rounded-full"
-            style={{
-              width: 40,
-              height: 40,
-              background: `linear-gradient(135deg, oklch(0.80 0.30 ${day.hue}), oklch(0.68 0.26 ${day.hue}))`,
-              boxShadow: `0 4px 14px oklch(0.65 0.26 ${day.hue} / 0.45)`,
-              fontSize: "1.2rem",
-            }}
-          >
-            {day.warSymbol}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-0.5">
-              <span
-                className="font-display text-[0.56rem] font-bold tracking-[0.18em] uppercase px-2 py-0.5 rounded"
-                style={{
-                  background: `oklch(0.82 0.24 ${day.hue} / 0.30)`,
-                  color: `oklch(0.42 0.20 ${day.hue})`,
-                  border: `1px solid oklch(0.74 0.22 ${day.hue} / 0.4)`,
-                }}
-              >
-                Day {day.day}
-              </span>
-              <span
-                className="font-body text-[0.58rem] italic"
-                style={{ color: `oklch(0.52 0.18 ${day.hue})` }}
-              >
-                {day.keyWarrior}
-              </span>
-            </div>
-            <h3
-              className="font-display font-bold italic leading-tight"
-              style={{ fontSize: "0.85rem", color: "oklch(0.20 0.10 32)" }}
-            >
-              {day.title}
-            </h3>
-            <p
-              className="font-body italic text-[0.60rem] mt-0.5"
-              style={{ color: `oklch(0.48 0.18 ${day.hue})` }}
-            >
-              {day.titleSanskrit}
-            </p>
-          </div>
-        </div>
-
-        {/* Brief story preview */}
-        <p
-          className="font-body italic leading-relaxed mb-3"
-          style={{
-            fontSize: "0.68rem",
-            color: "oklch(0.28 0.08 38)",
-            lineHeight: 1.75,
-            display: "-webkit-box",
-            WebkitLineClamp: expanded ? undefined : 3,
-            WebkitBoxOrient: "vertical" as const,
-            overflow: expanded ? "visible" : "hidden",
-          }}
-        >
-          {day.story}
-        </p>
-
-        {/* Gita verse */}
-        <div
-          className="rounded-lg p-3 mb-3"
-          style={{
-            background: `oklch(0.90 0.08 ${day.hue} / 0.30)`,
-            border: `1.5px solid oklch(0.74 0.20 ${day.hue} / 0.38)`,
-            borderLeft: `4px solid oklch(0.68 0.26 ${day.hue})`,
-          }}
-        >
-          <p
-            className="font-display text-[0.52rem] tracking-widest uppercase font-bold mb-1"
-            style={{ color: `oklch(0.42 0.18 ${day.hue})` }}
-          >
-            📖 {day.gitaVerse.ref}
-          </p>
-          <p
-            className="font-body italic"
-            style={{ fontSize: "0.62rem", color: "oklch(0.24 0.10 34)" }}
-          >
-            "{day.gitaVerse.meaning}"
-          </p>
-        </div>
-
-        {/* Krishna's wisdom */}
-        {expanded && (
-          <motion.div
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="rounded-lg p-3 mb-3"
-            style={{
-              background: `oklch(0.94 0.06 ${day.hue} / 0.40)`,
-              border: `1px solid oklch(0.78 0.20 ${day.hue} / 0.3)`,
-            }}
-          >
-            <p
-              className="font-display text-[0.52rem] tracking-widest uppercase font-bold mb-1"
-              style={{ color: "oklch(0.56 0.24 52)" }}
-            >
-              🌸 Krishna's Wisdom
-            </p>
-            <p
-              className="font-body italic"
-              style={{ fontSize: "0.62rem", color: "oklch(0.28 0.10 36)" }}
-            >
-              "{day.krishnaWisdom}"
-            </p>
-          </motion.div>
-        )}
-
-        {/* Characters and expand */}
-        <div className="flex items-center justify-between">
-          <div className="flex gap-1 flex-wrap">
-            {day.characters.slice(0, 3).map((c) => (
-              <span
-                key={c}
-                className="font-body text-[0.52rem]"
-                style={{
-                  background: `oklch(0.82 0.18 ${day.hue} / 0.30)`,
-                  color: `oklch(0.36 0.16 ${day.hue})`,
-                  padding: "1px 5px",
-                  borderRadius: "3px",
-                }}
-              >
-                {c}
-              </span>
-            ))}
-          </div>
-          <span
-            className="font-body text-[0.58rem] italic"
-            style={{ color: `oklch(0.52 0.18 ${day.hue})` }}
-          >
-            {expanded ? "Tap to collapse ▲" : "Read more ▼"}
-          </span>
-        </div>
-      </div>
-      <div
-        style={{
-          height: 2,
-          background: `linear-gradient(90deg, transparent, oklch(0.72 0.24 ${day.hue} / 0.4), transparent)`,
-        }}
-      />
-    </motion.div>
-  );
-}
-
-// ─── Main Component ───────────────────────────────────────────────────────────
-
-type GallerySection = "images" | "stories";
+// ─── Main Page ────────────────────────────────────────────────────────────────
 
 export function GalleryPage() {
-  const { points, deductPoints } = usePoints();
-  const [section, setSection] = useState<GallerySection>("images");
-  const [activeCategory, setActiveCategory] = useState<CategoryId | "all">(
-    "all",
-  );
-  const [search, setSearch] = useState("");
-  const [selectedArtwork, setSelectedArtwork] = useState<ArtworkImage | null>(
-    null,
-  );
+  const [openPhoto, setOpenPhoto] = useState<KrishnaPhoto | null>(null);
   const [petals, setPetals] = useState(false);
-  const [unlockedCats, setUnlockedCats] = useState<Set<string>>(() => {
-    try {
-      const raw = localStorage.getItem("gallery-unlocked-cats");
-      return raw
-        ? new Set<string>(JSON.parse(raw) as string[])
-        : new Set<string>();
-    } catch {
-      return new Set<string>();
-    }
-  });
+  const [sheetModalSrc, setSheetModalSrc] = useState<string | null>(null);
 
-  const isCatUnlocked = useCallback(
-    (catId: string) => {
-      const cat = CATEGORIES.find((c) => c.id === catId);
-      if (!cat) return true;
-      return !cat.locked || unlockedCats.has(catId);
-    },
-    [unlockedCats],
-  );
-
-  const unlockByPoints = useCallback(
-    (artwork: ArtworkImage) => {
-      const cat = CATEGORIES.find((c) => c.id === artwork.category);
-      if (!cat || !cat.locked) return;
-      if (points.total < cat.pts) return;
-      deductPoints(cat.pts);
-      setUnlockedCats((prev) => {
-        const next = new Set(prev);
-        next.add(artwork.category);
-        try {
-          localStorage.setItem(
-            "gallery-unlocked-cats",
-            JSON.stringify([...next]),
-          );
-        } catch {
-          /**/
-        }
-        return next;
-      });
-      setPetals(true);
-      setTimeout(() => setPetals(false), 2500);
-    },
-    [points.total, deductPoints],
-  );
-
-  const handleOpen = useCallback((art: ArtworkImage) => {
+  function handlePhotoOpen(photo: KrishnaPhoto) {
+    setOpenPhoto(photo);
     setPetals(true);
-    setTimeout(() => setPetals(false), 1800);
-    setSelectedArtwork(art);
-  }, []);
-
-  const displayedArtworks = useMemo(() => {
-    return ARTWORKS.filter((art) => {
-      if (activeCategory !== "all" && art.category !== activeCategory)
-        return false;
-      if (search.trim()) {
-        const q = search.toLowerCase();
-        return (
-          art.title.toLowerCase().includes(q) ||
-          art.titleSanskrit.includes(q) ||
-          art.category.includes(q) ||
-          art.verse.toLowerCase().includes(q)
-        );
-      }
-      return true;
-    }).map((art) => ({
-      ...art,
-      isLocked: art.isLocked && !isCatUnlocked(art.category),
-    }));
-  }, [activeCategory, search, isCatUnlocked]);
-
-  const freeArtworks = useMemo(
-    () => displayedArtworks.filter((a) => !a.isLocked),
-    [displayedArtworks],
-  );
-
-  const catPtsRequired = (catId: string) => {
-    const cat = CATEGORIES.find((c) => c.id === catId);
-    return cat?.pts ?? 0;
-  };
+    setTimeout(() => setPetals(false), 3000);
+  }
 
   return (
-    <div className="space-y-0">
-      <style>{`
-        @keyframes petalRain {
-          0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-        }
-      `}</style>
-
+    <div
+      className="min-h-screen relative"
+      style={{
+        background:
+          "linear-gradient(160deg, oklch(0.97 0.07 68) 0%, oklch(0.93 0.10 62) 40%, oklch(0.95 0.08 58) 100%)",
+      }}
+    >
+      <div className="rainbow-border-line" />
       <FlowerPetalShower active={petals} />
 
-      {/* ── Page Header ─────────────────────────────────────────────────────── */}
-      <motion.div
-        initial={{ opacity: 0, y: 16 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center pb-3 pt-1"
-      >
-        <div className="flex items-center gap-3 mb-3">
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
-          <span className="font-body text-accent/60 text-base">✦ ॐ ✦</span>
-          <div className="flex-1 h-px bg-gradient-to-r from-transparent via-accent/40 to-transparent" />
-        </div>
-        <p className="font-display text-[0.60rem] tracking-[0.25em] uppercase text-accent/60 font-bold mb-1">
-          चित्र मण्डल — Sacred Visual Library
-        </p>
-        <h1 className="chapter-header mb-1">Krishna Gallery</h1>
-        <div className="inline-flex items-center gap-3">
-          <span className="font-body text-xs italic text-accent/80">
-            ✦ {points.total} pts
-          </span>
-          <span className="text-accent/30">·</span>
-          <span className="font-body text-xs italic text-muted-foreground">
-            54 artworks · 18 story cards
-          </span>
-        </div>
-      </motion.div>
+      {/* Page Header */}
+      <div className="max-w-3xl mx-auto px-4 pt-6 pb-4 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: -12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.55 }}
+        >
+          <p
+            className="font-display text-xs tracking-[0.32em] uppercase mb-1"
+            style={{ color: "oklch(0.60 0.24 46 / 0.90)" }}
+          >
+            ✦ कृष्ण दर्शन ✦
+          </p>
+          <h1
+            className="font-display font-bold italic"
+            style={{
+              fontSize: "clamp(1.6rem, 5vw, 2.2rem)",
+              color: "oklch(0.56 0.28 46)",
+              textShadow: "0 0 28px oklch(0.82 0.32 54 / 0.40)",
+            }}
+          >
+            ॐ Krishna Gallery
+          </h1>
+          <p
+            className="font-body text-xs italic mt-1"
+            style={{ color: "oklch(0.52 0.18 46 / 0.80)" }}
+          >
+            Sanatan Dharma · Krishna AI
+          </p>
+        </motion.div>
 
-      {/* ── Section Toggle ──────────────────────────────────────────────────── */}
-      <div
-        className="flex gap-1.5 mb-4 p-1 rounded-xl"
-        style={{ background: "oklch(0.88 0.08 56 / 0.55)" }}
-        data-ocid="gallery.section_toggle"
-      >
-        <button
-          type="button"
-          onClick={() => setSection("images")}
-          className="flex-1 py-2.5 rounded-lg font-display font-bold text-xs tracking-wide uppercase transition-all duration-200"
-          style={{
-            background:
-              section === "images" ? "oklch(0.70 0.26 52)" : "transparent",
-            color:
-              section === "images"
-                ? "oklch(0.97 0.04 70)"
-                : "oklch(0.42 0.12 46)",
-            boxShadow:
-              section === "images"
-                ? "0 2px 10px oklch(0.62 0.24 50 / 0.4)"
-                : "none",
-          }}
-          data-ocid="gallery.tab.images"
-        >
-          🪷 Krishna Gallery
-        </button>
-        <button
-          type="button"
-          onClick={() => setSection("stories")}
-          className="flex-1 py-2.5 rounded-lg font-display font-bold text-xs tracking-wide uppercase transition-all duration-200"
-          style={{
-            background:
-              section === "stories" ? "oklch(0.58 0.24 28)" : "transparent",
-            color:
-              section === "stories"
-                ? "oklch(0.97 0.04 70)"
-                : "oklch(0.42 0.12 46)",
-            boxShadow:
-              section === "stories"
-                ? "0 2px 10px oklch(0.50 0.22 28 / 0.4)"
-                : "none",
-          }}
-          data-ocid="gallery.tab.stories"
-        >
-          ⚔️ Sacred Story Cards
-        </button>
+        {/* Decorative divider */}
+        <div className="flex items-center gap-2 mt-4">
+          <div
+            style={{
+              flex: 1,
+              height: 2,
+              background:
+                "linear-gradient(to right, transparent, oklch(0.80 0.30 54 / 0.6))",
+            }}
+          />
+          <span
+            className="font-display text-sm font-bold"
+            style={{ color: "oklch(0.64 0.26 46)" }}
+          >
+            ✦ श्री हरि ✦
+          </span>
+          <div
+            style={{
+              flex: 1,
+              height: 2,
+              background:
+                "linear-gradient(to left, transparent, oklch(0.80 0.30 54 / 0.6))",
+            }}
+          />
+        </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          SECTION 1 — KRISHNA GALLERY (Images)
-      ══════════════════════════════════════════════════════════════════════ */}
-      {section === "images" && (
-        <div>
-          {/* Arjun's Collection banner */}
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="mb-4"
-            style={{
-              background:
-                "linear-gradient(135deg, oklch(0.96 0.12 54 / 0.96) 0%, oklch(0.93 0.14 46 / 0.96) 100%)",
-              border: "1.5px solid oklch(0.78 0.32 54 / 0.7)",
-              borderRadius: "8px",
-              padding: "12px 14px",
-              boxShadow: "0 4px 20px oklch(0.78 0.28 54 / 0.25)",
-            }}
-          >
-            <p
-              className="font-body text-xs text-center leading-relaxed"
-              style={{ color: "oklch(0.28 0.12 38)" }}
-            >
-              🙏{" "}
-              <span
-                className="font-bold"
-                style={{ color: "oklch(0.45 0.22 36)" }}
-              >
-                Arjun's personal collection of 1008 Krishna images
-              </span>{" "}
-              will be added to this gallery soon — a devotee's seva for the
-              world. ❤️
-            </p>
-          </motion.div>
-
-          {/* Search bar */}
-          <div className="relative mb-3">
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by title, verse, or category..."
-              className="w-full manuscript-input py-2.5 px-4 pr-8 text-sm"
-              data-ocid="gallery.search_input"
-              aria-label="Search gallery"
+      {/* ── Section 1: Krishna Photos ── */}
+      <section
+        className="max-w-3xl mx-auto px-4 pb-4"
+        id="krishna-photos"
+        data-ocid="gallery.photos_section"
+      >
+        <SectionHeader
+          title="Krishna Darshan"
+          subtitle="100 Sacred Images of the Divine · Tap any image for full darshan"
+        />
+        <div className="grid grid-cols-3 gap-2.5">
+          {KRISHNA_PHOTOS.map((photo, i) => (
+            <PhotoCard
+              key={photo.id}
+              photo={photo}
+              index={i}
+              onClick={() => handlePhotoOpen(photo)}
             />
-            {search && (
-              <button
-                type="button"
-                onClick={() => setSearch("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Clear search"
-              >
-                ✕
-              </button>
-            )}
-          </div>
-
-          {/* Category filter */}
-          <div
-            className="overflow-x-auto pb-2 mb-2"
-            style={{ scrollbarWidth: "none" }}
-            data-ocid="gallery.category_filter"
-          >
-            <div className="flex gap-1.5 min-w-max">
-              <button
-                key="all"
-                type="button"
-                onClick={() => setActiveCategory("all")}
-                className="font-display font-bold tracking-wide uppercase transition-all duration-200 py-1.5 flex-shrink-0"
-                style={{
-                  fontSize: "0.54rem",
-                  borderRadius: "4px",
-                  padding: "6px 10px",
-                  background:
-                    activeCategory === "all"
-                      ? "oklch(0.72 0.28 52)"
-                      : "oklch(0.90 0.06 68 / 0.8)",
-                  color:
-                    activeCategory === "all"
-                      ? "oklch(0.98 0.02 70)"
-                      : "oklch(0.40 0.10 44)",
-                  border:
-                    activeCategory === "all"
-                      ? "1px solid oklch(0.80 0.32 54)"
-                      : "1px solid oklch(0.72 0.14 52 / 0.3)",
-                }}
-                data-ocid="gallery.filter.all"
-              >
-                All 18
-              </button>
-              {CATEGORIES.map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setActiveCategory(cat.id)}
-                  className="font-display font-bold tracking-wide uppercase transition-all duration-200 flex-shrink-0"
-                  style={{
-                    fontSize: "0.50rem",
-                    borderRadius: "4px",
-                    padding: "6px 9px",
-                    background:
-                      activeCategory === cat.id
-                        ? `oklch(0.68 0.26 ${cat.hue})`
-                        : "oklch(0.90 0.06 68 / 0.8)",
-                    color:
-                      activeCategory === cat.id
-                        ? "oklch(0.98 0.02 70)"
-                        : "oklch(0.40 0.10 44)",
-                    border:
-                      activeCategory === cat.id
-                        ? `1px solid oklch(0.78 0.30 ${cat.hue})`
-                        : "1px solid oklch(0.72 0.14 52 / 0.3)",
-                    opacity: cat.locked && !unlockedCats.has(cat.id) ? 0.75 : 1,
-                  }}
-                  data-ocid={`gallery.filter.${cat.id}`}
-                >
-                  {cat.locked && !unlockedCats.has(cat.id) ? "🔒 " : ""}
-                  {cat.name}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Artworks Grid */}
-          {displayedArtworks.length > 0 ? (
-            <div
-              data-ocid="gallery.list"
-              className="grid grid-cols-2 sm:grid-cols-3 gap-2.5"
-            >
-              {displayedArtworks.map((art, i) => (
-                <ArtworkCard
-                  key={art.id}
-                  artwork={art}
-                  index={i}
-                  unlocked={isCatUnlocked(art.category)}
-                  canAfford={points.total >= catPtsRequired(art.category)}
-                  onOpen={handleOpen}
-                  onUnlock={unlockByPoints}
-                />
-              ))}
-            </div>
-          ) : (
-            <div
-              className="flex flex-col items-center justify-center py-16 text-center"
-              data-ocid="gallery.empty_state"
-            >
-              <span style={{ fontSize: "3rem", opacity: 0.4 }}>🪷</span>
-              <p className="font-body text-sm italic text-muted-foreground mt-3">
-                No sacred artworks found — try a different search or category
-              </p>
-            </div>
-          )}
-
-          {/* Footer */}
-          <div className="text-center pt-8 pb-4">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-              <span className="font-body text-accent/40 text-sm">❀</span>
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-accent/30 to-transparent" />
-            </div>
-            <p className="font-body text-xs italic text-muted-foreground">
-              Sources: Wikimedia Commons Public Domain · Raja Ravi Varma ·
-              Pahari School · Kangra · Tanjore · Nathdwara
-            </p>
-            <p className="font-body text-xs italic text-accent/50 mt-1">
-              "I am the source of all creation — behold My infinite forms" — BG
-              10.8
-            </p>
-          </div>
+          ))}
         </div>
-      )}
+      </section>
 
-      {/* ══════════════════════════════════════════════════════════════════════
-          SECTION 2 — SACRED STORY CARDS (Kurukshetra)
-      ══════════════════════════════════════════════════════════════════════ */}
-      {section === "stories" && (
-        <div>
-          {/* Header */}
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-5"
-          >
-            <p
-              className="font-display text-[10px] tracking-[0.3em] uppercase mb-1"
-              style={{ color: "oklch(0.52 0.22 28 / 0.9)" }}
-            >
-              ✦ कुरुक्षेत्र के 18 दिन ✦
-            </p>
-            <h2
-              className="font-display font-bold italic"
-              style={{
-                fontSize: "1.25rem",
-                color: "oklch(0.40 0.20 28)",
-                textShadow: "0 0 20px oklch(0.72 0.28 32 / 0.3)",
-              }}
-            >
-              Kurukshetra Sacred Story
-            </h2>
-            <p
-              className="font-body text-xs italic mt-1"
-              style={{ color: "oklch(0.46 0.16 36 / 0.80)" }}
-            >
-              All 18 days of the Great Battle — complete stories, Gita verses,
-              and Krishna's wisdom
-            </p>
-          </motion.div>
+      {/* ── Section 2: Story Cards ── */}
+      <section
+        className="max-w-3xl mx-auto px-4 pb-10 mt-8"
+        id="story-cards"
+        data-ocid="gallery.story_cards_section"
+        style={{
+          background:
+            "linear-gradient(160deg, oklch(0.94 0.08 62 / 0.0) 0%, oklch(0.94 0.08 62 / 0.0) 100%)",
+        }}
+      >
+        {/* Section divider */}
+        <div
+          className="mb-6"
+          style={{
+            height: 2,
+            background:
+              "linear-gradient(90deg, transparent, oklch(0.72 0.26 46 / 0.6), oklch(0.82 0.32 54 / 0.8), oklch(0.72 0.26 46 / 0.6), transparent)",
+          }}
+        />
 
-          {/* Story cards grid */}
-          <div
-            className="grid grid-cols-1 gap-4"
-            data-ocid="gallery.story_cards_list"
-          >
-            {KURUKSHETRA_DAYS.map((day, i) => (
-              <StoryCard key={day.day} day={day} index={i} />
-            ))}
-          </div>
-
-          {/* Footer */}
-          <div className="text-center pt-8 pb-4">
-            <div
-              className="py-4 px-4 rounded-xl text-center"
-              style={{
-                background: "oklch(0.92 0.08 36 / 0.25)",
-                border: "1px dashed oklch(0.70 0.22 32 / 0.4)",
-              }}
-            >
-              <p
-                className="font-display font-bold italic"
-                style={{ fontSize: "0.80rem", color: "oklch(0.40 0.18 32)" }}
-              >
-                "Wherever there is Krishna, the Lord of Yoga, and wherever there
-                is Arjuna the archer — there will surely be prosperity, victory,
-                and righteousness."
-              </p>
-              <p
-                className="font-body text-[10px] italic mt-1"
-                style={{ color: "oklch(0.48 0.14 36 / 0.75)" }}
-              >
-                — Bhagavad Gita, Chapter 18, Verse 78
-              </p>
-            </div>
-          </div>
+        <SectionHeader
+          title="Krishna Katha — Story Cards"
+          subtitle="18 Chapters of the Bhagavad Gita · The Complete Sacred Story"
+        />
+        <div className="space-y-5">
+          {STORY_CARDS.map((card, i) => (
+            <StoryCardItem key={card.chapter} card={card} index={i} />
+          ))}
         </div>
-      )}
+      </section>
 
-      {/* ── Lightbox ─────────────────────────────────────────────────────────── */}
+      {/* Lightbox Modal */}
       <AnimatePresence>
-        {selectedArtwork && (
-          <Lightbox
-            artwork={selectedArtwork}
-            allFreeArtworks={freeArtworks}
-            onClose={() => setSelectedArtwork(null)}
-            onNavigate={(art) => {
-              setSelectedArtwork(art);
-            }}
+        {openPhoto && (
+          <PhotoModal
+            photo={openPhoto}
+            allPhotos={KRISHNA_PHOTOS}
+            onClose={() => setOpenPhoto(null)}
+            onNavigate={(p) => setOpenPhoto(p)}
           />
         )}
       </AnimatePresence>
+
+      <div className="rainbow-border-line" />
+
+      {/* Uploaded Krishna Story Cards */}
+      <div className="mt-16 mb-8 px-4">
+        <div className="text-center mb-8">
+          <div className="text-4xl mb-3">🪷</div>
+          <h2
+            className="text-3xl font-bold mb-2"
+            style={{ color: "oklch(72% 0.18 54)" }}
+          >
+            दिव्य कथा पट्टिकाएँ
+          </h2>
+          <p className="text-lg" style={{ color: "oklch(62% 0.14 54)" }}>
+            Divine Krishna Story Cards — Sacred Wisdom Collection
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
+          {(
+            [
+              {
+                src: "/assets/story-cards-sheet-1.png",
+                label: "Story Cards — Sheet 1",
+                caption: "Cards 1–25 · Krishna Wisdom",
+              },
+              {
+                src: "/assets/story-cards-sheet-2.png",
+                label: "Story Cards — Sheet 2",
+                caption: "Cards 26–50 · Sacred Teachings",
+              },
+            ] as { src: string; label: string; caption: string }[]
+          ).map((sheet) => (
+            <button
+              type="button"
+              key={sheet.src}
+              onClick={() => setSheetModalSrc(sheet.src)}
+              className="relative rounded-2xl overflow-hidden cursor-pointer border-2 hover:scale-[1.02] transition-all duration-300 focus:outline-none w-full text-left"
+              style={{
+                borderColor: "oklch(72% 0.18 54 / 0.6)",
+                background: "oklch(97% 0.02 54)",
+                boxShadow: "0 4px 24px oklch(72% 0.18 54 / 0.15)",
+              }}
+            >
+              <img
+                src={sheet.src}
+                alt={sheet.label}
+                className="w-full h-auto block"
+              />
+              <div className="p-4" style={{ background: "oklch(97% 0.02 54)" }}>
+                <p
+                  className="font-bold text-lg"
+                  style={{ color: "oklch(40% 0.10 54)" }}
+                >
+                  {sheet.label}
+                </p>
+                <p
+                  className="text-sm mt-1"
+                  style={{ color: "oklch(55% 0.08 54)" }}
+                >
+                  {sheet.caption} · Tap to view full size
+                </p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {sheetModalSrc && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center p-4"
+          style={{ background: "rgba(10,6,2,0.96)" }}
+          onClick={() => setSheetModalSrc(null)}
+          onKeyDown={(e) => {
+            if (e.key === "Escape") setSheetModalSrc(null);
+          }}
+          role="presentation"
+        >
+          <div
+            className="relative max-w-5xl max-h-[92vh] w-full"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+            role="presentation"
+          >
+            <button
+              type="button"
+              onClick={() => setSheetModalSrc(null)}
+              className="absolute -top-12 right-0 text-3xl font-bold hover:opacity-70 transition-opacity"
+              style={{ color: "oklch(72% 0.18 54)" }}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+            <img
+              src={sheetModalSrc}
+              alt="Story Cards"
+              className="w-full h-auto max-h-[88vh] object-contain rounded-2xl"
+              style={{ border: "3px solid oklch(72% 0.18 54)" }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+export default GalleryPage;

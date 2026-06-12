@@ -8,6 +8,15 @@
 
 import { IDL } from '@icp-sdk/core/candid';
 
+export const GalleryImageMeta = IDL.Record({
+  'id' : IDL.Nat,
+  'isApproved' : IDL.Bool,
+  'assetId' : IDL.Text,
+  'caption' : IDL.Text,
+  'category' : IDL.Text,
+  'uploader' : IDL.Principal,
+  'uploadedAt' : IDL.Int,
+});
 export const JournalEntry = IDL.Record({
   'id' : IDL.Text,
   'mood' : IDL.Text,
@@ -16,6 +25,25 @@ export const JournalEntry = IDL.Record({
   'verseId' : IDL.Text,
   'updatedAt' : IDL.Int,
   'principalId' : IDL.Text,
+});
+export const AdminConfig = IDL.Record({
+  'newsletterEnabled' : IDL.Bool,
+  'appVersion' : IDL.Text,
+  'senderName' : IDL.Text,
+  'senderEmail' : IDL.Text,
+});
+export const GrahaRemedyData = IDL.Record({
+  'avoidList' : IDL.Vec(IDL.Text),
+  'daan' : IDL.Text,
+  'role' : IDL.Text,
+  'mantraSanskrit' : IDL.Text,
+  'mantraCount' : IDL.Nat,
+  'gemstone' : IDL.Text,
+  'graha' : IDL.Text,
+  'weakCauses' : IDL.Vec(IDL.Text),
+  'gemstoneWarning' : IDL.Text,
+  'remedies' : IDL.Vec(IDL.Text),
+  'strongGives' : IDL.Vec(IDL.Text),
 });
 export const Chapter = IDL.Record({
   'id' : IDL.Nat,
@@ -42,6 +70,15 @@ export const DailyChallenge = IDL.Record({
   'task' : IDL.Text,
   'points' : IDL.Nat,
 });
+export const DonationInfo = IDL.Record({
+  'qrCodeAssetId' : IDL.Text,
+  'ifscCode' : IDL.Text,
+  'bankName' : IDL.Text,
+  'updatedAt' : IDL.Int,
+  'accountName' : IDL.Text,
+  'upiId' : IDL.Text,
+  'accountNumber' : IDL.Text,
+});
 export const Festival = IDL.Record({
   'dateStr' : IDL.Text,
   'meaning' : IDL.Text,
@@ -62,6 +99,36 @@ export const HeatmapEntry = IDL.Record({
   'versesRead' : IDL.Nat,
   'principalId' : IDL.Text,
 });
+export const DashaEntry = IDL.Record({
+  'durationYears' : IDL.Float64,
+  'endDate' : IDL.Int,
+  'lord' : IDL.Text,
+  'startDate' : IDL.Int,
+});
+export const PlanetPlacement = IDL.Record({
+  'house' : IDL.Nat,
+  'planet' : IDL.Text,
+  'retrograde' : IDL.Bool,
+  'sign' : IDL.Nat,
+  'degree' : IDL.Float64,
+  'nakshatra' : IDL.Text,
+  'nakshatraLord' : IDL.Text,
+});
+export const KundliData = IDL.Record({
+  'navamsaLagnaSign' : IDL.Nat,
+  'pratyantarDasha' : DashaEntry,
+  'lagnaRashi' : IDL.Text,
+  'profileId' : IDL.Principal,
+  'rulingPlanetGlyph' : IDL.Text,
+  'lagnaSign' : IDL.Nat,
+  'calculatedAt' : IDL.Int,
+  'planets' : IDL.Vec(PlanetPlacement),
+  'rulingPlanet' : IDL.Text,
+  'antardasha' : DashaEntry,
+  'navamsaPlanets' : IDL.Vec(PlanetPlacement),
+  'nextDashas' : IDL.Vec(DashaEntry),
+  'mahadasha' : DashaEntry,
+});
 export const MantraEntry = IDL.Record({
   'id' : IDL.Text,
   'meaning' : IDL.Text,
@@ -69,6 +136,51 @@ export const MantraEntry = IDL.Record({
   'text' : IDL.Text,
   'category' : IDL.Text,
   'benefit' : IDL.Text,
+});
+export const PanchangData = IDL.Record({
+  'tithi' : IDL.Text,
+  'vara' : IDL.Text,
+  'yoga' : IDL.Text,
+  'moonSign' : IDL.Text,
+  'description' : IDL.Text,
+  'nakshatra' : IDL.Text,
+  'karana' : IDL.Text,
+  'tithiNumber' : IDL.Nat,
+});
+export const RemedyReminder = IDL.Record({
+  'isActive' : IDL.Bool,
+  'reminderTime' : IDL.Text,
+  'graha' : IDL.Text,
+});
+export const TransitEvent = IDL.Record({
+  'remedy' : IDL.Text,
+  'colorCode' : IDL.Text,
+  'endDate' : IDL.Text,
+  'planet' : IDL.Text,
+  'description' : IDL.Text,
+  'startDate' : IDL.Text,
+  'eventType' : IDL.Text,
+});
+export const DateOfBirth = IDL.Record({
+  'day' : IDL.Nat,
+  'month' : IDL.Nat,
+  'year' : IDL.Nat,
+});
+export const TimeOfBirth = IDL.Record({ 'hour' : IDL.Nat, 'minute' : IDL.Nat });
+export const UserProfile = IDL.Record({
+  'id' : IDL.Principal,
+  'placeOfBirth' : IDL.Text,
+  'latitude' : IDL.Float64,
+  'timezone' : IDL.Text,
+  'dateOfBirth' : DateOfBirth,
+  'newsletterOptIn' : IDL.Bool,
+  'createdAt' : IDL.Int,
+  'fullName' : IDL.Text,
+  'email' : IDL.Text,
+  'updatedAt' : IDL.Int,
+  'timeOfBirth' : TimeOfBirth,
+  'longitude' : IDL.Float64,
+  'phone' : IDL.Text,
 });
 export const Verse = IDL.Record({
   'id' : IDL.Nat,
@@ -84,8 +196,46 @@ export const VerseCommentary = IDL.Record({
   'verseId' : IDL.Text,
   'ramanuja' : IDL.Text,
 });
+export const EmailSubscriber = IDL.Record({
+  'active' : IDL.Bool,
+  'subscribedAt' : IDL.Int,
+  'name' : IDL.Text,
+  'email' : IDL.Text,
+});
+export const UserProfileInput = IDL.Record({
+  'placeOfBirth' : IDL.Text,
+  'latitude' : IDL.Float64,
+  'timezone' : IDL.Text,
+  'dateOfBirth' : DateOfBirth,
+  'newsletterOptIn' : IDL.Bool,
+  'fullName' : IDL.Text,
+  'email' : IDL.Text,
+  'timeOfBirth' : TimeOfBirth,
+  'longitude' : IDL.Float64,
+  'phone' : IDL.Text,
+});
+export const DonationInfoInput = IDL.Record({
+  'qrCodeAssetId' : IDL.Text,
+  'ifscCode' : IDL.Text,
+  'bankName' : IDL.Text,
+  'accountName' : IDL.Text,
+  'upiId' : IDL.Text,
+  'accountNumber' : IDL.Text,
+});
+export const AdminConfigInput = IDL.Record({
+  'newsletterEnabled' : IDL.Bool,
+  'appVersion' : IDL.Text,
+  'senderName' : IDL.Text,
+  'senderEmail' : IDL.Text,
+});
+export const GalleryImageInput = IDL.Record({
+  'assetId' : IDL.Text,
+  'caption' : IDL.Text,
+  'category' : IDL.Text,
+});
 
 export const idlService = IDL.Service({
+  'adminListAllGalleryImages' : IDL.Func([], [IDL.Vec(GalleryImageMeta)], []),
   'clearOldMessages' : IDL.Func([], [], []),
   'createJournalEntry' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text],
@@ -93,6 +243,8 @@ export const idlService = IDL.Service({
       [],
     ),
   'deleteJournalEntry' : IDL.Func([IDL.Text], [IDL.Bool], []),
+  'getAdminConfig' : IDL.Func([], [AdminConfig], ['query']),
+  'getAllGrahaRemedies' : IDL.Func([], [IDL.Vec(GrahaRemedyData)], ['query']),
   'getChapter' : IDL.Func([IDL.Nat], [IDL.Opt(Chapter)], ['query']),
   'getCircleMessages' : IDL.Func(
       [IDL.Text],
@@ -109,7 +261,14 @@ export const idlService = IDL.Service({
       [IDL.Opt(DailyChallenge)],
       ['query'],
     ),
+  'getDonationInfo' : IDL.Func([], [IDL.Opt(DonationInfo)], ['query']),
   'getFestivals' : IDL.Func([], [IDL.Vec(Festival)], ['query']),
+  'getGalleryUploads' : IDL.Func([], [IDL.Vec(GalleryImageMeta)], ['query']),
+  'getGrahaRemedy' : IDL.Func(
+      [IDL.Text],
+      [IDL.Opt(GrahaRemedyData)],
+      ['query'],
+    ),
   'getGuidanceByCategory' : IDL.Func(
       [IDL.Text],
       [IDL.Opt(GuidanceResult)],
@@ -122,8 +281,17 @@ export const idlService = IDL.Service({
       [IDL.Opt(GuidanceResult)],
       ['query'],
     ),
+  'getKundliData' : IDL.Func([], [IDL.Opt(KundliData)], ['query']),
   'getMantras' : IDL.Func([], [IDL.Vec(MantraEntry)], ['query']),
+  'getPanchangToday' : IDL.Func([IDL.Text], [PanchangData], ['query']),
   'getReadingStreak' : IDL.Func([], [IDL.Nat], ['query']),
+  'getRemedyReminder' : IDL.Func([], [IDL.Opt(RemedyReminder)], ['query']),
+  'getTransitCalendar' : IDL.Func(
+      [IDL.Nat],
+      [IDL.Vec(TransitEvent)],
+      ['query'],
+    ),
+  'getUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
   'getVerse' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Opt(Verse)], ['query']),
   'getVerseCommentary' : IDL.Func(
       [IDL.Text],
@@ -131,6 +299,7 @@ export const idlService = IDL.Service({
       ['query'],
     ),
   'listChapters' : IDL.Func([], [IDL.Vec(Chapter)], ['query']),
+  'listNewsletterSubscribers' : IDL.Func([], [IDL.Vec(EmailSubscriber)], []),
   'listSatsangCircles' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
   'listVerses' : IDL.Func([IDL.Nat], [IDL.Vec(Verse)], ['query']),
   'postCircleMessage' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
@@ -144,21 +313,39 @@ export const idlService = IDL.Service({
       [HeatmapEntry],
       [],
     ),
+  'saveKundliData' : IDL.Func([KundliData], [IDL.Bool], []),
+  'saveRemedyReminder' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
+  'saveUserProfile' : IDL.Func([UserProfileInput], [IDL.Bool], []),
   'searchJournalEntries' : IDL.Func(
       [IDL.Text],
       [IDL.Vec(JournalEntry)],
       ['query'],
     ),
+  'setDonationInfo' : IDL.Func([DonationInfoInput], [IDL.Bool], []),
+  'setGalleryImageApproval' : IDL.Func([IDL.Nat, IDL.Bool], [IDL.Bool], []),
+  'subscribeNewsletter' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
+  'unsubscribeNewsletter' : IDL.Func([IDL.Text], [IDL.Bool], []),
+  'updateAdminConfig' : IDL.Func([AdminConfigInput], [IDL.Bool], []),
   'updateJournalEntry' : IDL.Func(
       [IDL.Text, IDL.Text, IDL.Text],
       [IDL.Opt(JournalEntry)],
       [],
     ),
+  'uploadGalleryImage' : IDL.Func([GalleryImageInput], [IDL.Nat], []),
 });
 
 export const idlInitArgs = [];
 
 export const idlFactory = ({ IDL }) => {
+  const GalleryImageMeta = IDL.Record({
+    'id' : IDL.Nat,
+    'isApproved' : IDL.Bool,
+    'assetId' : IDL.Text,
+    'caption' : IDL.Text,
+    'category' : IDL.Text,
+    'uploader' : IDL.Principal,
+    'uploadedAt' : IDL.Int,
+  });
   const JournalEntry = IDL.Record({
     'id' : IDL.Text,
     'mood' : IDL.Text,
@@ -167,6 +354,25 @@ export const idlFactory = ({ IDL }) => {
     'verseId' : IDL.Text,
     'updatedAt' : IDL.Int,
     'principalId' : IDL.Text,
+  });
+  const AdminConfig = IDL.Record({
+    'newsletterEnabled' : IDL.Bool,
+    'appVersion' : IDL.Text,
+    'senderName' : IDL.Text,
+    'senderEmail' : IDL.Text,
+  });
+  const GrahaRemedyData = IDL.Record({
+    'avoidList' : IDL.Vec(IDL.Text),
+    'daan' : IDL.Text,
+    'role' : IDL.Text,
+    'mantraSanskrit' : IDL.Text,
+    'mantraCount' : IDL.Nat,
+    'gemstone' : IDL.Text,
+    'graha' : IDL.Text,
+    'weakCauses' : IDL.Vec(IDL.Text),
+    'gemstoneWarning' : IDL.Text,
+    'remedies' : IDL.Vec(IDL.Text),
+    'strongGives' : IDL.Vec(IDL.Text),
   });
   const Chapter = IDL.Record({
     'id' : IDL.Nat,
@@ -193,6 +399,15 @@ export const idlFactory = ({ IDL }) => {
     'task' : IDL.Text,
     'points' : IDL.Nat,
   });
+  const DonationInfo = IDL.Record({
+    'qrCodeAssetId' : IDL.Text,
+    'ifscCode' : IDL.Text,
+    'bankName' : IDL.Text,
+    'updatedAt' : IDL.Int,
+    'accountName' : IDL.Text,
+    'upiId' : IDL.Text,
+    'accountNumber' : IDL.Text,
+  });
   const Festival = IDL.Record({
     'dateStr' : IDL.Text,
     'meaning' : IDL.Text,
@@ -213,6 +428,36 @@ export const idlFactory = ({ IDL }) => {
     'versesRead' : IDL.Nat,
     'principalId' : IDL.Text,
   });
+  const DashaEntry = IDL.Record({
+    'durationYears' : IDL.Float64,
+    'endDate' : IDL.Int,
+    'lord' : IDL.Text,
+    'startDate' : IDL.Int,
+  });
+  const PlanetPlacement = IDL.Record({
+    'house' : IDL.Nat,
+    'planet' : IDL.Text,
+    'retrograde' : IDL.Bool,
+    'sign' : IDL.Nat,
+    'degree' : IDL.Float64,
+    'nakshatra' : IDL.Text,
+    'nakshatraLord' : IDL.Text,
+  });
+  const KundliData = IDL.Record({
+    'navamsaLagnaSign' : IDL.Nat,
+    'pratyantarDasha' : DashaEntry,
+    'lagnaRashi' : IDL.Text,
+    'profileId' : IDL.Principal,
+    'rulingPlanetGlyph' : IDL.Text,
+    'lagnaSign' : IDL.Nat,
+    'calculatedAt' : IDL.Int,
+    'planets' : IDL.Vec(PlanetPlacement),
+    'rulingPlanet' : IDL.Text,
+    'antardasha' : DashaEntry,
+    'navamsaPlanets' : IDL.Vec(PlanetPlacement),
+    'nextDashas' : IDL.Vec(DashaEntry),
+    'mahadasha' : DashaEntry,
+  });
   const MantraEntry = IDL.Record({
     'id' : IDL.Text,
     'meaning' : IDL.Text,
@@ -220,6 +465,51 @@ export const idlFactory = ({ IDL }) => {
     'text' : IDL.Text,
     'category' : IDL.Text,
     'benefit' : IDL.Text,
+  });
+  const PanchangData = IDL.Record({
+    'tithi' : IDL.Text,
+    'vara' : IDL.Text,
+    'yoga' : IDL.Text,
+    'moonSign' : IDL.Text,
+    'description' : IDL.Text,
+    'nakshatra' : IDL.Text,
+    'karana' : IDL.Text,
+    'tithiNumber' : IDL.Nat,
+  });
+  const RemedyReminder = IDL.Record({
+    'isActive' : IDL.Bool,
+    'reminderTime' : IDL.Text,
+    'graha' : IDL.Text,
+  });
+  const TransitEvent = IDL.Record({
+    'remedy' : IDL.Text,
+    'colorCode' : IDL.Text,
+    'endDate' : IDL.Text,
+    'planet' : IDL.Text,
+    'description' : IDL.Text,
+    'startDate' : IDL.Text,
+    'eventType' : IDL.Text,
+  });
+  const DateOfBirth = IDL.Record({
+    'day' : IDL.Nat,
+    'month' : IDL.Nat,
+    'year' : IDL.Nat,
+  });
+  const TimeOfBirth = IDL.Record({ 'hour' : IDL.Nat, 'minute' : IDL.Nat });
+  const UserProfile = IDL.Record({
+    'id' : IDL.Principal,
+    'placeOfBirth' : IDL.Text,
+    'latitude' : IDL.Float64,
+    'timezone' : IDL.Text,
+    'dateOfBirth' : DateOfBirth,
+    'newsletterOptIn' : IDL.Bool,
+    'createdAt' : IDL.Int,
+    'fullName' : IDL.Text,
+    'email' : IDL.Text,
+    'updatedAt' : IDL.Int,
+    'timeOfBirth' : TimeOfBirth,
+    'longitude' : IDL.Float64,
+    'phone' : IDL.Text,
   });
   const Verse = IDL.Record({
     'id' : IDL.Nat,
@@ -235,8 +525,46 @@ export const idlFactory = ({ IDL }) => {
     'verseId' : IDL.Text,
     'ramanuja' : IDL.Text,
   });
+  const EmailSubscriber = IDL.Record({
+    'active' : IDL.Bool,
+    'subscribedAt' : IDL.Int,
+    'name' : IDL.Text,
+    'email' : IDL.Text,
+  });
+  const UserProfileInput = IDL.Record({
+    'placeOfBirth' : IDL.Text,
+    'latitude' : IDL.Float64,
+    'timezone' : IDL.Text,
+    'dateOfBirth' : DateOfBirth,
+    'newsletterOptIn' : IDL.Bool,
+    'fullName' : IDL.Text,
+    'email' : IDL.Text,
+    'timeOfBirth' : TimeOfBirth,
+    'longitude' : IDL.Float64,
+    'phone' : IDL.Text,
+  });
+  const DonationInfoInput = IDL.Record({
+    'qrCodeAssetId' : IDL.Text,
+    'ifscCode' : IDL.Text,
+    'bankName' : IDL.Text,
+    'accountName' : IDL.Text,
+    'upiId' : IDL.Text,
+    'accountNumber' : IDL.Text,
+  });
+  const AdminConfigInput = IDL.Record({
+    'newsletterEnabled' : IDL.Bool,
+    'appVersion' : IDL.Text,
+    'senderName' : IDL.Text,
+    'senderEmail' : IDL.Text,
+  });
+  const GalleryImageInput = IDL.Record({
+    'assetId' : IDL.Text,
+    'caption' : IDL.Text,
+    'category' : IDL.Text,
+  });
   
   return IDL.Service({
+    'adminListAllGalleryImages' : IDL.Func([], [IDL.Vec(GalleryImageMeta)], []),
     'clearOldMessages' : IDL.Func([], [], []),
     'createJournalEntry' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text],
@@ -244,6 +572,8 @@ export const idlFactory = ({ IDL }) => {
         [],
       ),
     'deleteJournalEntry' : IDL.Func([IDL.Text], [IDL.Bool], []),
+    'getAdminConfig' : IDL.Func([], [AdminConfig], ['query']),
+    'getAllGrahaRemedies' : IDL.Func([], [IDL.Vec(GrahaRemedyData)], ['query']),
     'getChapter' : IDL.Func([IDL.Nat], [IDL.Opt(Chapter)], ['query']),
     'getCircleMessages' : IDL.Func(
         [IDL.Text],
@@ -260,7 +590,14 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(DailyChallenge)],
         ['query'],
       ),
+    'getDonationInfo' : IDL.Func([], [IDL.Opt(DonationInfo)], ['query']),
     'getFestivals' : IDL.Func([], [IDL.Vec(Festival)], ['query']),
+    'getGalleryUploads' : IDL.Func([], [IDL.Vec(GalleryImageMeta)], ['query']),
+    'getGrahaRemedy' : IDL.Func(
+        [IDL.Text],
+        [IDL.Opt(GrahaRemedyData)],
+        ['query'],
+      ),
     'getGuidanceByCategory' : IDL.Func(
         [IDL.Text],
         [IDL.Opt(GuidanceResult)],
@@ -273,8 +610,17 @@ export const idlFactory = ({ IDL }) => {
         [IDL.Opt(GuidanceResult)],
         ['query'],
       ),
+    'getKundliData' : IDL.Func([], [IDL.Opt(KundliData)], ['query']),
     'getMantras' : IDL.Func([], [IDL.Vec(MantraEntry)], ['query']),
+    'getPanchangToday' : IDL.Func([IDL.Text], [PanchangData], ['query']),
     'getReadingStreak' : IDL.Func([], [IDL.Nat], ['query']),
+    'getRemedyReminder' : IDL.Func([], [IDL.Opt(RemedyReminder)], ['query']),
+    'getTransitCalendar' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Vec(TransitEvent)],
+        ['query'],
+      ),
+    'getUserProfile' : IDL.Func([], [IDL.Opt(UserProfile)], ['query']),
     'getVerse' : IDL.Func([IDL.Nat, IDL.Nat], [IDL.Opt(Verse)], ['query']),
     'getVerseCommentary' : IDL.Func(
         [IDL.Text],
@@ -282,6 +628,7 @@ export const idlFactory = ({ IDL }) => {
         ['query'],
       ),
     'listChapters' : IDL.Func([], [IDL.Vec(Chapter)], ['query']),
+    'listNewsletterSubscribers' : IDL.Func([], [IDL.Vec(EmailSubscriber)], []),
     'listSatsangCircles' : IDL.Func([], [IDL.Vec(IDL.Text)], ['query']),
     'listVerses' : IDL.Func([IDL.Nat], [IDL.Vec(Verse)], ['query']),
     'postCircleMessage' : IDL.Func([IDL.Text, IDL.Text, IDL.Text], [], []),
@@ -295,16 +642,25 @@ export const idlFactory = ({ IDL }) => {
         [HeatmapEntry],
         [],
       ),
+    'saveKundliData' : IDL.Func([KundliData], [IDL.Bool], []),
+    'saveRemedyReminder' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
+    'saveUserProfile' : IDL.Func([UserProfileInput], [IDL.Bool], []),
     'searchJournalEntries' : IDL.Func(
         [IDL.Text],
         [IDL.Vec(JournalEntry)],
         ['query'],
       ),
+    'setDonationInfo' : IDL.Func([DonationInfoInput], [IDL.Bool], []),
+    'setGalleryImageApproval' : IDL.Func([IDL.Nat, IDL.Bool], [IDL.Bool], []),
+    'subscribeNewsletter' : IDL.Func([IDL.Text, IDL.Text], [IDL.Bool], []),
+    'unsubscribeNewsletter' : IDL.Func([IDL.Text], [IDL.Bool], []),
+    'updateAdminConfig' : IDL.Func([AdminConfigInput], [IDL.Bool], []),
     'updateJournalEntry' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Text],
         [IDL.Opt(JournalEntry)],
         [],
       ),
+    'uploadGalleryImage' : IDL.Func([GalleryImageInput], [IDL.Nat], []),
   });
 };
 

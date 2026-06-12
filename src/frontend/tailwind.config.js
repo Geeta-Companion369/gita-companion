@@ -183,6 +183,40 @@ export default {
           },
           "50%": { transform: "translateY(-20px) rotate(15deg)", opacity: "0.6" },
         },
+        "kundli-shimmer": {
+          "0%, 100%": {
+            boxShadow: "0 0 0 2px oklch(0.78 0.34 54 / 0.3), inset 0 0 20px oklch(0.78 0.34 54 / 0.1)",
+          },
+          "50%": {
+            boxShadow: "0 0 16px oklch(0.78 0.34 54 / 0.6), 0 0 0 2px oklch(0.78 0.34 54 / 0.6), inset 0 0 24px oklch(0.78 0.34 54 / 0.25)",
+          },
+        },
+        "dasha-pulse": {
+          "0%, 100%": { opacity: "0.8" },
+          "50%": { opacity: "1" },
+        },
+        "graha-glow": {
+          "0%, 100%": {
+            boxShadow: "0 0 12px oklch(0.78 0.34 54 / 0.4)",
+          },
+          "50%": {
+            boxShadow: "0 0 24px oklch(0.78 0.34 54 / 0.75)",
+          },
+        },
+        "transit-shimmer": {
+          "0%, 100%": {
+            borderColor: "oklch(0.78 0.34 54 / 0.3)",
+            boxShadow: "0 0 0 1px oklch(0.78 0.34 54 / 0.3)",
+          },
+          "50%": {
+            borderColor: "oklch(0.78 0.34 54 / 0.75)",
+            boxShadow: "0 0 16px oklch(0.78 0.34 54 / 0.5), 0 0 0 1px oklch(0.78 0.34 54 / 0.6)",
+          },
+        },
+        "payment-slide-in": {
+          "from": { transform: "translateX(100%)", opacity: "0" },
+          "to": { transform: "translateX(0)", opacity: "1" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -196,6 +230,11 @@ export default {
         "rainbow-shift": "rainbow-shift-home 10s ease-in-out infinite",
         "lotus-float": "lotus-float 4s ease-in-out infinite",
         "glitter-burst": "glitter-burst 0.8s ease-out",
+        "kundli-shimmer": "kundli-shimmer 3.5s ease-in-out infinite",
+        "dasha-pulse": "dasha-pulse 2s ease-in-out infinite",
+        "graha-glow": "graha-glow 2.8s ease-in-out infinite",
+        "transit-shimmer": "transit-shimmer 4s ease-in-out infinite",
+        "payment-slide-in": "payment-slide-in 0.4s ease-out",
       },
     },
   },

@@ -14,12 +14,83 @@ type Verse =
    transliteration: text;
    verseNumber: text;
  };
+type UserProfileInput = 
+ record {
+   dateOfBirth: DateOfBirth;
+   email: text;
+   fullName: text;
+   latitude: float64;
+   longitude: float64;
+   newsletterOptIn: bool;
+   phone: text;
+   placeOfBirth: text;
+   timeOfBirth: TimeOfBirth;
+   timezone: text;
+ };
+type UserProfile = 
+ record {
+   createdAt: int;
+   dateOfBirth: DateOfBirth;
+   email: text;
+   fullName: text;
+   id: principal;
+   latitude: float64;
+   longitude: float64;
+   newsletterOptIn: bool;
+   phone: text;
+   placeOfBirth: text;
+   timeOfBirth: TimeOfBirth;
+   timezone: text;
+   updatedAt: int;
+ };
+type TransitEvent = 
+ record {
+   colorCode: text;
+   description: text;
+   endDate: text;
+   eventType: text;
+   planet: text;
+   remedy: text;
+   startDate: text;
+ };
+type TimeOfBirth = 
+ record {
+   hour: nat;
+   minute: nat;
+ };
 type SatsangMessage = 
  record {
    authorName: text;
    circleId: text;
    message: text;
    timestamp: int;
+ };
+type RemedyReminder = 
+ record {
+   graha: text;
+   isActive: bool;
+   reminderTime: text;
+ };
+type PlanetPlacement = 
+ record {
+   degree: float64;
+   house: nat;
+   nakshatra: text;
+   nakshatraLord: text;
+   planet: text;
+   retrograde: bool;
+   sign: nat;
+ };
+type PanchangData = 
+ record {
+   description: text;
+   karana: text;
+   moonSign: text;
+   nakshatra: text;
+   tithi: text;
+   tithiNumber: nat;
+   vara: text;
+   yoga: text;
  };
 type MantraEntry = 
  record {
@@ -29,6 +100,22 @@ type MantraEntry =
    meaning: text;
    name: text;
    "text": text;
+ };
+type KundliData = 
+ record {
+   antardasha: DashaEntry;
+   calculatedAt: int;
+   lagnaRashi: text;
+   lagnaSign: nat;
+   mahadasha: DashaEntry;
+   navamsaLagnaSign: nat;
+   navamsaPlanets: vec PlanetPlacement;
+   nextDashas: vec DashaEntry;
+   planets: vec PlanetPlacement;
+   pratyantarDasha: DashaEntry;
+   profileId: principal;
+   rulingPlanet: text;
+   rulingPlanetGlyph: text;
  };
 type JournalEntry = 
  record {
@@ -55,6 +142,36 @@ type GuidanceResult =
    keyword: text;
    verse: nat;
  };
+type GrahaRemedyData = 
+ record {
+   avoidList: vec text;
+   daan: text;
+   gemstone: text;
+   gemstoneWarning: text;
+   graha: text;
+   mantraCount: nat;
+   mantraSanskrit: text;
+   remedies: vec text;
+   role: text;
+   strongGives: vec text;
+   weakCauses: vec text;
+ };
+type GalleryImageMeta = 
+ record {
+   assetId: text;
+   caption: text;
+   category: text;
+   id: nat;
+   isApproved: bool;
+   uploadedAt: int;
+   uploader: principal;
+ };
+type GalleryImageInput = 
+ record {
+   assetId: text;
+   caption: text;
+   category: text;
+ };
 type Festival = 
  record {
    dateStr: text;
@@ -62,6 +179,45 @@ type Festival =
    meaning: text;
    name: text;
    recommendedVerse: text;
+ };
+type EmailSubscriber = 
+ record {
+   active: bool;
+   email: text;
+   name: text;
+   subscribedAt: int;
+ };
+type DonationInfoInput = 
+ record {
+   accountName: text;
+   accountNumber: text;
+   bankName: text;
+   ifscCode: text;
+   qrCodeAssetId: text;
+   upiId: text;
+ };
+type DonationInfo = 
+ record {
+   accountName: text;
+   accountNumber: text;
+   bankName: text;
+   ifscCode: text;
+   qrCodeAssetId: text;
+   updatedAt: int;
+   upiId: text;
+ };
+type DateOfBirth = 
+ record {
+   day: nat;
+   month: nat;
+   year: nat;
+ };
+type DashaEntry = 
+ record {
+   durationYears: float64;
+   endDate: int;
+   lord: text;
+   startDate: int;
  };
 type DailyChallenge = 
  record {
@@ -85,25 +241,51 @@ type Chapter =
    summary: text;
    verseCount: nat;
  };
+type AdminConfigInput = 
+ record {
+   appVersion: text;
+   newsletterEnabled: bool;
+   senderEmail: text;
+   senderName: text;
+ };
+type AdminConfig = 
+ record {
+   appVersion: text;
+   newsletterEnabled: bool;
+   senderEmail: text;
+   senderName: text;
+ };
 service : {
+  adminListAllGalleryImages: () -> (vec GalleryImageMeta);
   clearOldMessages: () -> ();
   createJournalEntry: (verseId: text, "text": text, mood: text) ->
    (JournalEntry);
   deleteJournalEntry: (id: text) -> (bool);
+  getAdminConfig: () -> (AdminConfig) query;
+  getAllGrahaRemedies: () -> (vec GrahaRemedyData) query;
   getChapter: (chapterId: nat) -> (opt Chapter) query;
   getCircleMessages: (circleId: text) -> (vec SatsangMessage) query;
   getConcentrationHistory: (limit: nat) -> (vec ConcentrationSession) query;
   getDailyChallenge: (dateKey: text) -> (opt DailyChallenge) query;
+  getDonationInfo: () -> (opt DonationInfo) query;
   getFestivals: () -> (vec Festival) query;
+  getGalleryUploads: () -> (vec GalleryImageMeta) query;
+  getGrahaRemedy: (graha: text) -> (opt GrahaRemedyData) query;
   getGuidanceByCategory: (category: text) -> (opt GuidanceResult) query;
   getHeatmapData: (days: nat) -> (vec HeatmapEntry) query;
   getJournalEntries: () -> (vec JournalEntry) query;
   getKrishnaGuidance: (keyword: text) -> (opt GuidanceResult) query;
+  getKundliData: () -> (opt KundliData) query;
   getMantras: () -> (vec MantraEntry) query;
+  getPanchangToday: (date: text) -> (PanchangData) query;
   getReadingStreak: () -> (nat) query;
+  getRemedyReminder: () -> (opt RemedyReminder) query;
+  getTransitCalendar: (year: nat) -> (vec TransitEvent) query;
+  getUserProfile: () -> (opt UserProfile) query;
   getVerse: (chapterId: nat, verseId: nat) -> (opt Verse) query;
   getVerseCommentary: (verseId: text) -> (opt VerseCommentary) query;
   listChapters: () -> (vec Chapter) query;
+  listNewsletterSubscribers: () -> (vec EmailSubscriber);
   listSatsangCircles: () -> (vec text) query;
   listVerses: (chapterId: nat) -> (vec Verse) query;
   postCircleMessage: (circleId: text, authorName: text, message: text) -> ();
@@ -111,7 +293,16 @@ service : {
    (ConcentrationSession);
   recordDailyReading: (date: text, versesRead: nat, chaptersRead: nat,
    allGoalsMet: bool) -> (HeatmapEntry);
+  saveKundliData: (data: KundliData) -> (bool);
+  saveRemedyReminder: (graha: text, time: text) -> (bool);
+  saveUserProfile: (input: UserProfileInput) -> (bool);
   searchJournalEntries: (searchText: text) -> (vec JournalEntry) query;
+  setDonationInfo: (input: DonationInfoInput) -> (bool);
+  setGalleryImageApproval: (id: nat, approved: bool) -> (bool);
+  subscribeNewsletter: (email: text, name: text) -> (bool);
+  unsubscribeNewsletter: (email: text) -> (bool);
+  updateAdminConfig: (config: AdminConfigInput) -> (bool);
   updateJournalEntry: (id: text, "text": text, mood: text) ->
    (opt JournalEntry);
+  uploadGalleryImage: (input: GalleryImageInput) -> (nat);
 }

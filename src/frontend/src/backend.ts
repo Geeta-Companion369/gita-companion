@@ -89,11 +89,87 @@ export class ExternalBlob {
         return this;
     }
 }
-export interface SatsangMessage {
-    circleId: string;
-    authorName: string;
-    message: string;
-    timestamp: bigint;
+export interface PanchangData {
+    tithi: string;
+    vara: string;
+    yoga: string;
+    moonSign: string;
+    description: string;
+    nakshatra: string;
+    karana: string;
+    tithiNumber: bigint;
+}
+export interface GuidanceResult {
+    guidanceText: string;
+    verse: bigint;
+    keyword: string;
+    chapter: bigint;
+}
+export interface DateOfBirth {
+    day: bigint;
+    month: bigint;
+    year: bigint;
+}
+export interface GrahaRemedyData {
+    avoidList: Array<string>;
+    daan: string;
+    role: string;
+    mantraSanskrit: string;
+    mantraCount: bigint;
+    gemstone: string;
+    graha: string;
+    weakCauses: Array<string>;
+    gemstoneWarning: string;
+    remedies: Array<string>;
+    strongGives: Array<string>;
+}
+export interface DashaEntry {
+    durationYears: number;
+    endDate: bigint;
+    lord: string;
+    startDate: bigint;
+}
+export interface Chapter {
+    id: bigint;
+    verseCount: bigint;
+    name: string;
+    summary: string;
+}
+export interface TimeOfBirth {
+    hour: bigint;
+    minute: bigint;
+}
+export interface TransitEvent {
+    remedy: string;
+    colorCode: string;
+    endDate: string;
+    planet: string;
+    description: string;
+    startDate: string;
+    eventType: string;
+}
+export interface VerseCommentary {
+    tilak: string;
+    shankaracharya: string;
+    verseId: string;
+    ramanuja: string;
+}
+export interface RemedyReminder {
+    isActive: boolean;
+    reminderTime: string;
+    graha: string;
+}
+export interface AdminConfigInput {
+    newsletterEnabled: boolean;
+    appVersion: string;
+    senderName: string;
+    senderEmail: string;
+}
+export interface EmailSubscriber {
+    active: boolean;
+    subscribedAt: bigint;
+    name: string;
+    email: string;
 }
 export interface HeatmapEntry {
     allGoalsMet: boolean;
@@ -102,32 +178,38 @@ export interface HeatmapEntry {
     versesRead: bigint;
     principalId: string;
 }
-export interface VerseCommentary {
-    tilak: string;
-    shankaracharya: string;
-    verseId: string;
-    ramanuja: string;
+export interface GalleryImageMeta {
+    id: bigint;
+    isApproved: boolean;
+    assetId: string;
+    caption: string;
+    category: string;
+    uploader: Principal;
+    uploadedAt: bigint;
 }
-export interface JournalEntry {
-    id: string;
-    mood: string;
-    createdAt: bigint;
-    text: string;
-    verseId: string;
+export interface DonationInfo {
+    qrCodeAssetId: string;
+    ifscCode: string;
+    bankName: string;
     updatedAt: bigint;
-    principalId: string;
+    accountName: string;
+    upiId: string;
+    accountNumber: string;
 }
-export interface GuidanceResult {
-    guidanceText: string;
-    verse: bigint;
-    keyword: string;
-    chapter: bigint;
-}
-export interface DailyChallenge {
-    action: string;
-    date: string;
-    task: string;
-    points: bigint;
+export interface KundliData {
+    navamsaLagnaSign: bigint;
+    pratyantarDasha: DashaEntry;
+    lagnaRashi: string;
+    profileId: Principal;
+    rulingPlanetGlyph: string;
+    lagnaSign: bigint;
+    calculatedAt: bigint;
+    planets: Array<PlanetPlacement>;
+    rulingPlanet: string;
+    antardasha: DashaEntry;
+    navamsaPlanets: Array<PlanetPlacement>;
+    nextDashas: Array<DashaEntry>;
+    mahadasha: DashaEntry;
 }
 export interface Verse {
     id: bigint;
@@ -159,41 +241,146 @@ export interface MantraEntry {
     category: string;
     benefit: string;
 }
-export interface Chapter {
-    id: bigint;
-    verseCount: bigint;
-    name: string;
-    summary: string;
+export interface SatsangMessage {
+    circleId: string;
+    authorName: string;
+    message: string;
+    timestamp: bigint;
+}
+export interface PlanetPlacement {
+    house: bigint;
+    planet: string;
+    retrograde: boolean;
+    sign: bigint;
+    degree: number;
+    nakshatra: string;
+    nakshatraLord: string;
+}
+export interface JournalEntry {
+    id: string;
+    mood: string;
+    createdAt: bigint;
+    text: string;
+    verseId: string;
+    updatedAt: bigint;
+    principalId: string;
+}
+export interface DonationInfoInput {
+    qrCodeAssetId: string;
+    ifscCode: string;
+    bankName: string;
+    accountName: string;
+    upiId: string;
+    accountNumber: string;
+}
+export interface DailyChallenge {
+    action: string;
+    date: string;
+    task: string;
+    points: bigint;
+}
+export interface AdminConfig {
+    newsletterEnabled: boolean;
+    appVersion: string;
+    senderName: string;
+    senderEmail: string;
+}
+export interface UserProfileInput {
+    placeOfBirth: string;
+    latitude: number;
+    timezone: string;
+    dateOfBirth: DateOfBirth;
+    newsletterOptIn: boolean;
+    fullName: string;
+    email: string;
+    timeOfBirth: TimeOfBirth;
+    longitude: number;
+    phone: string;
+}
+export interface UserProfile {
+    id: Principal;
+    placeOfBirth: string;
+    latitude: number;
+    timezone: string;
+    dateOfBirth: DateOfBirth;
+    newsletterOptIn: boolean;
+    createdAt: bigint;
+    fullName: string;
+    email: string;
+    updatedAt: bigint;
+    timeOfBirth: TimeOfBirth;
+    longitude: number;
+    phone: string;
+}
+export interface GalleryImageInput {
+    assetId: string;
+    caption: string;
+    category: string;
 }
 export interface backendInterface {
+    adminListAllGalleryImages(): Promise<Array<GalleryImageMeta>>;
     clearOldMessages(): Promise<void>;
     createJournalEntry(verseId: string, text: string, mood: string): Promise<JournalEntry>;
     deleteJournalEntry(id: string): Promise<boolean>;
+    getAdminConfig(): Promise<AdminConfig>;
+    getAllGrahaRemedies(): Promise<Array<GrahaRemedyData>>;
     getChapter(chapterId: bigint): Promise<Chapter | null>;
     getCircleMessages(circleId: string): Promise<Array<SatsangMessage>>;
     getConcentrationHistory(limit: bigint): Promise<Array<ConcentrationSession>>;
     getDailyChallenge(dateKey: string): Promise<DailyChallenge | null>;
+    getDonationInfo(): Promise<DonationInfo | null>;
     getFestivals(): Promise<Array<Festival>>;
+    getGalleryUploads(): Promise<Array<GalleryImageMeta>>;
+    getGrahaRemedy(graha: string): Promise<GrahaRemedyData | null>;
     getGuidanceByCategory(category: string): Promise<GuidanceResult | null>;
     getHeatmapData(days: bigint): Promise<Array<HeatmapEntry>>;
     getJournalEntries(): Promise<Array<JournalEntry>>;
     getKrishnaGuidance(keyword: string): Promise<GuidanceResult | null>;
+    getKundliData(): Promise<KundliData | null>;
     getMantras(): Promise<Array<MantraEntry>>;
+    getPanchangToday(date: string): Promise<PanchangData>;
     getReadingStreak(): Promise<bigint>;
+    getRemedyReminder(): Promise<RemedyReminder | null>;
+    getTransitCalendar(year: bigint): Promise<Array<TransitEvent>>;
+    getUserProfile(): Promise<UserProfile | null>;
     getVerse(chapterId: bigint, verseId: bigint): Promise<Verse | null>;
     getVerseCommentary(verseId: string): Promise<VerseCommentary | null>;
     listChapters(): Promise<Array<Chapter>>;
+    listNewsletterSubscribers(): Promise<Array<EmailSubscriber>>;
     listSatsangCircles(): Promise<Array<string>>;
     listVerses(chapterId: bigint): Promise<Array<Verse>>;
     postCircleMessage(circleId: string, authorName: string, message: string): Promise<void>;
     recordConcentrationSession(durationMinutes: bigint, sessionType: string): Promise<ConcentrationSession>;
     recordDailyReading(date: string, versesRead: bigint, chaptersRead: bigint, allGoalsMet: boolean): Promise<HeatmapEntry>;
+    saveKundliData(data: KundliData): Promise<boolean>;
+    saveRemedyReminder(graha: string, time: string): Promise<boolean>;
+    saveUserProfile(input: UserProfileInput): Promise<boolean>;
     searchJournalEntries(searchText: string): Promise<Array<JournalEntry>>;
+    setDonationInfo(input: DonationInfoInput): Promise<boolean>;
+    setGalleryImageApproval(id: bigint, approved: boolean): Promise<boolean>;
+    subscribeNewsletter(email: string, name: string): Promise<boolean>;
+    unsubscribeNewsletter(email: string): Promise<boolean>;
+    updateAdminConfig(config: AdminConfigInput): Promise<boolean>;
     updateJournalEntry(id: string, text: string, mood: string): Promise<JournalEntry | null>;
+    uploadGalleryImage(input: GalleryImageInput): Promise<bigint>;
 }
-import type { Chapter as _Chapter, DailyChallenge as _DailyChallenge, GuidanceResult as _GuidanceResult, JournalEntry as _JournalEntry, Verse as _Verse, VerseCommentary as _VerseCommentary } from "./declarations/backend.did.d.ts";
+import type { Chapter as _Chapter, DailyChallenge as _DailyChallenge, DonationInfo as _DonationInfo, GrahaRemedyData as _GrahaRemedyData, GuidanceResult as _GuidanceResult, JournalEntry as _JournalEntry, KundliData as _KundliData, RemedyReminder as _RemedyReminder, UserProfile as _UserProfile, Verse as _Verse, VerseCommentary as _VerseCommentary } from "./declarations/backend.did.d.ts";
 export class Backend implements backendInterface {
     constructor(private actor: ActorSubclass<_SERVICE>, private _uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, private _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, private processError?: (error: unknown) => never){}
+    async adminListAllGalleryImages(): Promise<Array<GalleryImageMeta>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.adminListAllGalleryImages();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.adminListAllGalleryImages();
+            return result;
+        }
+    }
     async clearOldMessages(): Promise<void> {
         if (this.processError) {
             try {
@@ -233,6 +420,34 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.deleteJournalEntry(arg0);
+            return result;
+        }
+    }
+    async getAdminConfig(): Promise<AdminConfig> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAdminConfig();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAdminConfig();
+            return result;
+        }
+    }
+    async getAllGrahaRemedies(): Promise<Array<GrahaRemedyData>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getAllGrahaRemedies();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getAllGrahaRemedies();
             return result;
         }
     }
@@ -292,6 +507,20 @@ export class Backend implements backendInterface {
             return from_candid_opt_n2(this._uploadFile, this._downloadFile, result);
         }
     }
+    async getDonationInfo(): Promise<DonationInfo | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getDonationInfo();
+                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getDonationInfo();
+            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getFestivals(): Promise<Array<Festival>> {
         if (this.processError) {
             try {
@@ -306,18 +535,46 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getGalleryUploads(): Promise<Array<GalleryImageMeta>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getGalleryUploads();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getGalleryUploads();
+            return result;
+        }
+    }
+    async getGrahaRemedy(arg0: string): Promise<GrahaRemedyData | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getGrahaRemedy(arg0);
+                return from_candid_opt_n4(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getGrahaRemedy(arg0);
+            return from_candid_opt_n4(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getGuidanceByCategory(arg0: string): Promise<GuidanceResult | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getGuidanceByCategory(arg0);
-                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n5(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getGuidanceByCategory(arg0);
-            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n5(this._uploadFile, this._downloadFile, result);
         }
     }
     async getHeatmapData(arg0: bigint): Promise<Array<HeatmapEntry>> {
@@ -352,14 +609,28 @@ export class Backend implements backendInterface {
         if (this.processError) {
             try {
                 const result = await this.actor.getKrishnaGuidance(arg0);
-                return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n5(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getKrishnaGuidance(arg0);
-            return from_candid_opt_n3(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n5(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getKundliData(): Promise<KundliData | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getKundliData();
+                return from_candid_opt_n6(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getKundliData();
+            return from_candid_opt_n6(this._uploadFile, this._downloadFile, result);
         }
     }
     async getMantras(): Promise<Array<MantraEntry>> {
@@ -373,6 +644,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.getMantras();
+            return result;
+        }
+    }
+    async getPanchangToday(arg0: string): Promise<PanchangData> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getPanchangToday(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getPanchangToday(arg0);
             return result;
         }
     }
@@ -390,32 +675,74 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async getRemedyReminder(): Promise<RemedyReminder | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getRemedyReminder();
+                return from_candid_opt_n7(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getRemedyReminder();
+            return from_candid_opt_n7(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async getTransitCalendar(arg0: bigint): Promise<Array<TransitEvent>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getTransitCalendar(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getTransitCalendar(arg0);
+            return result;
+        }
+    }
+    async getUserProfile(): Promise<UserProfile | null> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.getUserProfile();
+                return from_candid_opt_n8(this._uploadFile, this._downloadFile, result);
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.getUserProfile();
+            return from_candid_opt_n8(this._uploadFile, this._downloadFile, result);
+        }
+    }
     async getVerse(arg0: bigint, arg1: bigint): Promise<Verse | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getVerse(arg0, arg1);
-                return from_candid_opt_n4(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n9(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getVerse(arg0, arg1);
-            return from_candid_opt_n4(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n9(this._uploadFile, this._downloadFile, result);
         }
     }
     async getVerseCommentary(arg0: string): Promise<VerseCommentary | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.getVerseCommentary(arg0);
-                return from_candid_opt_n5(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n10(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.getVerseCommentary(arg0);
-            return from_candid_opt_n5(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n10(this._uploadFile, this._downloadFile, result);
         }
     }
     async listChapters(): Promise<Array<Chapter>> {
@@ -429,6 +756,20 @@ export class Backend implements backendInterface {
             }
         } else {
             const result = await this.actor.listChapters();
+            return result;
+        }
+    }
+    async listNewsletterSubscribers(): Promise<Array<EmailSubscriber>> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.listNewsletterSubscribers();
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.listNewsletterSubscribers();
             return result;
         }
     }
@@ -502,6 +843,48 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async saveKundliData(arg0: KundliData): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.saveKundliData(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.saveKundliData(arg0);
+            return result;
+        }
+    }
+    async saveRemedyReminder(arg0: string, arg1: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.saveRemedyReminder(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.saveRemedyReminder(arg0, arg1);
+            return result;
+        }
+    }
+    async saveUserProfile(arg0: UserProfileInput): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.saveUserProfile(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.saveUserProfile(arg0);
+            return result;
+        }
+    }
     async searchJournalEntries(arg0: string): Promise<Array<JournalEntry>> {
         if (this.processError) {
             try {
@@ -516,37 +899,136 @@ export class Backend implements backendInterface {
             return result;
         }
     }
+    async setDonationInfo(arg0: DonationInfoInput): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setDonationInfo(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setDonationInfo(arg0);
+            return result;
+        }
+    }
+    async setGalleryImageApproval(arg0: bigint, arg1: boolean): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.setGalleryImageApproval(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.setGalleryImageApproval(arg0, arg1);
+            return result;
+        }
+    }
+    async subscribeNewsletter(arg0: string, arg1: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.subscribeNewsletter(arg0, arg1);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.subscribeNewsletter(arg0, arg1);
+            return result;
+        }
+    }
+    async unsubscribeNewsletter(arg0: string): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.unsubscribeNewsletter(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.unsubscribeNewsletter(arg0);
+            return result;
+        }
+    }
+    async updateAdminConfig(arg0: AdminConfigInput): Promise<boolean> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.updateAdminConfig(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.updateAdminConfig(arg0);
+            return result;
+        }
+    }
     async updateJournalEntry(arg0: string, arg1: string, arg2: string): Promise<JournalEntry | null> {
         if (this.processError) {
             try {
                 const result = await this.actor.updateJournalEntry(arg0, arg1, arg2);
-                return from_candid_opt_n6(this._uploadFile, this._downloadFile, result);
+                return from_candid_opt_n11(this._uploadFile, this._downloadFile, result);
             } catch (e) {
                 this.processError(e);
                 throw new Error("unreachable");
             }
         } else {
             const result = await this.actor.updateJournalEntry(arg0, arg1, arg2);
-            return from_candid_opt_n6(this._uploadFile, this._downloadFile, result);
+            return from_candid_opt_n11(this._uploadFile, this._downloadFile, result);
+        }
+    }
+    async uploadGalleryImage(arg0: GalleryImageInput): Promise<bigint> {
+        if (this.processError) {
+            try {
+                const result = await this.actor.uploadGalleryImage(arg0);
+                return result;
+            } catch (e) {
+                this.processError(e);
+                throw new Error("unreachable");
+            }
+        } else {
+            const result = await this.actor.uploadGalleryImage(arg0);
+            return result;
         }
     }
 }
 function from_candid_opt_n1(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Chapter]): Chapter | null {
     return value.length === 0 ? null : value[0];
 }
+function from_candid_opt_n10(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_VerseCommentary]): VerseCommentary | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n11(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_JournalEntry]): JournalEntry | null {
+    return value.length === 0 ? null : value[0];
+}
 function from_candid_opt_n2(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_DailyChallenge]): DailyChallenge | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_GuidanceResult]): GuidanceResult | null {
+function from_candid_opt_n3(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_DonationInfo]): DonationInfo | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Verse]): Verse | null {
+function from_candid_opt_n4(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_GrahaRemedyData]): GrahaRemedyData | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_VerseCommentary]): VerseCommentary | null {
+function from_candid_opt_n5(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_GuidanceResult]): GuidanceResult | null {
     return value.length === 0 ? null : value[0];
 }
-function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_JournalEntry]): JournalEntry | null {
+function from_candid_opt_n6(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_KundliData]): KundliData | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n7(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_RemedyReminder]): RemedyReminder | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n8(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_UserProfile]): UserProfile | null {
+    return value.length === 0 ? null : value[0];
+}
+function from_candid_opt_n9(_uploadFile: (file: ExternalBlob) => Promise<Uint8Array>, _downloadFile: (file: Uint8Array) => Promise<ExternalBlob>, value: [] | [_Verse]): Verse | null {
     return value.length === 0 ? null : value[0];
 }
 export interface CreateActorOptions {

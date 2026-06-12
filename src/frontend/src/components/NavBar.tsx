@@ -7,6 +7,7 @@ import {
   BookOpen,
   Calendar,
   ChevronDown,
+  CircleDot,
   Clock,
   Clock3,
   Compass,
@@ -223,11 +224,12 @@ const DESKTOP_GROUPS = [
 ];
 
 // ─── Exactly 5 mobile tabs — Library replaces Maala Jaap ─────────────────────
+// ─── Exactly 5 mobile tabs — Home | Chat AI | Menu | Mala Jaap | Profile ──────
 const MOBILE_NAV = [
   { to: "/", label: "गृह", sublabel: "Home", icon: Home },
   { to: "/guidance", label: "कृष्ण AI", sublabel: "Chat AI", icon: Compass },
   { to: "/menu", label: "मार्ग", sublabel: "Menu", icon: Grid3x3 },
-  { to: "/library", label: "ग्रन्थ", sublabel: "Library", icon: BookOpen },
+  { to: "/mala", label: "जपमाला", sublabel: "Mala Jaap", icon: CircleDot },
   { to: "/profile", label: "प्रोफाइल", sublabel: "Profile", icon: User },
 ];
 
@@ -442,25 +444,23 @@ export function NavBar() {
           data-ocid="nav-home-brand"
         >
           <div
-            className="w-11 h-11 rounded-full flex items-center justify-center flex-shrink-0 transition-smooth"
+            className="w-11 h-11 rounded-full flex-shrink-0 overflow-hidden transition-smooth"
             style={{
-              background:
-                "radial-gradient(circle at 38% 30%, oklch(0.86 0.40 54) 0%, oklch(0.72 0.32 50) 50%, oklch(0.48 0.20 42) 100%)",
               border: "2.5px solid oklch(0.70 0.30 50)",
               boxShadow:
                 "0 3px 16px oklch(0.76 0.36 54 / 0.55), inset 0 1px 0 rgba(255,248,200,0.4)",
             }}
           >
-            <span
-              className="font-display font-bold leading-none select-none"
+            <img
+              src="/assets/screenshot_20260503_041711_gallery-019deae2-ecb2-73dd-b68c-df7a042ad732.jpg"
+              alt="Sanatan Dharma: Krishna AI"
               style={{
-                fontSize: "1.6rem",
-                color: "oklch(0.12 0.08 28)",
-                textShadow: "0 1px 4px rgba(255,240,180,0.4)",
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+                display: "block",
               }}
-            >
-              ॐ
-            </span>
+            />
           </div>
           <div className="hidden sm:block">
             <span
@@ -471,13 +471,13 @@ export function NavBar() {
                 textShadow: "0 1px 3px rgba(218,160,60,0.2)",
               }}
             >
-              Bhagavad Gita
+              Sanatan Dharma
             </span>
             <span
               className="font-body text-[10px] tracking-[0.22em] uppercase block leading-none"
               style={{ color: "oklch(0.52 0.22 46)", letterSpacing: "0.2em" }}
             >
-              Sacred Companion
+              Krishna AI · Ask Krishna. Find Your Path.
             </span>
           </div>
         </Link>
@@ -629,12 +629,13 @@ export function NavBar() {
         style={{
           paddingLeft: "20px",
           background:
-            "linear-gradient(180deg, oklch(0.86 0.09 60) 0%, oklch(0.83 0.10 56) 100%)",
+            "linear-gradient(180deg, oklch(0.94 0.09 62) 0%, oklch(0.91 0.11 58) 100%)",
           borderTop: "3px solid transparent",
           borderImage:
-            "linear-gradient(90deg, oklch(0.58 0.26 46), oklch(0.82 0.38 54), oklch(0.58 0.26 46)) 1",
+            "linear-gradient(90deg, oklch(0.58 0.26 46), oklch(0.82 0.38 54), oklch(0.86 0.42 54), oklch(0.82 0.38 54), oklch(0.58 0.26 46)) 1",
           boxShadow:
-            "0 -4px 20px rgba(60,40,20,0.18), inset 0 1px 0 rgba(255,248,200,0.2)",
+            "0 -6px 28px rgba(60,40,20,0.25), inset 0 1px 0 rgba(255,248,200,0.35)",
+          minHeight: "68px",
         }}
       >
         <div
@@ -656,9 +657,18 @@ export function NavBar() {
             <Link
               key={to}
               to={to}
-              className="flex-1 flex flex-col items-center justify-center gap-0.5 py-2.5 transition-smooth min-h-[56px]"
+              className="flex-1 flex flex-col items-center justify-center gap-1 transition-smooth"
               style={{
-                color: isActive ? "oklch(0.52 0.24 46)" : "oklch(0.36 0.12 38)",
+                color: isActive ? "oklch(0.45 0.24 44)" : "oklch(0.32 0.12 38)",
+                minHeight: "64px",
+                paddingTop: "8px",
+                paddingBottom: "8px",
+                background: isActive
+                  ? "linear-gradient(180deg, oklch(0.86 0.20 54 / 0.25) 0%, transparent 100%)"
+                  : "transparent",
+                borderTop: isActive
+                  ? "2.5px solid oklch(0.76 0.36 54)"
+                  : "2.5px solid transparent",
               }}
               data-ocid={`mobile-nav-${sublabel.toLowerCase().replace(/\s+/g, "-")}`}
             >
@@ -666,55 +676,67 @@ export function NavBar() {
                 <div
                   className="flex items-center justify-center transition-smooth"
                   style={{
-                    width: 28,
-                    height: 28,
+                    width: 36,
+                    height: 36,
                     borderRadius: "50%",
                     background: isActive
-                      ? "radial-gradient(circle, oklch(0.78 0.32 54 / 0.30) 0%, transparent 100%)"
-                      : "transparent",
+                      ? "radial-gradient(circle, oklch(0.82 0.36 54 / 0.35) 0%, oklch(0.78 0.30 52 / 0.15) 100%)"
+                      : "oklch(0.88 0.08 60 / 0.6)",
                     border: isActive
-                      ? "1.5px solid oklch(0.72 0.30 52 / 0.6)"
-                      : "1.5px solid transparent",
+                      ? "2px solid oklch(0.72 0.30 52 / 0.7)"
+                      : "1.5px solid oklch(0.72 0.22 52 / 0.3)",
                     boxShadow: isActive
-                      ? "0 0 10px oklch(0.72 0.30 52 / 0.3)"
+                      ? "0 0 14px oklch(0.72 0.30 52 / 0.4)"
                       : "none",
                   }}
                 >
                   <Icon
-                    style={{ width: "16px", height: "16px" }}
+                    style={{ width: "20px", height: "20px" }}
                     className={`transition-smooth ${isActive ? "scale-110" : ""}`}
                   />
                 </div>
               ) : (
-                <Icon
-                  style={{ width: "18px", height: "18px" }}
-                  className={`transition-smooth ${isActive ? "scale-110" : ""}`}
-                />
+                <div
+                  className="flex items-center justify-center"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    borderRadius: "10px",
+                    background: isActive
+                      ? "oklch(0.84 0.20 54 / 0.22)"
+                      : "transparent",
+                  }}
+                >
+                  <Icon
+                    style={{ width: "22px", height: "22px" }}
+                    className={`transition-smooth ${isActive ? "scale-110" : ""}`}
+                  />
+                </div>
               )}
               <span
-                className="text-[9px] font-display leading-none"
-                style={
-                  isActive
-                    ? { color: "oklch(0.58 0.26 48)", fontWeight: 700 }
-                    : {}
-                }
+                className="font-display leading-none"
+                style={{
+                  fontSize: "0.62rem",
+                  color: isActive
+                    ? "oklch(0.38 0.22 44)"
+                    : "oklch(0.42 0.14 40)",
+                  fontWeight: isActive ? 700 : 500,
+                }}
               >
                 {label}
               </span>
-              <span className="text-[7.5px] font-body italic leading-none opacity-65">
+              <span
+                className="font-body italic leading-none"
+                style={{
+                  fontSize: "0.58rem",
+                  color: isActive
+                    ? "oklch(0.48 0.18 46)"
+                    : "oklch(0.55 0.10 46 / 0.7)",
+                  fontWeight: isActive ? 600 : 400,
+                }}
+              >
                 {sublabel}
               </span>
-              {isActive && (
-                <div
-                  style={{
-                    width: "22px",
-                    height: "2px",
-                    borderRadius: "1px",
-                    background:
-                      "linear-gradient(90deg, transparent, oklch(0.76 0.36 54), transparent)",
-                  }}
-                />
-              )}
             </Link>
           );
         })}

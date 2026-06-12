@@ -10,6 +10,18 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { IDL } from '@icp-sdk/core/candid';
 import type { Principal } from '@icp-sdk/core/principal';
 
+export interface AdminConfig {
+  'newsletterEnabled' : boolean,
+  'appVersion' : string,
+  'senderName' : string,
+  'senderEmail' : string,
+}
+export interface AdminConfigInput {
+  'newsletterEnabled' : boolean,
+  'appVersion' : string,
+  'senderName' : string,
+  'senderEmail' : string,
+}
 export interface Chapter {
   'id' : bigint,
   'verseCount' : bigint,
@@ -29,12 +41,73 @@ export interface DailyChallenge {
   'task' : string,
   'points' : bigint,
 }
+export interface DashaEntry {
+  'durationYears' : number,
+  'endDate' : bigint,
+  'lord' : string,
+  'startDate' : bigint,
+}
+export interface DateOfBirth {
+  'day' : bigint,
+  'month' : bigint,
+  'year' : bigint,
+}
+export interface DonationInfo {
+  'qrCodeAssetId' : string,
+  'ifscCode' : string,
+  'bankName' : string,
+  'updatedAt' : bigint,
+  'accountName' : string,
+  'upiId' : string,
+  'accountNumber' : string,
+}
+export interface DonationInfoInput {
+  'qrCodeAssetId' : string,
+  'ifscCode' : string,
+  'bankName' : string,
+  'accountName' : string,
+  'upiId' : string,
+  'accountNumber' : string,
+}
+export interface EmailSubscriber {
+  'active' : boolean,
+  'subscribedAt' : bigint,
+  'name' : string,
+  'email' : string,
+}
 export interface Festival {
   'dateStr' : string,
   'meaning' : string,
   'name' : string,
   'mantraName' : string,
   'recommendedVerse' : string,
+}
+export interface GalleryImageInput {
+  'assetId' : string,
+  'caption' : string,
+  'category' : string,
+}
+export interface GalleryImageMeta {
+  'id' : bigint,
+  'isApproved' : boolean,
+  'assetId' : string,
+  'caption' : string,
+  'category' : string,
+  'uploader' : Principal,
+  'uploadedAt' : bigint,
+}
+export interface GrahaRemedyData {
+  'avoidList' : Array<string>,
+  'daan' : string,
+  'role' : string,
+  'mantraSanskrit' : string,
+  'mantraCount' : bigint,
+  'gemstone' : string,
+  'graha' : string,
+  'weakCauses' : Array<string>,
+  'gemstoneWarning' : string,
+  'remedies' : Array<string>,
+  'strongGives' : Array<string>,
 }
 export interface GuidanceResult {
   'guidanceText' : string,
@@ -58,6 +131,21 @@ export interface JournalEntry {
   'updatedAt' : bigint,
   'principalId' : string,
 }
+export interface KundliData {
+  'navamsaLagnaSign' : bigint,
+  'pratyantarDasha' : DashaEntry,
+  'lagnaRashi' : string,
+  'profileId' : Principal,
+  'rulingPlanetGlyph' : string,
+  'lagnaSign' : bigint,
+  'calculatedAt' : bigint,
+  'planets' : Array<PlanetPlacement>,
+  'rulingPlanet' : string,
+  'antardasha' : DashaEntry,
+  'navamsaPlanets' : Array<PlanetPlacement>,
+  'nextDashas' : Array<DashaEntry>,
+  'mahadasha' : DashaEntry,
+}
 export interface MantraEntry {
   'id' : string,
   'meaning' : string,
@@ -66,11 +154,72 @@ export interface MantraEntry {
   'category' : string,
   'benefit' : string,
 }
+export interface PanchangData {
+  'tithi' : string,
+  'vara' : string,
+  'yoga' : string,
+  'moonSign' : string,
+  'description' : string,
+  'nakshatra' : string,
+  'karana' : string,
+  'tithiNumber' : bigint,
+}
+export interface PlanetPlacement {
+  'house' : bigint,
+  'planet' : string,
+  'retrograde' : boolean,
+  'sign' : bigint,
+  'degree' : number,
+  'nakshatra' : string,
+  'nakshatraLord' : string,
+}
+export interface RemedyReminder {
+  'isActive' : boolean,
+  'reminderTime' : string,
+  'graha' : string,
+}
 export interface SatsangMessage {
   'circleId' : string,
   'authorName' : string,
   'message' : string,
   'timestamp' : bigint,
+}
+export interface TimeOfBirth { 'hour' : bigint, 'minute' : bigint }
+export interface TransitEvent {
+  'remedy' : string,
+  'colorCode' : string,
+  'endDate' : string,
+  'planet' : string,
+  'description' : string,
+  'startDate' : string,
+  'eventType' : string,
+}
+export interface UserProfile {
+  'id' : Principal,
+  'placeOfBirth' : string,
+  'latitude' : number,
+  'timezone' : string,
+  'dateOfBirth' : DateOfBirth,
+  'newsletterOptIn' : boolean,
+  'createdAt' : bigint,
+  'fullName' : string,
+  'email' : string,
+  'updatedAt' : bigint,
+  'timeOfBirth' : TimeOfBirth,
+  'longitude' : number,
+  'phone' : string,
+}
+export interface UserProfileInput {
+  'placeOfBirth' : string,
+  'latitude' : number,
+  'timezone' : string,
+  'dateOfBirth' : DateOfBirth,
+  'newsletterOptIn' : boolean,
+  'fullName' : string,
+  'email' : string,
+  'timeOfBirth' : TimeOfBirth,
+  'longitude' : number,
+  'phone' : string,
 }
 export interface Verse {
   'id' : bigint,
@@ -87,9 +236,12 @@ export interface VerseCommentary {
   'ramanuja' : string,
 }
 export interface _SERVICE {
+  'adminListAllGalleryImages' : ActorMethod<[], Array<GalleryImageMeta>>,
   'clearOldMessages' : ActorMethod<[], undefined>,
   'createJournalEntry' : ActorMethod<[string, string, string], JournalEntry>,
   'deleteJournalEntry' : ActorMethod<[string], boolean>,
+  'getAdminConfig' : ActorMethod<[], AdminConfig>,
+  'getAllGrahaRemedies' : ActorMethod<[], Array<GrahaRemedyData>>,
   'getChapter' : ActorMethod<[bigint], [] | [Chapter]>,
   'getCircleMessages' : ActorMethod<[string], Array<SatsangMessage>>,
   'getConcentrationHistory' : ActorMethod<
@@ -97,16 +249,25 @@ export interface _SERVICE {
     Array<ConcentrationSession>
   >,
   'getDailyChallenge' : ActorMethod<[string], [] | [DailyChallenge]>,
+  'getDonationInfo' : ActorMethod<[], [] | [DonationInfo]>,
   'getFestivals' : ActorMethod<[], Array<Festival>>,
+  'getGalleryUploads' : ActorMethod<[], Array<GalleryImageMeta>>,
+  'getGrahaRemedy' : ActorMethod<[string], [] | [GrahaRemedyData]>,
   'getGuidanceByCategory' : ActorMethod<[string], [] | [GuidanceResult]>,
   'getHeatmapData' : ActorMethod<[bigint], Array<HeatmapEntry>>,
   'getJournalEntries' : ActorMethod<[], Array<JournalEntry>>,
   'getKrishnaGuidance' : ActorMethod<[string], [] | [GuidanceResult]>,
+  'getKundliData' : ActorMethod<[], [] | [KundliData]>,
   'getMantras' : ActorMethod<[], Array<MantraEntry>>,
+  'getPanchangToday' : ActorMethod<[string], PanchangData>,
   'getReadingStreak' : ActorMethod<[], bigint>,
+  'getRemedyReminder' : ActorMethod<[], [] | [RemedyReminder]>,
+  'getTransitCalendar' : ActorMethod<[bigint], Array<TransitEvent>>,
+  'getUserProfile' : ActorMethod<[], [] | [UserProfile]>,
   'getVerse' : ActorMethod<[bigint, bigint], [] | [Verse]>,
   'getVerseCommentary' : ActorMethod<[string], [] | [VerseCommentary]>,
   'listChapters' : ActorMethod<[], Array<Chapter>>,
+  'listNewsletterSubscribers' : ActorMethod<[], Array<EmailSubscriber>>,
   'listSatsangCircles' : ActorMethod<[], Array<string>>,
   'listVerses' : ActorMethod<[bigint], Array<Verse>>,
   'postCircleMessage' : ActorMethod<[string, string, string], undefined>,
@@ -118,11 +279,20 @@ export interface _SERVICE {
     [string, bigint, bigint, boolean],
     HeatmapEntry
   >,
+  'saveKundliData' : ActorMethod<[KundliData], boolean>,
+  'saveRemedyReminder' : ActorMethod<[string, string], boolean>,
+  'saveUserProfile' : ActorMethod<[UserProfileInput], boolean>,
   'searchJournalEntries' : ActorMethod<[string], Array<JournalEntry>>,
+  'setDonationInfo' : ActorMethod<[DonationInfoInput], boolean>,
+  'setGalleryImageApproval' : ActorMethod<[bigint, boolean], boolean>,
+  'subscribeNewsletter' : ActorMethod<[string, string], boolean>,
+  'unsubscribeNewsletter' : ActorMethod<[string], boolean>,
+  'updateAdminConfig' : ActorMethod<[AdminConfigInput], boolean>,
   'updateJournalEntry' : ActorMethod<
     [string, string, string],
     [] | [JournalEntry]
   >,
+  'uploadGalleryImage' : ActorMethod<[GalleryImageInput], bigint>,
 }
 export declare const idlService: IDL.ServiceClass;
 export declare const idlInitArgs: IDL.Type[];

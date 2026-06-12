@@ -416,22 +416,30 @@ export function Layout({ children }: LayoutProps) {
         <div className="max-w-3xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-5">
           {/* Brand */}
           <div className="flex items-center gap-4">
-            <span
-              className="font-display text-4xl leading-none divine-glow-pulse select-none"
+            <div
+              className="w-14 h-14 rounded-full overflow-hidden flex-shrink-0"
               style={{
-                color: "oklch(0.78 0.38 54)",
-                textShadow:
-                  "0 0 28px oklch(0.78 0.38 54 / 0.65), 0 0 56px oklch(0.78 0.38 54 / 0.30)",
+                border: "2.5px solid oklch(0.70 0.30 50)",
+                boxShadow: "0 3px 16px oklch(0.76 0.36 54 / 0.40)",
               }}
             >
-              ॐ
-            </span>
+              <img
+                src="/assets/screenshot_20260503_041711_gallery-019deae2-ecb2-73dd-b68c-df7a042ad732.jpg"
+                alt="Sanatan Dharma: Krishna AI"
+                style={{
+                  width: "100%",
+                  height: "100%",
+                  objectFit: "cover",
+                  display: "block",
+                }}
+              />
+            </div>
             <div>
               <span
                 className="font-display text-base tracking-wide block leading-tight font-bold"
                 style={{ color: "oklch(0.16 0.09 32)", fontStyle: "italic" }}
               >
-                Bhagavad Gita Companion
+                Sanatan Dharma · Krishna AI
               </span>
               <span
                 className="font-body text-xs italic block"

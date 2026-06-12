@@ -1,4 +1,11 @@
 // Version: 1.0.0
+type AdminConfig__687918317 =
+  {
+    appVersion : Text;
+    newsletterEnabled : Bool;
+    senderEmail : Text;
+    senderName : Text
+  };
 type Chapter__619322844 =
   {id : Nat; name : Text; summary : Text; verseCount : Nat};
 type ConcentrationSession__1033370166 =
@@ -11,8 +18,23 @@ type ConcentrationSession__1033370166 =
   };
 type DailyChallenge__158827138 =
   {action : Text; date : Text; points : Nat; task : Text};
-type Data__791452850<K, V> =
-  {var count : Nat__490723111; kvs : [var ?(K, V)]};
+type DashaEntry__207541411 =
+  {durationYears : Float; endDate : Int; lord : Text; startDate : Int};
+type Data__80296667<K, V> =
+  {var count : Nat__1040412405; kvs : [var ?(K, V)]};
+type DateOfBirth__266317130 = {day : Nat; month : Nat; year : Nat};
+type DonationInfo__214545131 =
+  {
+    accountName : Text;
+    accountNumber : Text;
+    bankName : Text;
+    ifscCode : Text;
+    qrCodeAssetId : Text;
+    updatedAt : Int;
+    upiId : Text
+  };
+type EmailSubscriber__454195454 =
+  {active : Bool; email : Text; name : Text; subscribedAt : Int};
 type Festival__383627026 =
   {
     dateStr : Text;
@@ -20,6 +42,30 @@ type Festival__383627026 =
     meaning : Text;
     name : Text;
     recommendedVerse : Text
+  };
+type GalleryImageMeta__530260036 =
+  {
+    assetId : Text;
+    caption : Text;
+    category : Text;
+    id : Nat;
+    isApproved : Bool;
+    uploadedAt : Int;
+    uploader : Principal
+  };
+type GrahaRemedyData__433335250 =
+  {
+    avoidList : [Text];
+    daan : Text;
+    gemstone : Text;
+    gemstoneWarning : Text;
+    graha : Text;
+    mantraCount : Nat;
+    mantraSanskrit : Text;
+    remedies : [Text];
+    role : Text;
+    strongGives : [Text];
+    weakCauses : [Text]
   };
 type GuidanceResult__838316807 =
   {chapter : Nat; guidanceText : Text; keyword : Text; verse : Nat};
@@ -31,8 +77,8 @@ type HeatmapEntry__780806870 =
     principalId : Text;
     versesRead : Nat
   };
-type Internal__8484328<K, V> =
-  {children : [var ?Node__46230540<K, V>]; data : Data__791452850<K, V>};
+type Internal__41346355<K, V> =
+  {children : [var ?Node__1000929467<K, V>]; data : Data__80296667<K, V>};
 type JournalEntry__1056400789 =
   {
     createdAt : Int;
@@ -43,14 +89,30 @@ type JournalEntry__1056400789 =
     updatedAt : Int;
     verseId : Text
   };
-type Leaf__809889148<K, V> = {data : Data__791452850<K, V>};
-type List__415060402<T> = List__790383201<T>;
-type List__790383201<T> =
+type KundliData__103015255 =
   {
-    var blockIndex : Nat__490723111;
-    var blocks : [var [var ?T]];
-    var elementIndex : Nat__490723111
+    antardasha : DashaEntry__207541411;
+    calculatedAt : Int;
+    lagnaRashi : Text;
+    lagnaSign : Nat;
+    mahadasha : DashaEntry__207541411;
+    navamsaLagnaSign : Nat;
+    navamsaPlanets : [PlanetPlacement__854950779];
+    nextDashas : [DashaEntry__207541411];
+    planets : [PlanetPlacement__854950779];
+    pratyantarDasha : DashaEntry__207541411;
+    profileId : Principal;
+    rulingPlanet : Text;
+    rulingPlanetGlyph : Text
   };
+type Leaf__712614010<K, V> = {data : Data__80296667<K, V>};
+type List__529703492<T> =
+  {
+    var blockIndex : Nat__1040412405;
+    var blocks : [var [var ?T]];
+    var elementIndex : Nat__1040412405
+  };
+type List__560604548<T> = List__529703492<T>;
 type MantraEntry__490268718 =
   {
     benefit : Text;
@@ -60,12 +122,51 @@ type MantraEntry__490268718 =
     name : Text;
     text : Text
   };
-type Nat__490723111 = Nat__920180692;
+type Nat__1040412405 = Nat__920180692;
 type Nat__920180692 = Nat;
-type Node__46230540<K, V> =
-  {#internal : Internal__8484328<K, V>; #leaf : Leaf__809889148<K, V>};
+type Node__1000929467<K, V> =
+  {#internal : Internal__41346355<K, V>; #leaf : Leaf__712614010<K, V>};
+type PlanetPlacement__854950779 =
+  {
+    degree : Float;
+    house : Nat;
+    nakshatra : Text;
+    nakshatraLord : Text;
+    planet : Text;
+    retrograde : Bool;
+    sign : Nat
+  };
+type RemedyReminder__930290476 =
+  {graha : Text; isActive : Bool; reminderTime : Text};
 type SatsangMessage__974733064 =
   {authorName : Text; circleId : Text; message : Text; timestamp : Int};
+type TimeOfBirth__81710687 = {hour : Nat; minute : Nat};
+type TransitEvent__951684248 =
+  {
+    colorCode : Text;
+    description : Text;
+    endDate : Text;
+    eventType : Text;
+    planet : Text;
+    remedy : Text;
+    startDate : Text
+  };
+type UserProfile__702678360 =
+  {
+    createdAt : Int;
+    dateOfBirth : DateOfBirth__266317130;
+    email : Text;
+    fullName : Text;
+    id : Principal;
+    latitude : Float;
+    longitude : Float;
+    newsletterOptIn : Bool;
+    phone : Text;
+    placeOfBirth : Text;
+    timeOfBirth : TimeOfBirth__81710687;
+    timezone : Text;
+    updatedAt : Int
+  };
 type VerseCommentary__49421114 =
   {ramanuja : Text; shankaracharya : Text; tilak : Text; verseId : Text};
 type Verse__273208861 =
@@ -78,61 +179,101 @@ type Verse__273208861 =
     verseNumber : Text
   };
 actor {
+  stable adminConfig : {var value : AdminConfig__687918317};
   stable challenges :
     {
-      var root : Node__46230540<Text, DailyChallenge__158827138>;
-      var size : Nat__490723111
+      var root : Node__1000929467<Text, DailyChallenge__158827138>;
+      var size : Nat__1040412405
     };
   stable chapters :
     {
-      var root : Node__46230540<Nat, Chapter__619322844>;
-      var size : Nat__490723111
+      var root : Node__1000929467<Nat, Chapter__619322844>;
+      var size : Nat__1040412405
     };
   stable circleMessages :
     {
       var root :
-        Node__46230540<Text, List__415060402<SatsangMessage__974733064>>;
-      var size : Nat__490723111
+        Node__1000929467<Text, List__560604548<SatsangMessage__974733064>>;
+      var size : Nat__1040412405
     };
   stable commentaries :
     {
-      var root : Node__46230540<Text, VerseCommentary__49421114>;
-      var size : Nat__490723111
+      var root : Node__1000929467<Text, VerseCommentary__49421114>;
+      var size : Nat__1040412405
     };
+  stable donationInfo : {var value : ?DonationInfo__214545131};
   stable festivals :
     {
-      var root : Node__46230540<Text, Festival__383627026>;
-      var size : Nat__490723111
+      var root : Node__1000929467<Text, Festival__383627026>;
+      var size : Nat__1040412405
+    };
+  stable galleryImages :
+    {
+      var blockIndex : Nat__1040412405;
+      var blocks : [var [var ?GalleryImageMeta__530260036]];
+      var elementIndex : Nat__1040412405
+    };
+  stable grahaRemedies :
+    {
+      var root : Node__1000929467<Text, GrahaRemedyData__433335250>;
+      var size : Nat__1040412405
     };
   stable guidanceMap :
     {
-      var root : Node__46230540<Text, GuidanceResult__838316807>;
-      var size : Nat__490723111
+      var root : Node__1000929467<Text, GuidanceResult__838316807>;
+      var size : Nat__1040412405
     };
   stable heatmap :
     {
-      var root : Node__46230540<Text, HeatmapEntry__780806870>;
-      var size : Nat__490723111
+      var root : Node__1000929467<Text, HeatmapEntry__780806870>;
+      var size : Nat__1040412405
     };
   stable journal :
     {
-      var root : Node__46230540<Text, JournalEntry__1056400789>;
-      var size : Nat__490723111
+      var root : Node__1000929467<Text, JournalEntry__1056400789>;
+      var size : Nat__1040412405
+    };
+  stable kundlis :
+    {
+      var root : Node__1000929467<Principal, KundliData__103015255>;
+      var size : Nat__1040412405
     };
   stable mantras :
     {
-      var root : Node__46230540<Text, MantraEntry__490268718>;
-      var size : Nat__490723111
+      var root : Node__1000929467<Text, MantraEntry__490268718>;
+      var size : Nat__1040412405
+    };
+  stable nextImageId : {var value : Nat};
+  stable profiles :
+    {
+      var root : Node__1000929467<Principal, UserProfile__702678360>;
+      var size : Nat__1040412405
+    };
+  stable remedyReminders :
+    {
+      var root : Node__1000929467<Text, RemedyReminder__930290476>;
+      var size : Nat__1040412405
     };
   stable sessions :
     {
-      var blockIndex : Nat__490723111;
+      var blockIndex : Nat__1040412405;
       var blocks : [var [var ?ConcentrationSession__1033370166]];
-      var elementIndex : Nat__490723111
+      var elementIndex : Nat__1040412405
+    };
+  stable subscribers :
+    {
+      var root : Node__1000929467<Text, EmailSubscriber__454195454>;
+      var size : Nat__1040412405
+    };
+  stable transitEvents :
+    {
+      var blockIndex : Nat__1040412405;
+      var blocks : [var [var ?TransitEvent__951684248]];
+      var elementIndex : Nat__1040412405
     };
   stable verses :
     {
-      var root : Node__46230540<(Nat, Nat), Verse__273208861>;
-      var size : Nat__490723111
+      var root : Node__1000929467<(Nat, Nat), Verse__273208861>;
+      var size : Nat__1040412405
     }
 };

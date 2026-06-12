@@ -190,7 +190,7 @@ const PATHWAYS = [
   // 16
   {
     id: "donations",
-    to: "/store",
+    to: "/donate",
     symbol: "💛",
     label: "दान सेवा मॉड्यूल",
     sub: "Donation Module",
@@ -225,12 +225,12 @@ const PATHWAYS = [
   },
   // 19
   {
-    id: "library",
-    to: "/library",
-    symbol: "📚",
-    label: "वैदिक ग्रन्थालय",
-    sub: "Vedic Library",
-    desc: "38 Sacred Books",
+    id: "kundali-lite",
+    to: "/kundali-lite",
+    symbol: "🪐",
+    label: "कुण्डली लाइट",
+    sub: "Kundali Lite",
+    desc: "Vedic Astrology",
     grad: "linear-gradient(135deg, oklch(0.93 0.14 50 / 0.97) 0%, oklch(0.89 0.18 42 / 0.97) 100%)",
     glow: "oklch(0.76 0.26 48)",
     border: "oklch(0.70 0.22 44 / 0.70)",
@@ -260,7 +260,33 @@ const PATHWAYS = [
     border: "oklch(0.76 0.26 64 / 0.70)",
     isUSP: true,
   },
+  // 22 — Devlok Yaatra (The Sacred Journey to the World of Gods)
+  {
+    id: "daivi-charitra",
+    to: "/daivi-charitra",
+    symbol: "🕉️",
+    label: "देवलोक यात्रा",
+    sub: "Devlok Yaatra",
+    desc: "21 Sacred Stories • Path to Parabrahma",
+    grad: "linear-gradient(135deg, oklch(0.94 0.14 54 / 0.97) 0%, oklch(0.88 0.22 30 / 0.97) 50%, oklch(0.86 0.16 268 / 0.97) 100%)",
+    glow: "oklch(0.82 0.34 54)",
+    border: "oklch(0.78 0.30 54 / 0.70)",
+    isUSP: true,
+  },
 ] as const;
+
+// Blueprint entry (non-pathway, appears after the 21)
+const BLUEPRINT_ENTRY = {
+  id: "blueprint",
+  to: "/blueprint" as const,
+  symbol: "📜",
+  label: "ऐप ब्लूप्रिंट",
+  sub: "App Blueprint",
+  desc: "All 21 Pathways — Full PDF",
+  grad: "linear-gradient(135deg, oklch(0.95 0.14 68 / 0.97) 0%, oklch(0.91 0.18 60 / 0.97) 100%)",
+  glow: "oklch(0.80 0.32 62)",
+  border: "oklch(0.76 0.28 60 / 0.70)",
+};
 
 // ─── Pathway Tile ──────────────────────────────────────────────────────────────
 function PathwayTile({
@@ -565,7 +591,7 @@ export function MenuPage() {
             lineHeight: 1.2,
           }}
         >
-          21 Sacred Pathways to Krishna
+          22 Sacred Pathways to Krishna
         </h1>
         <p
           className="font-body text-xs italic mt-1"
@@ -625,7 +651,7 @@ export function MenuPage() {
           className="text-center font-body text-[9.5px] italic tracking-widest uppercase mb-3 mt-0.5"
           style={{ color: "oklch(0.50 0.18 50 / 0.80)" }}
         >
-          ✦ इक्कीस धर्म मार्ग · The 21 Paths of Dharma ✦
+          ✦ बाईस धर्म मार्ग · The 22 Paths of Dharma ✦
         </p>
 
         {/* 3-column grid — all 21 pathways */}
@@ -638,6 +664,74 @@ export function MenuPage() {
               onEmergency={() => setShowEmergency(true)}
             />
           ))}
+        </div>
+
+        {/* Blueprint card below the grid */}
+        <div
+          className="mt-3 pt-3"
+          style={{ borderTop: "1px solid oklch(0.76 0.26 52 / 0.30)" }}
+        >
+          <p
+            className="text-center font-body text-[9px] italic tracking-widest uppercase mb-2"
+            style={{ color: "oklch(0.50 0.18 50 / 0.80)" }}
+          >
+            ✦ App Documentation ✦
+          </p>
+          <motion.div
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.55, duration: 0.35 }}
+            whileHover={{ y: -2 }}
+          >
+            <Link
+              to={BLUEPRINT_ENTRY.to}
+              className="flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-300"
+              style={{
+                background: BLUEPRINT_ENTRY.grad,
+                border: `1.5px solid ${BLUEPRINT_ENTRY.border}`,
+                boxShadow: `0 3px 14px ${BLUEPRINT_ENTRY.glow}22, inset 0 1px 0 rgba(255,248,210,0.70)`,
+              }}
+              data-ocid="menu.blueprint.link"
+            >
+              <div
+                className="w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0"
+                style={{
+                  background: `radial-gradient(circle at 35% 28%, ${BLUEPRINT_ENTRY.glow}44 0%, ${BLUEPRINT_ENTRY.glow}18 100%)`,
+                  border: `1.5px solid ${BLUEPRINT_ENTRY.glow}55`,
+                }}
+              >
+                <span style={{ fontSize: "1.25rem" }}>
+                  {BLUEPRINT_ENTRY.symbol}
+                </span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p
+                  className="font-display text-[8.5px] font-bold italic leading-tight"
+                  style={{ color: "oklch(0.18 0.10 38)" }}
+                >
+                  {BLUEPRINT_ENTRY.label}
+                </p>
+                <p
+                  className="font-display text-[9.5px] font-bold leading-tight"
+                  style={{ color: "oklch(0.28 0.12 36)" }}
+                >
+                  {BLUEPRINT_ENTRY.sub}
+                </p>
+                <p
+                  className="font-body text-[8px] leading-tight"
+                  style={{ color: "oklch(0.42 0.12 46 / 0.85)" }}
+                >
+                  {BLUEPRINT_ENTRY.desc}
+                </p>
+              </div>
+              <span
+                className="font-body text-sm"
+                style={{ color: "oklch(0.60 0.22 52)" }}
+              >
+                →
+              </span>
+            </Link>
+          </motion.div>
         </div>
 
         {/* Bottom sacred quote — Gita 4:7 */}

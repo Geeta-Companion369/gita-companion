@@ -1059,7 +1059,7 @@ function IntroModal({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export function HomePage() {
-  const { lastRead } = useLastRead();
+  useLastRead();
   const { streak } = useStreak();
   const { points } = usePoints();
   const { displayName } = useUserProfile();
@@ -1334,128 +1334,6 @@ export function HomePage() {
           <TodaysBlessingCard />
         </motion.section>
 
-        {/* Quick action buttons */}
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="flex flex-col sm:flex-row gap-2.5 mb-4"
-        >
-          {lastRead ? (
-            <Link
-              to="/verse/$chapterId/$verseId"
-              params={{
-                chapterId: String(lastRead.chapterId),
-                verseId: lastRead.verseId,
-              }}
-              className="wax-seal-btn flex-1 text-center justify-center"
-              data-ocid="home.resume-reading"
-            >
-              ← Resume Chapter {lastRead.chapterId}
-            </Link>
-          ) : (
-            <Link
-              to="/chapter/$id"
-              params={{ id: "1" }}
-              className="wax-seal-btn flex-1 text-center justify-center"
-              data-ocid="home.start-reading"
-            >
-              ॐ Begin Sacred Journey
-            </Link>
-          )}
-          <Link
-            to="/guidance"
-            className="wax-seal-btn wax-seal-btn-saffron flex-1 text-center justify-center"
-            data-ocid="home.talk-to-krishna"
-          >
-            🦚 Talk to Krishna
-          </Link>
-        </motion.div>
-
-        {/* 3 Sacred Quick-Access Tiles */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.62 }}
-          className="grid grid-cols-3 gap-2 mb-6"
-          data-ocid="home.quick-tiles"
-        >
-          {(
-            [
-              {
-                to: "/chapter/1",
-                icon: "📖",
-                label: "गीता पाठ",
-                sub: "Read Gita",
-                grad: "linear-gradient(135deg, oklch(0.95 0.14 54 / 0.96) 0%, oklch(0.91 0.18 48 / 0.96) 100%)",
-                border: "oklch(0.76 0.26 50 / 0.65)",
-                ocid: "home.quick.gita",
-              },
-              {
-                to: "/guidance",
-                icon: "🤖",
-                label: "कृष्ण AI",
-                sub: "Ask Krishna",
-                grad: "linear-gradient(135deg, oklch(0.92 0.10 268 / 0.96) 0%, oklch(0.88 0.14 260 / 0.96) 100%)",
-                border: "oklch(0.64 0.20 265 / 0.65)",
-                ocid: "home.quick.ai",
-              },
-              {
-                to: "/mala",
-                icon: "📿",
-                label: "माला जाप",
-                sub: "Mala Counter",
-                grad: "linear-gradient(135deg, oklch(0.94 0.12 340 / 0.96) 0%, oklch(0.90 0.16 332 / 0.96) 100%)",
-                border: "oklch(0.68 0.20 336 / 0.65)",
-                ocid: "home.quick.mala",
-              },
-            ] as {
-              to: string;
-              icon: string;
-              label: string;
-              sub: string;
-              grad: string;
-              border: string;
-              ocid: string;
-            }[]
-          ).map((tile) => (
-            <Link
-              key={tile.to}
-              to={tile.to}
-              data-ocid={tile.ocid}
-              className="flex flex-col items-center justify-center p-3 rounded-xl text-center transition-all duration-200 hover:scale-[1.03]"
-              style={{
-                background: tile.grad,
-                border: `1.5px solid ${tile.border}`,
-                boxShadow:
-                  "0 3px 14px rgba(180,130,45,0.18), inset 0 1px 0 rgba(255,248,210,0.70)",
-                minHeight: "72px",
-              }}
-            >
-              <span
-                style={{
-                  fontSize: "1.35rem",
-                  lineHeight: 1,
-                  marginBottom: "4px",
-                }}
-              >
-                {tile.icon}
-              </span>
-              <p
-                className="font-display font-bold italic text-[10px] leading-tight"
-                style={{ color: "oklch(0.18 0.10 38)" }}
-              >
-                {tile.label}
-              </p>
-              <p
-                className="font-body text-[8px] mt-0.5"
-                style={{ color: "oklch(0.38 0.12 44 / 0.85)" }}
-              >
-                {tile.sub}
-              </p>
-            </Link>
-          ))}
-        </motion.div>
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}

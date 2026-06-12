@@ -545,7 +545,7 @@ function ChapterCard({
                 {/* Action buttons */}
                 <div className="flex gap-2 pt-1">
                   <Link
-                    to="/library"
+                    to="/gita"
                     className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-display text-[11px] font-bold italic transition-all duration-200 hover:shadow-sacred"
                     style={{
                       background:
@@ -555,7 +555,7 @@ function ChapterCard({
                     data-ocid={`moksha.chapter.${chapter.num}.library_button`}
                   >
                     <BookOpen size={12} />
-                    Read in Library
+                    Read in Gita
                   </Link>
                   <Link
                     to="/guidance"
@@ -852,7 +852,7 @@ export function DharmaWellnessPage() {
         </p>
         <div className="flex gap-2 mt-3">
           <Link
-            to="/library"
+            to="/gita"
             className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg font-display text-[11px] font-bold italic"
             style={{
               background: "oklch(0.94 0.09 64/0.90)",

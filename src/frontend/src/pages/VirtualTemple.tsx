@@ -986,7 +986,465 @@ function AartiDiyaOverlay({ isActive }: { isActive: boolean }) {
   );
 }
 
-// ─── Main Component ─────────────────────────────────────────────────────────────
+// ─── Live Darshan Data ─────────────────────────────────────────────────────
+
+interface DarshanEntry {
+  temple: string;
+  deity: string;
+  deityHindi: string;
+  day: string;
+  embedUrl: string;
+  searchUrl: string;
+  hasLiveEmbed: boolean;
+  accentHue: number;
+}
+
+const LIVE_DARSHAN: Record<number, DarshanEntry> = {
+  0: {
+    temple: "Surya Narayan Temple, Arasavalli",
+    deity: "Surya",
+    deityHindi: "सूर्य भगवान",
+    day: "Sunday",
+    embedUrl:
+      "https://www.youtube.com/embed?listType=search&list=Surya+Narayan+Temple+Arasavalli+live+darshan",
+    searchUrl:
+      "https://www.youtube.com/results?search_query=surya+narayan+arasavalli+live+darshan",
+    hasLiveEmbed: true,
+    accentHue: 54,
+  },
+  1: {
+    temple: "Mahakaleshwar Temple, Ujjain",
+    deity: "Shiva",
+    deityHindi: "महाकालेश्वर",
+    day: "Monday",
+    embedUrl:
+      "https://www.youtube.com/embed?listType=search&list=Mahakaleshwar+temple+Ujjain+live+darshan",
+    searchUrl: "",
+    hasLiveEmbed: true,
+    accentHue: 280,
+  },
+  2: {
+    temple: "Kastbhanjan Hanuman, Sarangpur",
+    deity: "Hanuman",
+    deityHindi: "हनुमान जी",
+    day: "Tuesday",
+    embedUrl:
+      "https://www.youtube.com/embed?listType=search&list=Sarangpur+Hanuman+temple+live+darshan",
+    searchUrl:
+      "https://www.youtube.com/results?search_query=sarangpur+hanuman+live+darshan+kastbhanjan",
+    hasLiveEmbed: true,
+    accentHue: 32,
+  },
+  3: {
+    temple: "Siddhivinayak Temple, Mumbai",
+    deity: "Ganesha",
+    deityHindi: "गणेश",
+    day: "Wednesday",
+    embedUrl:
+      "https://www.youtube.com/embed?listType=search&list=Siddhivinayak+temple+Mumbai+live+darshan",
+    searchUrl:
+      "https://www.youtube.com/results?search_query=siddhivinayak+temple+mumbai+live+darshan",
+    hasLiveEmbed: true,
+    accentHue: 56,
+  },
+  4: {
+    temple: "Dwarkadhish Mandir, Dwarka",
+    deity: "Krishna",
+    deityHindi: "श्री कृष्ण",
+    day: "Thursday",
+    embedUrl:
+      "https://www.youtube.com/embed?listType=search&list=Dwarikadhish+temple+Dwarka+live+darshan",
+    searchUrl:
+      "https://www.youtube.com/results?search_query=dwarkadhish+mandir+dwarka+live+darshan",
+    hasLiveEmbed: true,
+    accentHue: 268,
+  },
+  5: {
+    temple: "Mahalakshmi Temple, Mumbai",
+    deity: "Lakshmi",
+    deityHindi: "लक्ष्मी माँ",
+    day: "Friday",
+    embedUrl:
+      "https://www.youtube.com/embed?listType=search&list=Mahalakshmi+temple+Mumbai+live+darshan",
+    searchUrl:
+      "https://www.youtube.com/results?search_query=mahalakshmi+temple+mumbai+live+darshan",
+    hasLiveEmbed: true,
+    accentHue: 52,
+  },
+  6: {
+    temple: "Shani Shingnapur Temple, Maharashtra",
+    deity: "Shani",
+    deityHindi: "शनि देव",
+    day: "Saturday",
+    embedUrl:
+      "https://www.youtube.com/embed?listType=search&list=Shani+Shingnapur+temple+live+darshan",
+    searchUrl:
+      "https://www.youtube.com/results?search_query=shani+shingnapur+live+darshan",
+    hasLiveEmbed: true,
+    accentHue: 268,
+  },
+};
+
+const ISKCON_DARSHAN = {
+  temple: "ISKCON Vrindavan",
+  deityHindi: "श्री कृष्ण वृन्दावन",
+  embedUrl:
+    "https://www.youtube.com/embed/live_stream?channel=UCAA6IsLVfbHrP1I_lzxv09Q&autoplay=0&rel=0",
+};
+const DAY_ICONS = ["☀️", "💙", "🫧", "🐘", "🎺", "🌷", "🪁"];
+
+function LiveDarshanSection() {
+  const todayIdx = new Date().getDay();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setRefreshKey((k) => k + 1);
+      setLastRefresh(new Date());
+    }, 300000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleManualRefresh = () => {
+    setRefreshKey((k) => k + 1);
+    setLastRefresh(new Date());
+  };
+
+  const weekdayEntries = Object.entries(LIVE_DARSHAN).map(
+    ([dayIdx, entry]) => ({
+      ...entry,
+      idx: Number(dayIdx),
+      isToday: Number(dayIdx) === todayIdx,
+    }),
+  );
+
+  return (
+    <div className="pb-8">
+      {/* Header Banner */}
+      <div
+        className="text-center py-4 px-4 rounded-2xl mb-5"
+        style={{
+          background:
+            "linear-gradient(135deg, oklch(0.92 0.14 54 / 0.40), oklch(0.86 0.18 46 / 0.30))",
+          border: "1.5px solid oklch(0.78 0.28 54 / 0.4)",
+        }}
+      >
+        <p
+          className="font-display text-xs tracking-[0.25em] uppercase mb-1"
+          style={{ color: "oklch(0.58 0.24 46 / 0.85)" }}
+        >
+          ✦ लाइव दर्शन ✦
+        </p>
+        <h2
+          className="font-display font-bold"
+          style={{
+            fontSize: "clamp(1.1rem, 4vw, 1.4rem)",
+            color: "oklch(0.50 0.26 46)",
+          }}
+        >
+          🛥 Live Darshan — Witness the Divine
+        </h2>
+        <p
+          className="font-body text-xs italic mt-1"
+          style={{ color: "oklch(0.50 0.16 46 / 0.75)" }}
+        >
+          All 7 weekday deities + ISKCON Vrindavan — always available
+        </p>
+        <div className="flex items-center justify-center gap-3 mt-2">
+          <p
+            className="font-display text-[0.55rem]"
+            style={{ color: "oklch(0.60 0.14 54 / 0.65)" }}
+          >
+            ↺ Auto-refreshes every 5 min · Last:{" "}
+            {lastRefresh.toLocaleTimeString("en-IN", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </p>
+          <button
+            type="button"
+            onClick={handleManualRefresh}
+            className="px-3 py-1 rounded-lg font-display text-[0.55rem] font-bold transition-all duration-200 hover:scale-105"
+            style={{
+              background: "oklch(0.78 0.28 54 / 0.30)",
+              color: "oklch(0.42 0.20 46)",
+              border: "1px solid oklch(0.72 0.24 54 / 0.50)",
+            }}
+            data-ocid="temple.darshan.refresh_button"
+          >
+            🔄 Refresh Now
+          </button>
+        </div>
+      </div>
+
+      {/* SECTION 1 — 7-Day Darshan Grid */}
+      <p
+        className="font-display text-xs tracking-[0.20em] uppercase font-bold mb-3 text-center"
+        style={{ color: "oklch(0.56 0.22 46)" }}
+      >
+        ✦ सप्ताह दर्शन — Saptah Darshan ✦
+      </p>
+      <div
+        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-8"
+        data-ocid="temple.darshan.weekday_grid"
+      >
+        {weekdayEntries.map((entry) => {
+          const hue = entry.accentHue;
+          return (
+            <div
+              key={entry.idx}
+              className="rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-lg"
+              style={{
+                border: entry.isToday
+                  ? `3px solid oklch(0.72 0.28 ${hue})`
+                  : `2px solid oklch(0.72 0.20 ${hue} / 0.45)`,
+                boxShadow: entry.isToday
+                  ? `0 8px 32px oklch(0.18 0.10 ${hue} / 0.28)`
+                  : "0 4px 16px oklch(0.18 0.06 46 / 0.12)",
+              }}
+              data-ocid={`temple.darshan.stream.${entry.idx + 1}`}
+            >
+              {/* Header */}
+              <div
+                className="px-3 py-2 flex items-center justify-between"
+                style={{
+                  background: entry.isToday
+                    ? `linear-gradient(135deg, oklch(0.90 0.14 ${hue} / 0.50), oklch(0.94 0.08 ${hue} / 0.30))`
+                    : `linear-gradient(135deg, oklch(0.92 0.10 ${hue} / 0.35), oklch(0.96 0.06 ${hue} / 0.20))`,
+                  borderBottom: entry.isToday
+                    ? `1px solid oklch(0.72 0.24 ${hue} / 0.50)`
+                    : `1px solid oklch(0.72 0.18 ${hue} / 0.35)`,
+                }}
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    {entry.isToday && (
+                      <span
+                        className="px-1.5 py-0.5 rounded font-display font-bold uppercase flex-shrink-0"
+                        style={{
+                          fontSize: "0.45rem",
+                          background: "oklch(0.72 0.28 148)",
+                          color: "oklch(0.97 0.04 70)",
+                        }}
+                      >
+                        TODAY
+                      </span>
+                    )}
+                    <p
+                      className="font-display font-bold text-xs truncate"
+                      style={{ color: `oklch(0.38 0.22 ${hue})` }}
+                    >
+                      {entry.deityHindi}
+                    </p>
+                  </div>
+                  <p
+                    className="font-body italic text-xs truncate"
+                    style={{
+                      color: `oklch(0.50 0.16 ${hue} / 0.80)`,
+                    }}
+                  >
+                    {entry.temple}
+                  </p>
+                </div>
+                <span className="text-lg flex-shrink-0 ml-1">
+                  {DAY_ICONS[entry.idx]}
+                </span>
+              </div>
+
+              {/* Video Embed */}
+              <div style={{ position: "relative", paddingBottom: "56.25%" }}>
+                <iframe
+                  key={`stream-${entry.idx}-${refreshKey}`}
+                  className="absolute inset-0 w-full h-full"
+                  src={entry.embedUrl}
+                  title={`Live Darshan — ${entry.temple}`}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  style={{ border: 0 }}
+                />
+              </div>
+
+              {/* Footer info */}
+              <div
+                className="px-3 py-2"
+                style={{
+                  background: "oklch(0.97 0.06 68 / 0.90)",
+                  borderTop: `1px solid oklch(0.72 0.16 ${hue} / 0.25)`,
+                }}
+              >
+                <p
+                  className="font-body text-xs text-center"
+                  style={{ color: `oklch(0.46 0.14 ${hue} / 0.85)` }}
+                >
+                  {entry.day}
+                  {entry.isToday && (
+                    <span className="font-display font-bold ml-1">
+                      — Your Today's Deity
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* SECTION 2 — Special Darshan */}
+      <p
+        className="font-display text-xs tracking-[0.20em] uppercase font-bold mb-3 text-center"
+        style={{ color: "oklch(0.56 0.22 46)" }}
+      >
+        ✦ विशेष दर्शन — Special Darshan ✦
+      </p>
+      <div
+        className="rounded-2xl overflow-hidden transition-all duration-200 hover:shadow-lg"
+        style={{
+          border: "2px solid oklch(0.62 0.26 268 / 0.55)",
+          boxShadow: "0 8px 32px oklch(0.18 0.10 268 / 0.20)",
+        }}
+        data-ocid="temple.darshan.special.stream"
+      >
+        {/* Header */}
+        <div
+          className="px-4 py-3 flex items-center justify-between"
+          style={{
+            background:
+              "linear-gradient(135deg, oklch(0.90 0.12 268 / 0.40), oklch(0.94 0.08 268 / 0.25))",
+            borderBottom: "1px solid oklch(0.72 0.24 268 / 0.50)",
+          }}
+        >
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <span
+                className="px-2 py-0.5 rounded font-display font-bold uppercase flex-shrink-0"
+                style={{
+                  fontSize: "0.5rem",
+                  background: "oklch(0.60 0.26 268)",
+                  color: "oklch(0.97 0.04 70)",
+                }}
+              >
+                ALWAYS LIVE
+              </span>
+              <p
+                className="font-display font-bold text-sm truncate"
+                style={{ color: "oklch(0.38 0.22 268)" }}
+              >
+                {ISKCON_DARSHAN.deityHindi}
+              </p>
+            </div>
+            <p
+              className="font-body italic text-sm truncate"
+              style={{ color: "oklch(0.50 0.16 268 / 0.80)" }}
+            >
+              {ISKCON_DARSHAN.temple}
+            </p>
+          </div>
+          <span className="text-xl flex-shrink-0 ml-2">🪷</span>
+        </div>
+
+        {/* Larger Video Embed */}
+        <div style={{ position: "relative", paddingBottom: "50%" }}>
+          <iframe
+            key={`stream-iskcon-${refreshKey}`}
+            className="absolute inset-0 w-full h-full"
+            src={ISKCON_DARSHAN.embedUrl}
+            title={`Live Darshan — ${ISKCON_DARSHAN.temple}`}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{ border: 0 }}
+          />
+        </div>
+
+        {/* Footer info */}
+        <div
+          className="px-4 py-3"
+          style={{
+            background: "oklch(0.97 0.06 68 / 0.90)",
+            borderTop: "1px solid oklch(0.72 0.16 268 / 0.25)",
+          }}
+        >
+          <p
+            className="font-body text-sm text-center"
+            style={{ color: "oklch(0.46 0.14 268 / 0.85)" }}
+          >
+            Every Day — 24/7 Live from Vrindavan
+          </p>
+        </div>
+      </div>
+
+      {/* Schedule reference */}
+      <p
+        className="font-display text-xs tracking-[0.20em] uppercase font-bold mt-6 mb-3 text-center"
+        style={{ color: "oklch(0.56 0.22 46)" }}
+      >
+        ✦ साप्ताहिक दर्शन सूची ✦
+      </p>
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+        {Object.entries(LIVE_DARSHAN).map(([dayIdx, entry]) => {
+          const idx = Number(dayIdx);
+          const isToday = idx === todayIdx;
+          return (
+            <div
+              key={idx}
+              className="flex items-center gap-3 p-3 rounded-xl"
+              style={{
+                border: isToday
+                  ? `2px solid oklch(0.68 0.26 ${entry.accentHue})`
+                  : `1px solid oklch(0.78 0.18 ${entry.accentHue} / 0.45)`,
+                background: isToday
+                  ? `linear-gradient(135deg, oklch(0.90 0.14 ${entry.accentHue} / 0.40), oklch(0.94 0.08 ${entry.accentHue} / 0.25))`
+                  : "oklch(0.97 0.06 68 / 0.80)",
+              }}
+              data-ocid={`temple.darshan.schedule.${idx + 1}`}
+            >
+              <span className="text-2xl flex-shrink-0">{DAY_ICONS[idx]}</span>
+              <div className="min-w-0">
+                <p
+                  className="font-display font-bold text-xs leading-tight"
+                  style={{ color: `oklch(0.38 0.20 ${entry.accentHue})` }}
+                >
+                  {entry.day}
+                  {isToday && (
+                    <span
+                      className="ml-1.5 px-1 rounded"
+                      style={{
+                        fontSize: "0.48rem",
+                        background: "oklch(0.68 0.28 148)",
+                        color: "oklch(0.97 0.04 70)",
+                      }}
+                    >
+                      TODAY
+                    </span>
+                  )}
+                </p>
+                <p
+                  className="font-body text-xs leading-tight truncate"
+                  style={{
+                    color: `oklch(0.46 0.14 ${entry.accentHue} / 0.80)`,
+                  }}
+                >
+                  {entry.deityHindi}
+                </p>
+                <p
+                  className="font-body italic leading-tight truncate"
+                  style={{
+                    fontSize: "0.56rem",
+                    color: `oklch(0.52 0.10 ${entry.accentHue} / 0.70)`,
+                  }}
+                >
+                  {entry.temple.split(",")[0]}
+                </p>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Main Component
 export function VirtualTemplePage() {
   const today = DAYS[new Date().getDay()];
   const defaultDeity =
@@ -998,6 +1456,7 @@ export function VirtualTemplePage() {
   const [aartiActive, setAartiActive] = useState(false);
   const [particles, setParticles] = useState<OfferingParticle[]>([]);
   const [imgError, setImgError] = useState(false);
+  const [activeTab, setActiveTab] = useState<"temple" | "darshan">("temple");
   const nextId = useRef(0);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -1073,294 +1532,367 @@ export function VirtualTemplePage() {
             </div>
           )}
         </div>
+
+        {/* Tab Switcher */}
+        <div
+          className="max-w-3xl mx-auto px-4 pb-3 flex gap-2"
+          data-ocid="temple.tab_switcher"
+        >
+          <button
+            type="button"
+            onClick={() => setActiveTab("temple")}
+            className="flex-1 py-2 rounded-xl font-display font-bold text-sm transition-all duration-200"
+            style={{
+              background:
+                activeTab === "temple"
+                  ? "linear-gradient(135deg, oklch(0.78 0.28 54), oklch(0.68 0.24 46))"
+                  : "oklch(0.92 0.06 54 / 0.50)",
+              color:
+                activeTab === "temple"
+                  ? "oklch(0.12 0.06 30)"
+                  : "oklch(0.52 0.18 46)",
+              border:
+                activeTab === "temple"
+                  ? "none"
+                  : "1px solid oklch(0.72 0.18 54 / 0.4)",
+              boxShadow:
+                activeTab === "temple"
+                  ? "0 4px 16px oklch(0.62 0.24 46 / 0.35)"
+                  : "none",
+            }}
+            data-ocid="temple.temple_tab"
+          >
+            🛕 Temple
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("darshan")}
+            className="flex-1 py-2 rounded-xl font-display font-bold text-sm transition-all duration-200"
+            style={{
+              background:
+                activeTab === "darshan"
+                  ? "linear-gradient(135deg, oklch(0.78 0.28 54), oklch(0.68 0.24 46))"
+                  : "oklch(0.92 0.06 54 / 0.50)",
+              color:
+                activeTab === "darshan"
+                  ? "oklch(0.12 0.06 30)"
+                  : "oklch(0.52 0.18 46)",
+              border:
+                activeTab === "darshan"
+                  ? "none"
+                  : "1px solid oklch(0.72 0.18 54 / 0.4)",
+              boxShadow:
+                activeTab === "darshan"
+                  ? "0 4px 16px oklch(0.62 0.24 46 / 0.35)"
+                  : "none",
+            }}
+            data-ocid="temple.darshan_tab"
+          >
+            📡 Live Darshan
+          </button>
+        </div>
       </header>
 
       <div className="max-w-3xl mx-auto px-4 pb-24 pt-4">
-        {/* Day Banner */}
-        {selectedDeity.day ? (
-          <motion.div
-            key={`${selectedDeity.id}-banner`}
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 text-center rounded-2xl py-3 px-4 border"
-            style={{
-              background: `linear-gradient(135deg, ${selectedDeity.accentColor}20, ${selectedDeity.accentColor}10)`,
-              borderColor: `${selectedDeity.accentColor}50`,
-            }}
-          >
-            <p
-              className="text-sm font-display font-bold"
-              style={{ color: selectedDeity.accentColor }}
-            >
-              ✦ आज का देवता: {selectedDeity.hindi} — {selectedDeity.weekday} (
-              {selectedDeity.day}) ✦
-            </p>
-          </motion.div>
+        {/* Live Darshan tab */}
+        {activeTab === "darshan" ? (
+          <LiveDarshanSection />
         ) : (
-          <motion.div
-            key={`${selectedDeity.id}-banner`}
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 text-center rounded-2xl py-3 px-4 border"
-            style={{
-              background: `linear-gradient(135deg, ${selectedDeity.accentColor}20, ${selectedDeity.accentColor}10)`,
-              borderColor: `${selectedDeity.accentColor}50`,
-            }}
-          >
-            <p
-              className="text-sm font-display font-bold"
-              style={{ color: selectedDeity.accentColor }}
-            >
-              ✦ {selectedDeity.hindi} — {selectedDeity.weekday} — सभी दिन पूजनीय
-              ✦
-            </p>
-          </motion.div>
-        )}
-
-        {/* Main Deity Display */}
-        <motion.div
-          key={selectedDeity.id}
-          initial={{ opacity: 0, scale: 0.97 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4 }}
-          className="relative rounded-3xl overflow-hidden mb-6"
-          ref={containerRef}
-          style={{
-            border: `3px solid ${selectedDeity.accentColor}`,
-            boxShadow: `0 0 0 6px ${selectedDeity.accentColor}20, 0 24px 80px ${selectedDeity.accentColor}40, 0 8px 32px rgba(0,0,0,0.25)`,
-          }}
-          data-ocid="temple.deity_display"
-        >
-          {/* Deity Image */}
-          <div
-            className="relative"
-            style={{ aspectRatio: "4/3", background: "oklch(0.12 0.08 46)" }}
-          >
-            {!imgError ? (
-              <img
-                src={selectedDeity.image}
-                alt={selectedDeity.name}
-                className="w-full h-full object-cover object-center"
-                onError={() => setImgError(true)}
-                style={{ filter: "brightness(1.05) saturate(1.1)" }}
-              />
-            ) : (
-              <div
-                className="w-full h-full flex items-center justify-center"
+          <>
+            {/* Day Banner */}
+            {selectedDeity.day ? (
+              <motion.div
+                key={`${selectedDeity.id}-banner`}
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 text-center rounded-2xl py-3 px-4 border"
                 style={{
-                  background: `linear-gradient(160deg, ${selectedDeity.accentColor}30, ${selectedDeity.accentColor}10)`,
+                  background: `linear-gradient(135deg, ${selectedDeity.accentColor}20, ${selectedDeity.accentColor}10)`,
+                  borderColor: `${selectedDeity.accentColor}50`,
                 }}
               >
-                <div className="text-center">
-                  <div className="text-8xl mb-4">🕉️</div>
-                  <div
-                    className="font-display font-bold text-2xl"
-                    style={{ color: selectedDeity.accentColor }}
-                  >
-                    {selectedDeity.hindi}
-                  </div>
-                </div>
-              </div>
+                <p
+                  className="text-sm font-display font-bold"
+                  style={{ color: selectedDeity.accentColor }}
+                >
+                  ✦ आज का देवता: {selectedDeity.hindi} — {selectedDeity.weekday}{" "}
+                  ({selectedDeity.day}) ✦
+                </p>
+              </motion.div>
+            ) : (
+              <motion.div
+                key={`${selectedDeity.id}-banner`}
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 text-center rounded-2xl py-3 px-4 border"
+                style={{
+                  background: `linear-gradient(135deg, ${selectedDeity.accentColor}20, ${selectedDeity.accentColor}10)`,
+                  borderColor: `${selectedDeity.accentColor}50`,
+                }}
+              >
+                <p
+                  className="text-sm font-display font-bold"
+                  style={{ color: selectedDeity.accentColor }}
+                >
+                  ✦ {selectedDeity.hindi} — {selectedDeity.weekday} — सभी दिन
+                  पूजनीय ✦
+                </p>
+              </motion.div>
             )}
 
-            {/* Ornate golden overlay frame */}
-            <div
-              className="absolute inset-0 pointer-events-none"
+            {/* Main Deity Display */}
+            <motion.div
+              key={selectedDeity.id}
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+              className="relative rounded-3xl overflow-hidden mb-6"
+              ref={containerRef}
               style={{
-                boxShadow: `inset 0 0 40px ${selectedDeity.accentColor}30, inset 0 -60px 60px oklch(0.06 0.06 40 / 0.6)`,
+                border: `3px solid ${selectedDeity.accentColor}`,
+                boxShadow: `0 0 0 6px ${selectedDeity.accentColor}20, 0 24px 80px ${selectedDeity.accentColor}40, 0 8px 32px rgba(0,0,0,0.25)`,
               }}
-            />
-
-            {/* Offering animations */}
-            <OfferingAnimations particles={particles} />
-
-            {/* Aarti diya overlay */}
-            <AartiDiyaOverlay isActive={aartiActive} />
-
-            {/* Name overlay at bottom */}
-            <div
-              className="absolute bottom-0 left-0 right-0 p-4 text-center"
-              style={{
-                background:
-                  "linear-gradient(0deg, oklch(0.06 0.06 40 / 0.85) 0%, transparent 100%)",
-              }}
+              data-ocid="temple.deity_display"
             >
-              <h2
-                className="text-3xl font-display font-bold"
+              {/* Deity Image */}
+              <div
+                className="relative"
                 style={{
-                  color: selectedDeity.accentColor,
-                  textShadow: `0 2px 12px ${selectedDeity.accentColor}80`,
+                  aspectRatio: "4/3",
+                  background: "oklch(0.12 0.08 46)",
                 }}
               >
-                {selectedDeity.hindi}
-              </h2>
-              <p className="text-sm text-amber-100/80 font-display">
-                {selectedDeity.name}
-              </p>
-            </div>
-          </div>
+                {!imgError ? (
+                  <img
+                    src={selectedDeity.image}
+                    alt={selectedDeity.name}
+                    className="w-full h-full object-cover object-center"
+                    onError={() => setImgError(true)}
+                    style={{ filter: "brightness(1.05) saturate(1.1)" }}
+                  />
+                ) : (
+                  <div
+                    className="w-full h-full flex items-center justify-center"
+                    style={{
+                      background: `linear-gradient(160deg, ${selectedDeity.accentColor}30, ${selectedDeity.accentColor}10)`,
+                    }}
+                  >
+                    <div className="text-center">
+                      <div className="text-8xl mb-4">🕉️</div>
+                      <div
+                        className="font-display font-bold text-2xl"
+                        style={{ color: selectedDeity.accentColor }}
+                      >
+                        {selectedDeity.hindi}
+                      </div>
+                    </div>
+                  </div>
+                )}
 
-          {/* Mantra section */}
-          <div
-            className="px-5 py-4 text-center"
-            style={{ background: "oklch(0.97 0.07 68 / 0.97)" }}
-          >
-            <p className="text-2xl font-body font-bold leading-relaxed text-foreground mb-1">
-              {selectedDeity.mantra}
-            </p>
-            <p className="text-sm font-display italic text-muted-foreground">
-              {selectedDeity.mantraRoman}
-            </p>
-
-            <div className="flex gap-3 justify-center mt-4">
-              <button
-                type="button"
-                onClick={() => setShowAarti(true)}
-                className="px-5 py-2 rounded-xl text-sm font-display font-bold transition-smooth"
-                style={{
-                  background: `linear-gradient(135deg, ${selectedDeity.accentColor}, oklch(0.68 0.26 46))`,
-                  color: "oklch(0.97 0.04 70)",
-                  boxShadow: `0 4px 20px ${selectedDeity.accentColor}50`,
-                }}
-                data-ocid="temple.read_aarti_button"
-              >
-                📖 Read Full Aarti
-              </button>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* 8 Offerings */}
-        <div className="mb-6">
-          <h3
-            className="text-center text-sm font-display font-bold tracking-widest uppercase mb-3"
-            style={{ color: "oklch(0.56 0.24 50)" }}
-          >
-            ✦ अर्पण — Sacred Offerings ✦
-          </h3>
-          <div
-            className="grid grid-cols-4 gap-3"
-            data-ocid="temple.offerings_grid"
-          >
-            {OFFERINGS.map((o) => (
-              <motion.button
-                key={o.type}
-                whileTap={{ scale: 0.92 }}
-                whileHover={{ scale: 1.05 }}
-                onClick={() => handleOffering(o.type)}
-                className="flex flex-col items-center gap-1 py-3 rounded-2xl border-2 transition-smooth cursor-pointer"
-                style={{
-                  background:
-                    o.type === "aarti" && aartiActive
-                      ? `linear-gradient(135deg, ${selectedDeity.accentColor}30, ${selectedDeity.accentColor}15)`
-                      : "oklch(0.97 0.07 68 / 0.95)",
-                  borderColor:
-                    o.type === "aarti" && aartiActive
-                      ? selectedDeity.accentColor
-                      : "oklch(0.78 0.22 54 / 0.5)",
-                  boxShadow:
-                    o.type === "aarti" && aartiActive
-                      ? `0 0 20px ${selectedDeity.accentColor}60`
-                      : "none",
-                }}
-                data-ocid={`temple.offering_${o.type}`}
-                aria-label={`Offer ${o.label}`}
-              >
-                <span className="text-2xl">{o.emoji}</span>
-                <span className="text-xs font-bold font-display text-foreground leading-tight">
-                  {o.hindi}
-                </span>
-                <span className="text-xs text-muted-foreground leading-none">
-                  {o.label}
-                </span>
-              </motion.button>
-            ))}
-          </div>
-          {aartiActive && (
-            <motion.p
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              className="text-center text-sm font-display font-bold mt-3"
-              style={{ color: selectedDeity.accentColor }}
-            >
-              🕯️ आरती हो रही है... Aarti in progress...
-            </motion.p>
-          )}
-        </div>
-
-        {/* Deity Selector */}
-        <div>
-          <h3
-            className="text-center text-sm font-display font-bold tracking-widest uppercase mb-3"
-            style={{ color: "oklch(0.56 0.24 50)" }}
-          >
-            ✦ सभी देवता — All Deities ✦
-          </h3>
-          <div
-            className="flex gap-3 overflow-x-auto pb-3 snap-x"
-            data-ocid="temple.deity_selector"
-          >
-            {DEITIES.map((d, i) => (
-              <motion.button
-                key={d.id}
-                whileTap={{ scale: 0.9 }}
-                onClick={() => setSelectedDeity(d)}
-                className="flex-shrink-0 snap-start flex flex-col items-center gap-1.5 w-20"
-                data-ocid={`temple.deity_selector.item.${i + 1}`}
-                aria-label={`Select ${d.name}`}
-              >
+                {/* Ornate golden overlay frame */}
                 <div
-                  className="w-16 h-16 rounded-full overflow-hidden border-3"
+                  className="absolute inset-0 pointer-events-none"
                   style={{
-                    border: `3px solid ${selectedDeity.id === d.id ? d.accentColor : "oklch(0.78 0.22 54 / 0.4)"}`,
-                    boxShadow:
-                      selectedDeity.id === d.id
-                        ? `0 0 14px ${d.accentColor}70, 0 0 28px ${d.accentColor}35`
-                        : "none",
+                    boxShadow: `inset 0 0 40px ${selectedDeity.accentColor}30, inset 0 -60px 60px oklch(0.06 0.06 40 / 0.6)`,
+                  }}
+                />
+
+                {/* Offering animations */}
+                <OfferingAnimations particles={particles} />
+
+                {/* Aarti diya overlay */}
+                <AartiDiyaOverlay isActive={aartiActive} />
+
+                {/* Name overlay at bottom */}
+                <div
+                  className="absolute bottom-0 left-0 right-0 p-4 text-center"
+                  style={{
+                    background:
+                      "linear-gradient(0deg, oklch(0.06 0.06 40 / 0.85) 0%, transparent 100%)",
                   }}
                 >
-                  <img
-                    src={d.image}
-                    alt={d.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = "none";
+                  <h2
+                    className="text-3xl font-display font-bold"
+                    style={{
+                      color: selectedDeity.accentColor,
+                      textShadow: `0 2px 12px ${selectedDeity.accentColor}80`,
                     }}
-                  />
-                </div>
-                <span className="text-xs font-body text-center text-foreground leading-tight line-clamp-2">
-                  {d.hindi}
-                </span>
-                {d.day && (
-                  <span
-                    className="text-xs font-display"
-                    style={{ color: d.accentColor, fontSize: "0.6rem" }}
                   >
-                    {d.day.substring(0, 3)}
-                  </span>
-                )}
-              </motion.button>
-            ))}
-          </div>
-        </div>
+                    {selectedDeity.hindi}
+                  </h2>
+                  <p className="text-sm text-amber-100/80 font-display">
+                    {selectedDeity.name}
+                  </p>
+                </div>
+              </div>
 
-        {/* Blessing */}
-        <motion.div
-          key={`${selectedDeity.id}-blessing`}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-6 rounded-2xl p-5 text-center border"
-          style={{
-            background: `linear-gradient(160deg, ${selectedDeity.accentColor}12, ${selectedDeity.accentColor}06)`,
-            borderColor: `${selectedDeity.accentColor}35`,
-          }}
-          data-ocid="temple.blessing_card"
-        >
-          <div className="text-2xl mb-2">🌺</div>
-          <p className="font-body italic text-foreground text-sm leading-relaxed">
-            {selectedDeity.blessing}
-          </p>
-        </motion.div>
+              {/* Mantra section */}
+              <div
+                className="px-5 py-4 text-center"
+                style={{ background: "oklch(0.97 0.07 68 / 0.97)" }}
+              >
+                <p className="text-2xl font-body font-bold leading-relaxed text-foreground mb-1">
+                  {selectedDeity.mantra}
+                </p>
+                <p className="text-sm font-display italic text-muted-foreground">
+                  {selectedDeity.mantraRoman}
+                </p>
+
+                <div className="flex gap-3 justify-center mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setShowAarti(true)}
+                    className="px-5 py-2 rounded-xl text-sm font-display font-bold transition-smooth"
+                    style={{
+                      background: `linear-gradient(135deg, ${selectedDeity.accentColor}, oklch(0.68 0.26 46))`,
+                      color: "oklch(0.97 0.04 70)",
+                      boxShadow: `0 4px 20px ${selectedDeity.accentColor}50`,
+                    }}
+                    data-ocid="temple.read_aarti_button"
+                  >
+                    📖 Read Full Aarti
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* 8 Offerings */}
+            <div className="mb-6">
+              <h3
+                className="text-center text-sm font-display font-bold tracking-widest uppercase mb-3"
+                style={{ color: "oklch(0.56 0.24 50)" }}
+              >
+                ✦ अर्पण — Sacred Offerings …
+              </h3>
+              <div
+                className="grid grid-cols-4 gap-3"
+                data-ocid="temple.offerings_grid"
+              >
+                {OFFERINGS.map((o) => (
+                  <motion.button
+                    key={o.type}
+                    whileTap={{ scale: 0.92 }}
+                    whileHover={{ scale: 1.05 }}
+                    onClick={() => handleOffering(o.type)}
+                    className="flex flex-col items-center gap-1 py-3 rounded-2xl border-2 transition-smooth cursor-pointer"
+                    style={{
+                      background:
+                        o.type === "aarti" && aartiActive
+                          ? `linear-gradient(135deg, ${selectedDeity.accentColor}30, ${selectedDeity.accentColor}15)`
+                          : "oklch(0.97 0.07 68 / 0.95)",
+                      borderColor:
+                        o.type === "aarti" && aartiActive
+                          ? selectedDeity.accentColor
+                          : "oklch(0.78 0.22 54 / 0.5)",
+                      boxShadow:
+                        o.type === "aarti" && aartiActive
+                          ? `0 0 20px ${selectedDeity.accentColor}60`
+                          : "none",
+                    }}
+                    data-ocid={`temple.offering_${o.type}`}
+                    aria-label={`Offer ${o.label}`}
+                  >
+                    <span className="text-2xl">{o.emoji}</span>
+                    <span className="text-xs font-bold font-display text-foreground leading-tight">
+                      {o.hindi}
+                    </span>
+                    <span className="text-xs text-muted-foreground leading-none">
+                      {o.label}
+                    </span>
+                  </motion.button>
+                ))}
+              </div>
+              {aartiActive && (
+                <motion.p
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="text-center text-sm font-display font-bold mt-3"
+                  style={{ color: selectedDeity.accentColor }}
+                >
+                  🕯️ आरती हो रही है... Aarti in progress...
+                </motion.p>
+              )}
+            </div>
+
+            {/* Deity Selector */}
+            <div>
+              <h3
+                className="text-center text-sm font-display font-bold tracking-widest uppercase mb-3"
+                style={{ color: "oklch(0.56 0.24 50)" }}
+              >
+                ✦ सभी देवता — All Deities …
+              </h3>
+              <div
+                className="flex gap-3 overflow-x-auto pb-3 snap-x"
+                data-ocid="temple.deity_selector"
+              >
+                {DEITIES.map((d, i) => (
+                  <motion.button
+                    key={d.id}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setSelectedDeity(d)}
+                    className="flex-shrink-0 snap-start flex flex-col items-center gap-1.5 w-20"
+                    data-ocid={`temple.deity_selector.item.${i + 1}`}
+                    aria-label={`Select ${d.name}`}
+                  >
+                    <div
+                      className="w-16 h-16 rounded-full overflow-hidden border-3"
+                      style={{
+                        border: `3px solid ${
+                          selectedDeity.id === d.id
+                            ? d.accentColor
+                            : "oklch(0.78 0.22 54 / 0.4)"
+                        }`,
+                        boxShadow:
+                          selectedDeity.id === d.id
+                            ? `0 0 14px ${d.accentColor}70, 0 0 28px ${d.accentColor}35`
+                            : "none",
+                      }}
+                    >
+                      <img
+                        src={d.image}
+                        alt={d.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    </div>
+                    <span className="text-xs font-body text-center text-foreground leading-tight line-clamp-2">
+                      {d.hindi}
+                    </span>
+                    {d.day && (
+                      <span
+                        className="text-xs font-display"
+                        style={{ color: d.accentColor, fontSize: "0.6rem" }}
+                      >
+                        {d.day.substring(0, 3)}
+                      </span>
+                    )}
+                  </motion.button>
+                ))}
+              </div>
+            </div>
+
+            {/* Blessing */}
+            <motion.div
+              key={`${selectedDeity.id}-blessing`}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-6 rounded-2xl p-5 text-center border"
+              style={{
+                background: `linear-gradient(160deg, ${selectedDeity.accentColor}12, ${selectedDeity.accentColor}06)`,
+                borderColor: `${selectedDeity.accentColor}35`,
+              }}
+              data-ocid="temple.blessing_card"
+            >
+              <div className="text-2xl mb-2">🌺</div>
+              <p className="font-body italic text-foreground text-sm leading-relaxed">
+                {selectedDeity.blessing}
+              </p>
+            </motion.div>
+          </>
+        )}
       </div>
 
       {/* Aarti Modal */}

@@ -1,4 +1,5 @@
 import { Layout } from "@/components/Layout";
+import { OnboardingModal } from "@/components/OnboardingModal";
 import { Screensaver } from "@/components/Screensaver";
 import { Toaster } from "@/components/ui/sonner";
 import {
@@ -169,9 +170,6 @@ const GitaIndexPage = lazy(() =>
 const MenuPage = lazy(() =>
   import("@/pages/Menu").then((m) => ({ default: m.MenuPage })),
 );
-const LibraryPage = lazy(() =>
-  import("@/pages/Library").then((m) => ({ default: m.LibraryPage })),
-);
 const YouthHugPage = lazy(() =>
   import("@/pages/YouthHug").then((m) => ({ default: m.YouthHugPage })),
 );
@@ -186,6 +184,26 @@ const MannKiBaatPage = lazy(() =>
 const AboutPage = lazy(() =>
   import("@/pages/About").then((m) => ({ default: m.AboutPage })),
 );
+const DonatePage = lazy(() =>
+  import("@/pages/Donate").then((m) => ({ default: m.DonatePage })),
+);
+const AdminNewsletterPage = lazy(() =>
+  import("@/pages/AdminNewsletter").then((m) => ({
+    default: m.AdminNewsletterPage,
+  })),
+);
+const KundaliLitePageComponent = lazy(() =>
+  import("@/pages/KundaliLite").then((m) => ({ default: m.KundaliLitePage })),
+);
+const BlueprintPage = lazy(() =>
+  import("@/pages/Blueprint").then((m) => ({ default: m.BlueprintPage })),
+);
+
+const DaiviCharitraPage = lazy(() =>
+  import("@/pages/DaiviCharitra").then((m) => ({
+    default: m.DaiviCharitraPage,
+  })),
+);
 
 const LOADER_QUOTES = [
   "Karmaṇy-evādhikāras te — You have the right to act, not to the fruits thereof.",
@@ -196,6 +214,38 @@ const LOADER_QUOTES = [
 ];
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
+
+function OnboardingWrapper({ children }: { children: React.ReactNode }) {
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  useEffect(() => {
+    try {
+      const welcomed = localStorage.getItem("gita-welcome-shown");
+      if (!welcomed) {
+        const t = setTimeout(() => setShowOnboarding(true), 600);
+        return () => clearTimeout(t);
+      }
+    } catch {
+      /* silent */
+    }
+  }, []);
+
+  function handleComplete() {
+    try {
+      localStorage.setItem("gita-welcome-shown", "1");
+    } catch {
+      /* silent */
+    }
+    setShowOnboarding(false);
+  }
+
+  return (
+    <>
+      {children}
+      {showOnboarding && <OnboardingModal onComplete={handleComplete} />}
+    </>
+  );
+}
 
 function SubscriptionModal() {
   const navigate = useNavigate();
@@ -376,15 +426,18 @@ function PageLoader() {
   );
 }
 
+// Kundali Lite — full feature page
 const rootRoute = createRootRoute({
   component: () => (
     <Layout>
-      <Suspense fallback={<PageLoader />}>
-        <Outlet />
-      </Suspense>
-      <Toaster richColors position="top-center" />
-      <Screensaver />
-      <SubscriptionModal />
+      <OnboardingWrapper>
+        <Suspense fallback={<PageLoader />}>
+          <Outlet />
+        </Suspense>
+        <Toaster richColors position="top-center" />
+        <Screensaver />
+        <SubscriptionModal />
+      </OnboardingWrapper>
     </Layout>
   ),
 });
@@ -620,11 +673,6 @@ const menuRoute = createRoute({
   path: "/menu",
   component: MenuPage,
 });
-const libraryRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/library",
-  component: LibraryPage,
-});
 const youthHugRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/youth-hug",
@@ -645,7 +693,32 @@ const aboutRoute = createRoute({
   path: "/about",
   component: AboutPage,
 });
+const donateRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/donate",
+  component: DonatePage,
+});
+const adminNewsletterRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/admin-newsletter",
+  component: AdminNewsletterPage,
+});
+const kundaliLiteRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/kundali-lite",
+  component: KundaliLitePageComponent,
+});
+const blueprintRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/blueprint",
+  component: BlueprintPage,
+});
 
+const daiviCharitraRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/daivi-charitra",
+  component: DaiviCharitraPage,
+});
 const routeTree = rootRoute.addChildren([
   homeRoute,
   chapterRoute,
@@ -693,11 +766,15 @@ const routeTree = rootRoute.addChildren([
   youthRoute,
   gitaIndexRoute,
   menuRoute,
-  libraryRoute,
   youthHugRoute,
   dharmaWellnessRoute,
   mannKiBaatRoute,
   aboutRoute,
+  donateRoute,
+  adminNewsletterRoute,
+  kundaliLiteRoute,
+  blueprintRoute,
+  daiviCharitraRoute,
 ]);
 
 const router = createRouter({ routeTree });

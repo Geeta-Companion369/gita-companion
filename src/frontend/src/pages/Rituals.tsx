@@ -11,7 +11,920 @@ import { usePoints } from "@/hooks/use-points";
 import { useStreak } from "@/hooks/use-streak";
 import { Link } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+
+// ─── Dharma Vaar Chakra data ──────────────────────────────────────────────────
+interface DayData {
+  id: number; // 0=Sun, 1=Mon, ... 6=Sat (matches getDay())
+  name: string;
+  hindi: string;
+  deity: string;
+  deityEmoji: string;
+  color: string; // oklch accent
+  colorBg: string; // light bg
+  colorBorder: string;
+  colorText: string;
+  vrat: string;
+  mantra: string;
+  mantraDevanagari: string;
+  ritual: string;
+  gitaVerse: string;
+  gitaText: string;
+  gitaMeaning: string;
+  healthBenefit: string;
+  story: string;
+  offerings: string;
+}
+
+const VAAR_DATA: DayData[] = [
+  {
+    id: 0,
+    name: "Sunday",
+    hindi: "रविवार",
+    deity: "Surya Dev",
+    deityEmoji: "☀️",
+    color: "oklch(0.72 0.28 48)",
+    colorBg: "oklch(0.96 0.09 60 / 0.92)",
+    colorBorder: "oklch(0.72 0.28 48 / 0.6)",
+    colorText: "oklch(0.42 0.22 46)",
+    vrat: "Surya Vrat",
+    mantra: "Om Suryaya Namah",
+    mantraDevanagari: "ॐ सूर्याय नमः",
+    ritual:
+      "Offer red flowers and water to the Sun at sunrise. Recite Aditya Hridayam facing east. Light a ghee diya.",
+    offerings: "Red flowers, water arghya, red sandalwood, copper vessel",
+    gitaVerse: "Bhagavad Gita — Chapter 10, Verse 21",
+    gitaText: "ज्योतिषां रविरंशुमान्",
+    gitaMeaning:
+      '"Of lights I am the radiant sun." — Krishna declares Himself the Sun among luminaries.',
+    healthBenefit:
+      "Improves eyesight, vitality, and confidence. Removes skin ailments. Strengthens heart and immune system.",
+    story:
+      "When the sage Agastya was exhausted in battle, Lord Rama recited the Aditya Hridayam — the hymn of Surya Dev — and gained divine strength to defeat Ravana. Surya Dev blesses His devotees with boundless energy, clarity of vision, and the courage of a thousand suns.",
+  },
+  {
+    id: 1,
+    name: "Monday",
+    hindi: "सोमवार",
+    deity: "Lord Shiva",
+    deityEmoji: "🔱",
+    color: "oklch(0.65 0.18 240)",
+    colorBg: "oklch(0.96 0.05 230 / 0.92)",
+    colorBorder: "oklch(0.65 0.18 240 / 0.6)",
+    colorText: "oklch(0.36 0.14 238)",
+    vrat: "Somvar Vrat",
+    mantra: "Om Namah Shivaya",
+    mantraDevanagari: "ॐ नमः शिवाय",
+    ritual:
+      "Offer white flowers, milk, and bilva leaves to the Shiva linga. Fast until evening. Light a diya of sesame oil.",
+    offerings:
+      "White flowers, raw milk, bilva leaves, bel fruit, white sandalwood, water from Ganga",
+    gitaVerse: "Bhagavad Gita — Chapter 7, Verse 8",
+    gitaText: "रसोऽहमप्सु कौन्तेय",
+    gitaMeaning:
+      '"I am the taste of water." — Krishna identifies Himself with the life-giving essence of water, associated with Soma (Moon) and Shiva.',
+    healthBenefit:
+      "Mental peace, removes fear and anxiety. Balances the mind and emotions. Brings clarity in relationships.",
+    story:
+      "Devoted to Shiva, the hunter Kannappa brought flesh, water, and flowers for his Lord every day. When Shiva tested him by making one of the deity's eyes bleed, Kannappa offered his own eye without hesitation. Shiva wept with love and granted him liberation. Such is the compassion of Mahadeva for those who surrender to him completely.",
+  },
+  {
+    id: 2,
+    name: "Tuesday",
+    hindi: "मंगलवार",
+    deity: "Lord Hanuman",
+    deityEmoji: "🪬",
+    color: "oklch(0.65 0.26 32)",
+    colorBg: "oklch(0.97 0.08 40 / 0.92)",
+    colorBorder: "oklch(0.65 0.26 32 / 0.6)",
+    colorText: "oklch(0.40 0.20 30)",
+    vrat: "Mangal Vrat",
+    mantra: "Om Hanumate Namah",
+    mantraDevanagari: "ॐ हनुमते नमः",
+    ritual:
+      "Offer sindoor, red flowers. Recite Hanuman Chalisa 3 times. Light mustard oil lamp. Observe celibacy.",
+    offerings: "Sindoor, red flowers, red cloth, jaggery, panchamrit",
+    gitaVerse: "Bhagavad Gita — Chapter 18, Verse 65",
+    gitaText: "मन्मना भव मद्भक्तो मद्याजी मां नमस्कुरु",
+    gitaMeaning:
+      '"Always think of Me, become My devotee, worship Me, bow down to Me." — Pure devotion as Hanuman demonstrated, thinking only of Rama.',
+    healthBenefit:
+      "Courage, strength, and fearlessness. Protection from enemies and evil forces. Removes Mangal dosha. Builds physical and mental strength.",
+    story:
+      "When Ravana's army seemed unbeatable, Hanuman crossed the ocean alone, burned Lanka, and returned with news of Sita — all out of pure love for Rama. He asked for no reward. He sought no recognition. His only desire was to serve his Lord. Hanuman is the highest example of Karma Yoga — complete action with complete surrender.",
+  },
+  {
+    id: 3,
+    name: "Wednesday",
+    hindi: "बुधवार",
+    deity: "Lord Ganesha",
+    deityEmoji: "🐘",
+    color: "oklch(0.56 0.22 155)",
+    colorBg: "oklch(0.96 0.06 150 / 0.92)",
+    colorBorder: "oklch(0.56 0.22 155 / 0.6)",
+    colorText: "oklch(0.32 0.18 152)",
+    vrat: "Budh Vrat",
+    mantra: "Om Ganapataye Namah",
+    mantraDevanagari: "ॐ गणपतये नमः",
+    ritual:
+      "Offer green grass (durva), modak, incense. Recite Ganapati Atharvashirsha. Keep 21 durva blades.",
+    offerings:
+      "21 blades of durva grass, modak, green cloth, incense, sandalwood paste",
+    gitaVerse: "Bhagavad Gita — Chapter 10, Verse 11",
+    gitaText: "तेषामेवानुकम्पार्थमहमज्ञानजं तमः",
+    gitaMeaning:
+      '"Out of compassion for them, I, dwelling in their hearts, destroy with the shining lamp of knowledge the darkness born of ignorance." — Ganesha removes the darkness of ignorance and obstacles.',
+    healthBenefit:
+      "Sharpens intellect and memory. Removes obstacles in education, business, and new beginnings. Improves speech and communication.",
+    story:
+      "When the sage Vyasa wished to dictate the entire Mahabharata, he needed a scribe who could write as fast as he spoke. Only Ganesha agreed — on the condition that Vyasa never pause. Vyasa agreed, adding his own condition: Ganesha must understand every word before writing it. So great is Ganesha's intellect that he understood every cosmic truth in an instant. He is the first deity worshipped because all obstacles dissolve in His presence.",
+  },
+  {
+    id: 4,
+    name: "Thursday",
+    hindi: "गुरुवार",
+    deity: "Vishnu / Krishna",
+    deityEmoji: "🦚",
+    color: "oklch(0.74 0.30 56)",
+    colorBg: "oklch(0.97 0.10 64 / 0.92)",
+    colorBorder: "oklch(0.74 0.30 56 / 0.6)",
+    colorText: "oklch(0.44 0.24 52)",
+    vrat: "Guruvar Vrat",
+    mantra: "Om Namo Narayanaya",
+    mantraDevanagari: "ॐ नमो नारायणाय",
+    ritual:
+      "Wear yellow, offer yellow flowers and chana dal. Recite Vishnu Sahasranama. Worship your Guru with full reverence.",
+    offerings:
+      "Yellow flowers, chana dal, turmeric, yellow cloth, banana, ghee lamp",
+    gitaVerse: "Bhagavad Gita — Chapter 4, Verse 1",
+    gitaText: "इमं विवस्वते योगं प्रोक्तवानहमव्ययम्",
+    gitaMeaning:
+      '"I instructed this imperishable science of yoga to the Sun-God Vivasvan." — Krishna as the original Guru who began the divine knowledge lineage.',
+    healthBenefit:
+      "Wisdom, prosperity, and good fortune. Removes effects of weak Jupiter. Brings blessings in education, children, and spiritual progress.",
+    story:
+      "A poor Brahmin devotee of Lord Vishnu had nothing to offer but love. Each Thursday he would come to the temple empty-handed and sit in stillness. One day the Lord appeared to him in a dream and said: 'Your silence is the finest offering. Your love is the richest gift.' The next morning the devotee found his home filled with abundance — not because he had asked, but because he had surrendered. Krishna's grace descends on those who honor their Guru and practice pure devotion.",
+  },
+  {
+    id: 5,
+    name: "Friday",
+    hindi: "शुक्रवार",
+    deity: "Goddess Lakshmi",
+    deityEmoji: "🪷",
+    color: "oklch(0.76 0.22 340)",
+    colorBg: "oklch(0.97 0.07 340 / 0.92)",
+    colorBorder: "oklch(0.76 0.22 340 / 0.6)",
+    colorText: "oklch(0.44 0.18 338)",
+    vrat: "Shukra Vrat",
+    mantra: "Om Shri Mahalakshmyai Namah",
+    mantraDevanagari: "ॐ श्री महालक्ष्म्यै नमः",
+    ritual:
+      "Offer lotus flowers, kheer. Light a ghee lamp. Wear pink or white. Recite Lakshmi Stotram or Sri Suktam.",
+    offerings:
+      "Lotus flowers, kheer, lotus seeds, pink/white cloth, rose water, conch shell",
+    gitaVerse: "Bhagavad Gita — Chapter 10, Verse 34",
+    gitaText: "कीर्तिः श्रीर्वाक्च नारीणां स्मृतिर्मेधा धृतिः क्षमा",
+    gitaMeaning:
+      '"I am fame, prosperity, and speech in women. I am memory, intelligence, steadfastness, and patience." — Lakshmi embodies all auspicious qualities.',
+    healthBenefit:
+      "Attracts prosperity, beauty, and harmonious relationships. Removes financial obstacles. Brings peace in the home and blessings for the family.",
+    story:
+      "When the ocean of creation was churned by the gods and demons, Lakshmi arose from the depths — radiant, carrying a lotus, choosing her dwelling in the pure heart of Lord Vishnu. She said: 'I will reside wherever there is dharma, cleanliness, gratitude, and devotion.' The lesson is eternal: Lakshmi does not come to those who chase her, but to those who purify their hearts and live in righteousness.",
+  },
+  {
+    id: 6,
+    name: "Saturday",
+    hindi: "शनिवार",
+    deity: "Shani Dev",
+    deityEmoji: "🌑",
+    color: "oklch(0.46 0.18 258)",
+    colorBg: "oklch(0.94 0.06 250 / 0.92)",
+    colorBorder: "oklch(0.46 0.18 258 / 0.6)",
+    colorText: "oklch(0.30 0.16 256)",
+    vrat: "Shani Vrat",
+    mantra: "Om Sham Shanicharaya Namah",
+    mantraDevanagari: "ॐ शं शनिश्चराय नमः",
+    ritual:
+      "Offer black sesame seeds and mustard oil lamp. Feed crows and dogs. Donate to the poor. Recite Shani Chalisa.",
+    offerings:
+      "Black sesame, mustard oil lamp, black cloth, iron vessel, urad dal, donation to the poor",
+    gitaVerse: "Bhagavad Gita — Chapter 18, Verse 17",
+    gitaText: "यस्य नाहंकृतो भावो बुद्धिर्यस्य न लिप्यते",
+    gitaMeaning:
+      '"He who is free from ego and whose intellect is not contaminated — though he kills people in this world, he does not kill, nor is he bound by karma."',
+    healthBenefit:
+      "Reduces suffering from accumulated karma. Brings discipline, patience, and endurance. Removes delays and obstacles caused by Saturn's influence.",
+    story:
+      "Shani Dev once asked Lord Vishnu: 'Even you cannot escape my influence.' Vishnu smiled and said: 'Test me.' For seven and a half years Shani tested Vishnu — but Vishnu remained undisturbed in his dharma, his service, and his devotion. Shani bowed and said: 'You who are free of ego cannot be touched by karma.' Shani Dev does not punish — he purifies. His tests strip away what is false so that what is eternal can shine through.",
+  },
+];
+
+// ─── Hora Chakra data ─────────────────────────────────────────────────────────
+interface HoraInfo {
+  planet: string;
+  sanskrit: string;
+  emoji: string;
+  color: string;
+  colorBg: string;
+  colorBorder: string;
+  mantra: string;
+  mantraDevanagari: string;
+  auspicious: string[];
+  avoid: string;
+}
+
+const HORA_PLANETS: Record<string, HoraInfo> = {
+  Sun: {
+    planet: "Sun (Surya)",
+    sanskrit: "सूर्य",
+    emoji: "☀️",
+    color: "oklch(0.72 0.28 48)",
+    colorBg: "oklch(0.97 0.09 58 / 0.95)",
+    colorBorder: "oklch(0.72 0.28 48 / 0.55)",
+    mantra: "Om Suryaya Namah",
+    mantraDevanagari: "ॐ सूर्याय नमः",
+    auspicious: [
+      "Government work",
+      "Leadership decisions",
+      "Health matters",
+      "Seeking authority",
+      "Starting new ventures",
+    ],
+    avoid: "Borrowing money, emotional conversations",
+  },
+  Moon: {
+    planet: "Moon (Chandra)",
+    sanskrit: "चंद्र",
+    emoji: "🌙",
+    color: "oklch(0.65 0.16 238)",
+    colorBg: "oklch(0.97 0.05 235 / 0.95)",
+    colorBorder: "oklch(0.65 0.16 238 / 0.55)",
+    mantra: "Om Chandraya Namah",
+    mantraDevanagari: "ॐ चंद्राय नमः",
+    auspicious: [
+      "Travel",
+      "Emotional healing",
+      "Meeting women",
+      "Agriculture",
+      "Artistic activities",
+      "Family matters",
+    ],
+    avoid: "Confrontations, legal disputes",
+  },
+  Mars: {
+    planet: "Mars (Mangal)",
+    sanskrit: "मंगल",
+    emoji: "🔴",
+    color: "oklch(0.58 0.26 22)",
+    colorBg: "oklch(0.97 0.07 26 / 0.95)",
+    colorBorder: "oklch(0.58 0.26 22 / 0.55)",
+    mantra: "Om Mangalaya Namah",
+    mantraDevanagari: "ॐ मंगलाय नमः",
+    auspicious: [
+      "Physical training",
+      "Courage-requiring tasks",
+      "Surgery",
+      "Construction",
+      "Confronting enemies",
+    ],
+    avoid: "Marriage proposals, starting partnerships",
+  },
+  Mercury: {
+    planet: "Mercury (Budha)",
+    sanskrit: "बुध",
+    emoji: "✍️",
+    color: "oklch(0.56 0.22 155)",
+    colorBg: "oklch(0.96 0.06 150 / 0.95)",
+    colorBorder: "oklch(0.56 0.22 155 / 0.55)",
+    mantra: "Om Budhaya Namah",
+    mantraDevanagari: "ॐ बुधाय नमः",
+    auspicious: [
+      "Writing",
+      "Business deals",
+      "Education",
+      "Communication",
+      "Signing contracts",
+      "Learning",
+    ],
+    avoid: "Heavy physical work, rash decisions",
+  },
+  Jupiter: {
+    planet: "Jupiter (Guru)",
+    sanskrit: "गुरु",
+    emoji: "🦚",
+    color: "oklch(0.74 0.30 56)",
+    colorBg: "oklch(0.97 0.10 62 / 0.95)",
+    colorBorder: "oklch(0.74 0.30 56 / 0.55)",
+    mantra: "Om Gurave Namah",
+    mantraDevanagari: "ॐ गुरवे नमः",
+    auspicious: [
+      "Spiritual study",
+      "Teaching",
+      "Consulting Guru",
+      "Starting education",
+      "Religious ceremonies",
+      "Prayer",
+    ],
+    avoid: "Frivolous activities, gossip",
+  },
+  Venus: {
+    planet: "Venus (Shukra)",
+    sanskrit: "शुक्र",
+    emoji: "🪷",
+    color: "oklch(0.76 0.22 340)",
+    colorBg: "oklch(0.97 0.07 338 / 0.95)",
+    colorBorder: "oklch(0.76 0.22 340 / 0.55)",
+    mantra: "Om Shukraya Namah",
+    mantraDevanagari: "ॐ शुक्राय नमः",
+    auspicious: [
+      "Art",
+      "Romance",
+      "Beauty rituals",
+      "Buying jewellery",
+      "Music",
+      "Creative work",
+      "Marriage discussions",
+    ],
+    avoid: "Disputes, harsh speech",
+  },
+  Saturn: {
+    planet: "Saturn (Shani)",
+    sanskrit: "शनि",
+    emoji: "🌑",
+    color: "oklch(0.46 0.18 258)",
+    colorBg: "oklch(0.94 0.06 250 / 0.95)",
+    colorBorder: "oklch(0.46 0.18 258 / 0.55)",
+    mantra: "Om Shanaishcharaya Namah",
+    mantraDevanagari: "ॐ शनैश्चराय नमः",
+    auspicious: [
+      "Agriculture",
+      "Service work",
+      "Disciplined routines",
+      "Charitable acts",
+      "Long-term planning",
+    ],
+    avoid: "Starting new businesses, social events",
+  },
+};
+
+// Hora sequences per weekday (starting from sunrise hora)
+const HORA_SEQUENCE: Record<number, string[]> = {
+  0: ["Sun", "Venus", "Mercury", "Moon", "Saturn", "Jupiter", "Mars"],
+  1: ["Moon", "Saturn", "Jupiter", "Mars", "Sun", "Venus", "Mercury"],
+  2: ["Mars", "Sun", "Venus", "Mercury", "Moon", "Saturn", "Jupiter"],
+  3: ["Mercury", "Moon", "Saturn", "Jupiter", "Mars", "Sun", "Venus"],
+  4: ["Jupiter", "Mars", "Sun", "Venus", "Mercury", "Moon", "Saturn"],
+  5: ["Venus", "Mercury", "Moon", "Saturn", "Jupiter", "Mars", "Sun"],
+  6: ["Saturn", "Jupiter", "Mars", "Sun", "Venus", "Mercury", "Moon"],
+};
+
+function getCurrentHoraIndex(now: Date): {
+  index: number;
+  secondsIntoHora: number;
+} {
+  // Approximate sunrise at 6:00 AM local time (simplified)
+  const sunriseHour = 6;
+  const minutesSinceSunrise =
+    (now.getHours() - sunriseHour) * 60 + now.getMinutes();
+  // Each hora = 60 minutes
+  const horaIndex = Math.floor(minutesSinceSunrise / 60);
+  const secondsIntoHora = (minutesSinceSunrise % 60) * 60 + now.getSeconds();
+  // Wrap into 7-planet repeating cycle
+  const normalizedIndex = ((horaIndex % 24) + 24) % 24;
+  const planetIndex = normalizedIndex % 7;
+  return { index: planetIndex, secondsIntoHora };
+}
+
+// ─── Dharma Vaar Chakra Component ─────────────────────────────────────────────
+function DharmaVaarChakra() {
+  const today = new Date().getDay(); // 0=Sun, 1=Mon...
+  const [selectedDay, setSelectedDay] = useState<number>(today);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to today on mount
+  useEffect(() => {
+    if (scrollRef.current) {
+      const todayCard = scrollRef.current.querySelector(
+        `[data-day="${today}"]`,
+      );
+      if (todayCard) {
+        todayCard.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
+      }
+    }
+  }, [today]);
+
+  const selected = VAAR_DATA[selectedDay];
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="space-y-4"
+      data-ocid="rituals.vaar-chakra.section"
+    >
+      {/* Section header */}
+      <div className="ornate-header">
+        <h2>धर्म वार चक्र</h2>
+        <p className="font-body text-sm italic text-muted-foreground mt-1">
+          Dharma Vaar Chakra — The Sacred 7-Day Wheel of Vedic Life
+        </p>
+      </div>
+
+      {/* Horizontal scroll row of 7 day cards */}
+      <div
+        ref={scrollRef}
+        className="flex gap-3 overflow-x-auto pb-2 scroll-smooth"
+        style={{
+          scrollbarWidth: "thin",
+          scrollbarColor: "oklch(0.78 0.34 54 / 0.4) transparent",
+        }}
+        aria-label="Day selector"
+        data-ocid="rituals.vaar-chakra.days-row"
+      >
+        {VAAR_DATA.map((day) => {
+          const isToday = day.id === today;
+          const isSelected = day.id === selectedDay;
+          return (
+            <button
+              key={day.id}
+              type="button"
+              data-day={day.id}
+              data-ocid={`rituals.vaar-chakra.day.${day.id + 1}`}
+              onClick={() => setSelectedDay(day.id)}
+              className="flex-shrink-0 flex flex-col items-center gap-1.5 transition-smooth rounded-lg p-3 min-w-[76px]"
+              style={{
+                background: isSelected
+                  ? day.colorBg
+                  : "oklch(0.95 0.05 70 / 0.85)",
+                border: `2px solid ${isSelected ? day.colorBorder : "oklch(0.82 0.12 60 / 0.4)"}`,
+                boxShadow: isToday
+                  ? `0 0 0 3px ${day.colorBorder}, 0 4px 20px ${day.color.replace(")", " / 0.25)")}`
+                  : isSelected
+                    ? `0 4px 16px ${day.color.replace(")", " / 0.18)")}`
+                    : "none",
+                transform: isSelected ? "translateY(-2px)" : "none",
+              }}
+              aria-pressed={isSelected}
+              aria-label={`${day.name}${isToday ? " (Today)" : ""}`}
+            >
+              <span className="text-2xl leading-none">{day.deityEmoji}</span>
+              <span
+                className="font-display italic text-[11px] font-bold leading-tight text-center"
+                style={{
+                  color: isSelected ? day.colorText : "oklch(0.46 0.09 52)",
+                }}
+              >
+                {day.name.slice(0, 3)}
+              </span>
+              <span
+                className="font-body text-[9px] leading-tight text-center"
+                style={{
+                  color: isSelected ? day.colorText : "oklch(0.58 0.07 56)",
+                }}
+              >
+                {day.hindi}
+              </span>
+              {isToday && (
+                <span
+                  className="font-body text-[8px] font-bold px-1.5 py-0.5 rounded-full"
+                  style={{
+                    background: day.color,
+                    color: "oklch(0.98 0.04 70)",
+                  }}
+                >
+                  Today
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Expanded detail panel */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={selectedDay}
+          initial={{ opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.28 }}
+          className="manuscript-card overflow-hidden"
+          style={{ border: `1.5px solid ${selected.colorBorder}` }}
+          data-ocid="rituals.vaar-chakra.detail-panel"
+        >
+          {/* Top color stripe */}
+          <div
+            className="h-1 w-full"
+            style={{
+              background: `linear-gradient(90deg, transparent, ${selected.color}, transparent)`,
+            }}
+          />
+
+          <div className="p-4 space-y-4">
+            {/* Header: deity + day */}
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-3xl">{selected.deityEmoji}</span>
+                  <div>
+                    <p className="font-display italic text-base font-bold text-primary leading-tight">
+                      {selected.deity}
+                    </p>
+                    <p
+                      className="font-body text-xs"
+                      style={{ color: selected.colorText }}
+                    >
+                      {selected.name} · {selected.hindi}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <span
+                    className="font-body text-[10px] px-2 py-0.5 rounded-full font-bold"
+                    style={{
+                      background: `${selected.color.replace(")", " / 0.15)")}`,
+                      color: selected.colorText,
+                      border: `1px solid ${selected.colorBorder}`,
+                    }}
+                  >
+                    🪔 {selected.vrat}
+                  </span>
+                </div>
+              </div>
+              {today === selectedDay && (
+                <span
+                  className="font-display italic text-[10px] px-2 py-1 rounded font-bold flex-shrink-0"
+                  style={{
+                    background: selected.color,
+                    color: "oklch(0.98 0.04 70)",
+                  }}
+                >
+                  Today ✦
+                </span>
+              )}
+            </div>
+
+            {/* Mantra */}
+            <div
+              className="rounded p-3 text-center"
+              style={{
+                background: `${selected.color.replace(")", " / 0.10)")}`,
+                border: `1px solid ${selected.colorBorder}`,
+              }}
+            >
+              <p
+                className="font-body text-[10px] tracking-widest uppercase mb-1"
+                style={{ color: selected.colorText }}
+              >
+                Sacred Mantra
+              </p>
+              <p
+                className="font-body text-lg font-bold leading-loose"
+                style={{ color: selected.colorText }}
+              >
+                {selected.mantraDevanagari}
+              </p>
+              <p className="font-body text-xs italic text-muted-foreground">
+                {selected.mantra}
+              </p>
+            </div>
+
+            {/* Ritual & Offerings */}
+            <div className="grid grid-cols-1 gap-3">
+              <div>
+                <p className="font-body text-[10px] text-accent/80 tracking-widest uppercase mb-1.5">
+                  Today's Ritual
+                </p>
+                <p className="font-body text-sm text-foreground leading-relaxed">
+                  {selected.ritual}
+                </p>
+              </div>
+              <div>
+                <p className="font-body text-[10px] text-accent/80 tracking-widest uppercase mb-1.5">
+                  Sacred Offerings
+                </p>
+                <p className="font-body text-xs text-muted-foreground leading-relaxed italic">
+                  {selected.offerings}
+                </p>
+              </div>
+            </div>
+
+            {/* Gita verse */}
+            <div
+              className="rounded p-3"
+              style={{
+                background: "oklch(0.96 0.06 68 / 0.7)",
+                border: "1.5px solid oklch(0.78 0.34 54 / 0.3)",
+                borderLeft: "4px solid oklch(0.78 0.34 54 / 0.75)",
+              }}
+            >
+              <p className="font-body text-[10px] text-accent/80 tracking-widest uppercase mb-1.5">
+                {selected.gitaVerse}
+              </p>
+              <p className="font-body text-base font-medium text-foreground leading-loose mb-1">
+                {selected.gitaText}
+              </p>
+              <p className="font-body text-xs italic text-muted-foreground leading-relaxed">
+                {selected.gitaMeaning}
+              </p>
+            </div>
+
+            {/* Health Benefit */}
+            <div className="flex gap-2 items-start">
+              <span className="text-lg flex-shrink-0">💚</span>
+              <div>
+                <p className="font-body text-[10px] text-accent/80 tracking-widest uppercase mb-1">
+                  Health & Spiritual Benefit
+                </p>
+                <p className="font-body text-sm text-foreground leading-relaxed">
+                  {selected.healthBenefit}
+                </p>
+              </div>
+            </div>
+
+            {/* Story */}
+            <div>
+              <p className="font-body text-[10px] text-accent/80 tracking-widest uppercase mb-2">
+                Sacred Story
+              </p>
+              <p className="font-body text-sm text-foreground leading-relaxed">
+                {selected.story}
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      </AnimatePresence>
+    </motion.div>
+  );
+}
+
+// ─── Hora Chakra Component ────────────────────────────────────────────────────
+function HoraChakra() {
+  const [now, setNow] = useState(() => new Date());
+
+  useEffect(() => {
+    const interval = setInterval(() => setNow(new Date()), 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const dayOfWeek = now.getDay();
+  const { index: horaIndex, secondsIntoHora } = getCurrentHoraIndex(now);
+  const seq = HORA_SEQUENCE[dayOfWeek];
+  const currentPlanetKey = seq[horaIndex];
+  const currentHora = HORA_PLANETS[currentPlanetKey];
+
+  // Next hora countdown
+  const secondsRemaining = 3600 - secondsIntoHora;
+  const minutesLeft = Math.floor(secondsRemaining / 60);
+  const secondsLeft = secondsRemaining % 60;
+
+  // Next hora
+  const nextPlanetKey = seq[(horaIndex + 1) % 7];
+  const nextHora = HORA_PLANETS[nextPlanetKey];
+
+  // Progress in current hora (0–1)
+  const horaProgress = secondsIntoHora / 3600;
+
+  // Hour number (1–24 from sunrise)
+  const sunriseHour = 6;
+  const minutesSinceSunrise =
+    (now.getHours() - sunriseHour) * 60 + now.getMinutes();
+  const horaNumber = Math.max(1, Math.floor(minutesSinceSunrise / 60) + 1);
+
+  const circumference = 2 * Math.PI * 48;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.1 }}
+      className="manuscript-card overflow-hidden"
+      data-ocid="rituals.hora-chakra.section"
+    >
+      <div
+        className="h-1 w-full"
+        style={{
+          background: `linear-gradient(90deg, transparent, ${currentHora.color}, transparent)`,
+        }}
+      />
+
+      <div className="p-4">
+        {/* Header */}
+        <div className="text-center mb-4">
+          <p className="font-body text-[10px] tracking-widest uppercase text-accent/70 mb-1">
+            ✦ Vedic Planetary Hours ✦
+          </p>
+          <h3 className="font-display italic text-lg font-bold text-primary">
+            होरा चक्र
+          </h3>
+          <p className="font-body text-xs italic text-muted-foreground mt-0.5">
+            Hora Chakra — Auspicious Time Science of the Vedas
+          </p>
+        </div>
+
+        {/* Current hora display */}
+        <div className="flex flex-col items-center gap-4 mb-4">
+          {/* Circular progress */}
+          <div className="relative">
+            <svg
+              width="120"
+              height="120"
+              viewBox="0 0 120 120"
+              className="-rotate-90"
+              aria-hidden="true"
+            >
+              <circle
+                cx="60"
+                cy="60"
+                r="48"
+                fill="none"
+                stroke="oklch(0.82 0.12 60 / 0.3)"
+                strokeWidth="8"
+              />
+              <circle
+                cx="60"
+                cy="60"
+                r="48"
+                fill="none"
+                stroke={currentHora.color}
+                strokeWidth="8"
+                strokeDasharray={circumference}
+                strokeDashoffset={circumference * (1 - horaProgress)}
+                strokeLinecap="round"
+                style={{ transition: "stroke-dashoffset 1s linear" }}
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <span className="text-3xl leading-none">{currentHora.emoji}</span>
+              <span className="font-display italic text-[10px] font-bold mt-0.5 text-primary">
+                Hora {horaNumber}
+              </span>
+            </div>
+          </div>
+
+          {/* Planet name & info */}
+          <div className="text-center">
+            <p
+              className="font-display italic text-xl font-bold leading-tight"
+              style={{ color: currentHora.color }}
+            >
+              {currentHora.planet}
+            </p>
+            <p className="font-body text-base leading-loose text-foreground">
+              {currentHora.sanskrit}
+            </p>
+          </div>
+        </div>
+
+        {/* Mantra for current hora */}
+        <div
+          className="rounded p-3 text-center mb-4"
+          style={{
+            background: `${currentHora.color.replace(")", " / 0.10)")}`,
+            border: `1px solid ${currentHora.colorBorder}`,
+          }}
+          data-ocid="rituals.hora-chakra.current-hora"
+        >
+          <p
+            className="font-body text-[10px] tracking-widest uppercase mb-1"
+            style={{ color: currentHora.color }}
+          >
+            Chant Now
+          </p>
+          <p
+            className="font-body text-sm font-bold"
+            style={{ color: currentHora.color }}
+          >
+            {currentHora.mantraDevanagari}
+          </p>
+          <p className="font-body text-[10px] italic text-muted-foreground">
+            {currentHora.mantra}
+          </p>
+        </div>
+
+        {/* Auspicious activities */}
+        <div className="mb-4">
+          <p className="font-body text-[10px] text-accent/80 tracking-widest uppercase mb-2">
+            Auspicious in This Hora
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {currentHora.auspicious.map((act) => (
+              <span
+                key={act}
+                className="font-body text-[10px] px-2 py-0.5 rounded-full"
+                style={{
+                  background: `${currentHora.color.replace(")", " / 0.12)")}`,
+                  color: currentHora.color,
+                  border: `1px solid ${currentHora.colorBorder}`,
+                }}
+              >
+                ✦ {act}
+              </span>
+            ))}
+          </div>
+          <p className="font-body text-[10px] text-muted-foreground italic mt-2">
+            Avoid: {currentHora.avoid}
+          </p>
+        </div>
+
+        {/* Countdown + Next hora */}
+        <div
+          className="flex items-center justify-between rounded p-3 gap-3"
+          style={{
+            background: "oklch(0.94 0.06 66 / 0.8)",
+            border: "1px solid oklch(0.78 0.28 54 / 0.3)",
+          }}
+          data-ocid="rituals.hora-chakra.countdown"
+        >
+          <div>
+            <p className="font-body text-[10px] text-accent/80 tracking-widest uppercase mb-0.5">
+              Hora Ends In
+            </p>
+            <p className="font-display italic text-xl font-bold text-primary tabular-nums">
+              {String(minutesLeft).padStart(2, "0")}:
+              {String(secondsLeft).padStart(2, "0")}
+            </p>
+          </div>
+          <div className="text-right">
+            <p className="font-body text-[10px] text-accent/80 tracking-widest uppercase mb-0.5">
+              Next Hora
+            </p>
+            <div className="flex items-center gap-1.5 justify-end">
+              <span className="text-base">{nextHora.emoji}</span>
+              <p
+                className="font-body text-xs font-bold"
+                style={{ color: nextHora.color }}
+              >
+                {nextPlanetKey}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* All 7 today's horas mini-list */}
+        <details className="mt-4" data-ocid="rituals.hora-chakra.full-list">
+          <summary className="font-body text-[10px] tracking-widest uppercase text-accent/70 cursor-pointer hover:text-accent transition-smooth py-1">
+            ▼ View All 7 Planetary Hours — Today's Cycle
+          </summary>
+          <div className="mt-3 grid grid-cols-1 gap-1.5">
+            {seq.map((planetKey, i) => {
+              const hora = HORA_PLANETS[planetKey];
+              const isCurrent = i === horaIndex;
+              const horaStart = sunriseHour + i;
+              const horaEnd = horaStart + 1;
+              const startStr = `${String(horaStart % 24).padStart(2, "0")}:00`;
+              const endStr = `${String(horaEnd % 24).padStart(2, "0")}:00`;
+              const horaKey = `hora-slot-${startStr}`;
+              return (
+                <div
+                  key={horaKey}
+                  className="flex items-center gap-2 rounded px-3 py-2 transition-smooth"
+                  style={{
+                    background: isCurrent
+                      ? `${hora.color.replace(")", " / 0.15)")}`
+                      : "oklch(0.96 0.05 70 / 0.6)",
+                    border: `1px solid ${isCurrent ? hora.colorBorder : "oklch(0.82 0.10 60 / 0.3)"}`,
+                  }}
+                >
+                  <span className="text-base flex-shrink-0">{hora.emoji}</span>
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className="font-body text-xs font-bold"
+                      style={{ color: hora.color }}
+                    >
+                      {hora.planet}
+                    </p>
+                    <p className="font-body text-[10px] text-muted-foreground truncate">
+                      {hora.auspicious[0]}
+                    </p>
+                  </div>
+                  <div className="text-right flex-shrink-0">
+                    <p className="font-body text-[10px] text-muted-foreground">
+                      {startStr}–{endStr}
+                    </p>
+                    {isCurrent && (
+                      <span
+                        className="font-body text-[9px] font-bold"
+                        style={{ color: hora.color }}
+                      >
+                        ▶ Now
+                      </span>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </details>
+      </div>
+    </motion.div>
+  );
+}
 
 // ─── 18 Daily Practices ───────────────────────────────────────────────────────
 const DAILY_PRACTICES = [
@@ -1753,6 +2666,16 @@ export function RitualsPage() {
             </span>
           </div>
         )}
+      </div>
+
+      {/* ── Dharma Vaar Chakra ─────────────────────────────────────── */}
+      <div className="mb-6">
+        <DharmaVaarChakra />
+      </div>
+
+      {/* ── Hora Chakra ────────────────────────────────────────────── */}
+      <div className="mb-6">
+        <HoraChakra />
       </div>
 
       {/* Tabs */}

@@ -1,5 +1,5 @@
 // ─── Videos Page — Kurukshetra Sacred Story · Season 1 ───────────────────────
-// Only Kurukshetra Season 1 Episodes 1 & 2 — available offline — inside app
+// Only Kurukshetra Season 1 Episodes 1 & 2 — played inside app via YouTube embed
 
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
@@ -40,7 +40,7 @@ function FlowerPetals({ active }: { active: boolean }) {
   );
 }
 
-// ─── Video Modal — plays inside app ──────────────────────────────────────────
+// ─── Video Modal — plays inside app via YouTube iframe ────────────────────────
 
 interface VideoModalProps {
   title: string;
@@ -146,6 +146,7 @@ function VideoModal({ title, embedUrl, onClose }: VideoModalProps) {
               }}
             />
 
+            {/* YouTube iframe embed — plays inside app, never leaves */}
             <div
               style={{
                 position: "relative",
@@ -179,7 +180,7 @@ function VideoModal({ title, embedUrl, onClose }: VideoModalProps) {
                 className="font-body text-[9px] italic"
                 style={{ color: "oklch(0.50 0.10 268 / 0.7)" }}
               >
-                ✦ Hare Krishna · Available Offline · Tap outside to close ✦
+                ✦ Hare Krishna · Tap outside or press Esc to close ✦
               </span>
               <div
                 style={{
@@ -197,251 +198,280 @@ function VideoModal({ title, embedUrl, onClose }: VideoModalProps) {
   );
 }
 
-// ─── Episode data ─────────────────────────────────────────────────────────────
+// ─── Featured Movie Card — Kurukshetra Sacred Movie ──────────────────────────
 
-interface KurukshetraEpisode {
-  episode: number;
-  season: number;
-  title: string;
-  titleSanskrit: string;
-  duration: string;
-  description: string;
-  highlights: string[];
-  keyGitaVerse: { ref: string; text: string };
-  embedUrl: string;
-  hue: number;
-  offlineAvailable: boolean;
+const FEATURED_MOVIE = {
+  title: "Kurukshetra — The Sacred Battle",
+  titleSanskrit: "कुरुक्षेत्र — धर्म का युद्ध",
+  subtitle: "Season 1 · The Divine Battle of Dharma",
+  description:
+    "Witness the sacred epic unfold in breathtaking cinematic glory. On the field of Kurukshetra — where dharma clashed with adharma — Krishna's eternal wisdom was born. This film captures the grandeur of the Mahabharata's greatest chapter: the chariot at the battlefield, Arjuna's grief, Krishna's cosmic form, and the 18 days that changed the universe forever.",
+  embedUrl:
+    "https://www.youtube.com/embed/G-3JSyi_Ss0?autoplay=1&rel=0&playsinline=1&modestbranding=1&controls=1&fs=1",
+  thumbUrl: "https://img.youtube.com/vi/G-3JSyi_Ss0/maxresdefault.jpg",
+  highlights: [
+    "The divine Bhagavad Gita spoken live on the battlefield",
+    "Arjuna's surrender and Krishna's Vishwaroopa darshan",
+    "Eighteen days of the sacred war in cinematic glory",
+    "Bhishma, Drona, Karna, and the greatest warriors of Aryavarta",
+  ],
+  gitaVerse: {
+    ref: "BG 11.7",
+    text: "In this body you can now see the entire universe — moving and non-moving — and all else you wish to behold. — Lord Krishna",
+  },
+};
+
+interface FeaturedMovieCardProps {
+  onPlay: () => void;
 }
 
-const EPISODES: KurukshetraEpisode[] = [
-  {
-    episode: 1,
-    season: 1,
-    title: "Episode 1 — The Call of Dharma",
-    titleSanskrit: "धर्म का आह्वान",
-    duration: "42 min",
-    description:
-      "The great war is about to begin. On the sacred field of Kurukshetra — where Brahmins performed rituals for ages — two vast armies stand facing each other. Prince Arjuna asks Krishna to drive his chariot between the armies. What he sees breaks his heart. The Bhagavad Gita is about to be born from this moment of grief and divine surrender.",
-    highlights: [
-      "Two armies assemble on the battlefield of Kurukshetra",
-      "Arjuna surveys his kinsmen on both sides — his teachers, grandfathers, brothers",
-      "Arjuna's bow slips from his hands. He collapses in grief",
-      "He declares he will not fight — 'What is a kingdom worth, if won by killing one's own?'",
-      "Krishna prepares to speak the eternal wisdom of the Bhagavad Gita",
-    ],
-    keyGitaVerse: {
-      ref: "BG 2.7",
-      text: "I ask you — what is truly beneficial for me? I am your disciple. I surrender to you. Please teach me.",
-    },
-    embedUrl: "https://www.youtube.com/embed/9bZkp7q19f0?autoplay=1",
-    hue: 28,
-    offlineAvailable: true,
-  },
-  {
-    episode: 2,
-    season: 1,
-    title: "Episode 2 — The Great War Begins",
-    titleSanskrit: "महायुद्ध का आरम्भ",
-    duration: "38 min",
-    description:
-      "Krishna speaks the eternal Bhagavad Gita — all 18 chapters of divine wisdom delivered on the battlefield. Arjuna rises transformed. The conch shells sound. The greatest war in human history begins. Bhishma Pitamaha, the invincible grandsire, commands the Kaurava forces. Day 1 through Day 3 of the 18-day battle unfolds.",
-    highlights: [
-      "Krishna reveals the nature of the immortal soul — 'It is never born nor does it die'",
-      "The Bhagavad Gita is spoken — all 18 chapters, 700 sacred verses",
-      "Arjuna's grief transforms to divine clarity and readiness",
-      "Bhishma takes supreme command of the Kaurava forces",
-      "The first three days of battle — dharma meets adharma",
-    ],
-    keyGitaVerse: {
-      ref: "BG 2.20",
-      text: "The soul is never born nor dies at any time. It is unborn, eternal, ever-existing and primeval. It is not slain when the body is slain.",
-    },
-    embedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1",
-    hue: 46,
-    offlineAvailable: true,
-  },
-];
-
-// ─── Episode Card ─────────────────────────────────────────────────────────────
-
-function EpisodeCard({
-  ep,
-  index,
-  onPlay,
-}: {
-  ep: KurukshetraEpisode;
-  index: number;
-  onPlay: (ep: KurukshetraEpisode) => void;
-}) {
+function FeaturedMovieCard({ onPlay }: FeaturedMovieCardProps) {
+  const m = FEATURED_MOVIE;
   return (
     <motion.div
-      initial={{ opacity: 0, y: 18 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ delay: index * 0.15, duration: 0.5 }}
-      data-ocid={`videos.kurukshetra_episode.${ep.episode}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="mb-8"
+      data-ocid="videos.featured_movie.card"
     >
+      {/* Section label */}
+      <div className="flex items-center gap-3 mb-3 px-1">
+        <div
+          style={{
+            flex: 1,
+            height: "1px",
+            background:
+              "linear-gradient(to right, transparent, oklch(0.72 0.26 46 / 0.5))",
+          }}
+        />
+        <span
+          className="font-display text-[0.58rem] tracking-[0.28em] uppercase font-bold px-3 py-1"
+          style={{
+            borderRadius: "20px",
+            background:
+              "linear-gradient(135deg, oklch(0.82 0.34 46), oklch(0.74 0.28 32))",
+            color: "oklch(0.14 0.08 32)",
+          }}
+        >
+          ✦ Featured Sacred Film ✦
+        </span>
+        <div
+          style={{
+            flex: 1,
+            height: "1px",
+            background:
+              "linear-gradient(to left, transparent, oklch(0.72 0.26 46 / 0.5))",
+          }}
+        />
+      </div>
+
+      {/* Hero card with ornate gradient border */}
       <div
         style={{
-          padding: "2px",
-          borderRadius: "12px",
-          background: `linear-gradient(135deg, oklch(0.84 0.34 ${ep.hue}), oklch(0.72 0.26 ${(ep.hue + 50) % 360}), oklch(0.82 0.30 ${ep.hue}))`,
-          backgroundSize: "200% 200%",
+          padding: "3px",
+          borderRadius: "16px",
+          background:
+            "linear-gradient(135deg, oklch(0.86 0.40 54) 0%, oklch(0.72 0.28 32) 25%, oklch(0.54 0.28 268) 50%, oklch(0.80 0.36 46) 75%, oklch(0.86 0.40 54) 100%)",
+          backgroundSize: "300% 300%",
           animation: "luxury-border-shift 5s linear infinite",
-          boxShadow: `0 8px 40px oklch(0.62 0.28 ${ep.hue} / 0.28)`,
+          boxShadow:
+            "0 12px 56px oklch(0.72 0.32 46 / 0.45), 0 0 120px oklch(0.60 0.26 268 / 0.18)",
         }}
       >
         <div
           style={{
-            borderRadius: "11px",
+            borderRadius: "14px",
             overflow: "hidden",
-            background: "oklch(0.96 0.07 68 / 0.99)",
+            background: "oklch(0.13 0.09 32)",
           }}
         >
-          {/* Golden top accent bar */}
+          {/* Ornate top bar */}
           <div
             style={{
-              height: 4,
-              background: `linear-gradient(90deg, oklch(0.80 0.34 ${ep.hue}), oklch(0.72 0.28 ${(ep.hue + 60) % 360}), oklch(0.82 0.34 ${ep.hue}))`,
+              height: 5,
+              background:
+                "linear-gradient(90deg, oklch(0.72 0.30 32), oklch(0.84 0.38 54), oklch(0.68 0.26 46), oklch(0.78 0.32 54), oklch(0.72 0.30 32))",
             }}
           />
 
-          {/* Thumbnail / play area */}
+          {/* Hero thumbnail / play area */}
           <button
             type="button"
-            className="relative flex items-center justify-center cursor-pointer group w-full border-0 p-0"
-            style={{
-              height: 200,
-              background: `linear-gradient(160deg, oklch(0.14 0.09 ${ep.hue} / 0.97) 0%, oklch(0.10 0.07 ${(ep.hue + 40) % 360} / 0.94) 100%)`,
-            }}
-            onClick={() => onPlay(ep)}
-            aria-label={`Play ${ep.title}`}
+            className="relative flex items-center justify-center cursor-pointer group w-full border-0 p-0 overflow-hidden"
+            style={{ height: 240 }}
+            onClick={onPlay}
+            aria-label="Play Kurukshetra — The Sacred Battle"
+            data-ocid="videos.featured_movie.play_button"
           >
-            {/* Sacred radial glow backdrop */}
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage: `radial-gradient(circle at 25% 35%, oklch(0.65 0.26 ${ep.hue} / 0.22) 0%, transparent 55%), radial-gradient(circle at 75% 65%, oklch(0.52 0.22 ${(ep.hue + 60) % 360} / 0.18) 0%, transparent 50%)`,
+            {/* YouTube maxres thumbnail */}
+            <img
+              src={m.thumbUrl}
+              alt="Kurukshetra — The Sacred Battle"
+              className="absolute inset-0 w-full h-full object-cover"
+              style={{ opacity: 0.55 }}
+              onError={(e) => {
+                // Fallback to hq thumbnail
+                const img = e.currentTarget as HTMLImageElement;
+                if (!img.src.includes("hqdefault")) {
+                  img.src =
+                    "https://img.youtube.com/vi/G-3JSyi_Ss0/hqdefault.jpg";
+                }
               }}
             />
 
-            {/* Season / Episode badge */}
+            {/* Deep sacred overlay */}
             <div
-              className="absolute top-3 left-3 z-10 font-display text-[0.55rem] font-bold tracking-[0.18em] uppercase px-2.5 py-1"
+              className="absolute inset-0"
               style={{
-                borderRadius: "4px",
-                background: `linear-gradient(135deg, oklch(0.80 0.34 ${ep.hue}), oklch(0.72 0.28 ${ep.hue}))`,
-                color: "oklch(0.14 0.08 32)",
+                background:
+                  "linear-gradient(160deg, oklch(0.10 0.09 28 / 0.75) 0%, oklch(0.15 0.10 46 / 0.60) 50%, oklch(0.10 0.08 268 / 0.65) 100%)",
               }}
-            >
-              Season {ep.season} · Episode {ep.episode}
-            </div>
+            />
 
-            {/* Offline badge */}
-            {ep.offlineAvailable && (
+            {/* Radial golden glow from center */}
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at 50% 50%, oklch(0.72 0.28 54 / 0.22) 0%, transparent 65%)",
+              }}
+            />
+
+            {/* Top badge row */}
+            <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-10">
               <div
-                className="absolute top-3 right-3 z-10 font-display text-[0.50rem] font-bold tracking-wide uppercase px-2 py-0.5"
+                className="font-display text-[0.52rem] font-bold tracking-[0.18em] uppercase px-3 py-1.5"
                 style={{
-                  borderRadius: "3px",
-                  background: "oklch(0.60 0.22 148 / 0.9)",
-                  color: "oklch(0.97 0.04 70)",
-                  border: "1px solid oklch(0.72 0.24 148 / 0.5)",
+                  borderRadius: "5px",
+                  background:
+                    "linear-gradient(135deg, oklch(0.82 0.36 54), oklch(0.72 0.28 46))",
+                  color: "oklch(0.12 0.08 32)",
                 }}
               >
-                📵 OFFLINE
+                🎬 Sacred Feature Film
               </div>
-            )}
-
-            {/* Play button */}
-            <div
-              className="relative z-10 flex items-center justify-center transition-all duration-300 group-hover:scale-110"
-              style={{
-                width: 72,
-                height: 72,
-                borderRadius: "50%",
-                background: `linear-gradient(135deg, oklch(0.82 0.34 ${ep.hue}), oklch(0.70 0.28 ${ep.hue}))`,
-                boxShadow: `0 0 0 3px oklch(0.88 0.38 ${ep.hue} / 0.3), 0 8px 32px oklch(0.65 0.28 ${ep.hue} / 0.55)`,
-              }}
-            >
-              <span style={{ fontSize: "1.8rem", marginLeft: "4px" }}>▶</span>
+              <div
+                className="font-display text-[0.50rem] font-bold tracking-wide uppercase px-2.5 py-1"
+                style={{
+                  borderRadius: "4px",
+                  background: "oklch(0.55 0.22 148 / 0.92)",
+                  color: "oklch(0.97 0.04 70)",
+                  border: "1px solid oklch(0.68 0.24 148 / 0.55)",
+                }}
+              >
+                ▶ Watch Inside App
+              </div>
             </div>
 
-            {/* Sanskrit label */}
+            {/* Central play button */}
+            <div className="relative z-10 flex flex-col items-center gap-3 transition-all duration-300 group-hover:scale-105">
+              <div
+                style={{
+                  width: 88,
+                  height: 88,
+                  borderRadius: "50%",
+                  background:
+                    "linear-gradient(135deg, oklch(0.84 0.36 54), oklch(0.72 0.30 46))",
+                  boxShadow:
+                    "0 0 0 4px oklch(0.86 0.38 54 / 0.28), 0 0 0 8px oklch(0.72 0.28 46 / 0.16), 0 12px 48px oklch(0.65 0.28 46 / 0.55)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <span style={{ fontSize: "2.2rem", marginLeft: "6px" }}>▶</span>
+              </div>
+              <span
+                className="font-display font-bold italic tracking-widest uppercase"
+                style={{
+                  fontSize: "0.60rem",
+                  color: "oklch(0.92 0.16 62)",
+                  textShadow: "0 2px 8px oklch(0.10 0.08 32 / 0.8)",
+                  letterSpacing: "0.22em",
+                }}
+              >
+                Watch Full Movie
+              </span>
+            </div>
+
+            {/* Sanskrit watermark bottom */}
             <div
-              className="absolute bottom-3 left-0 right-0 text-center font-body italic"
+              className="absolute bottom-4 left-0 right-0 text-center font-body italic z-10"
               style={{
-                fontSize: "0.62rem",
-                color: `oklch(0.80 0.20 ${ep.hue})`,
+                fontSize: "0.75rem",
+                color: "oklch(0.88 0.18 60 / 0.90)",
+                textShadow: "0 2px 6px oklch(0.08 0.06 32 / 0.8)",
               }}
             >
-              {ep.titleSanskrit}
+              {m.titleSanskrit}
             </div>
           </button>
 
-          {/* Episode info */}
+          {/* Movie info section */}
           <div className="p-5">
-            <div className="flex items-start justify-between gap-2 mb-3">
-              <div>
-                <h3
-                  className="font-display font-bold italic leading-tight mb-1"
-                  style={{ fontSize: "1.05rem", color: "oklch(0.20 0.10 32)" }}
-                >
-                  {ep.title}
-                </h3>
-                <p
-                  className="font-body italic text-[0.62rem]"
-                  style={{ color: `oklch(0.48 0.20 ${ep.hue})` }}
-                >
-                  {ep.titleSanskrit}
-                </p>
-              </div>
-              <div
-                className="flex-shrink-0 font-display text-[0.58rem] font-bold tracking-wide uppercase px-2 py-1"
+            {/* Title row */}
+            <div className="mb-3">
+              <h2
+                className="font-display font-bold italic leading-tight"
                 style={{
-                  borderRadius: "4px",
-                  background: `oklch(0.88 0.14 ${ep.hue} / 0.25)`,
-                  border: `1px solid oklch(0.74 0.24 ${ep.hue} / 0.4)`,
-                  color: `oklch(0.40 0.20 ${ep.hue})`,
+                  fontSize: "clamp(1.0rem, 4vw, 1.3rem)",
+                  color: "oklch(0.88 0.20 60)",
+                  textShadow: "0 0 20px oklch(0.78 0.28 54 / 0.35)",
                 }}
               >
-                {ep.duration}
-              </div>
+                {m.title}
+              </h2>
+              <p
+                className="font-body italic mt-1 text-[0.62rem]"
+                style={{ color: "oklch(0.72 0.18 54 / 0.80)" }}
+              >
+                {m.subtitle}
+              </p>
             </div>
 
+            {/* Divider */}
+            <div
+              className="mb-3"
+              style={{
+                height: "1px",
+                background:
+                  "linear-gradient(90deg, transparent, oklch(0.72 0.24 54 / 0.45), transparent)",
+              }}
+            />
+
+            {/* Description */}
             <p
               className="font-body italic leading-relaxed mb-4"
               style={{
-                fontSize: "0.72rem",
-                color: "oklch(0.30 0.08 42)",
-                lineHeight: 1.8,
+                fontSize: "0.71rem",
+                color: "oklch(0.76 0.10 54 / 0.88)",
+                lineHeight: 1.85,
               }}
             >
-              {ep.description}
+              {m.description}
             </p>
 
             {/* Highlights */}
             <div className="mb-4">
               <p
-                className="font-display text-[0.56rem] tracking-[0.18em] uppercase font-bold mb-2"
-                style={{ color: `oklch(0.46 0.20 ${ep.hue})` }}
+                className="font-display text-[0.54rem] tracking-[0.18em] uppercase font-bold mb-2"
+                style={{ color: "oklch(0.74 0.24 54 / 0.90)" }}
               >
-                ✦ Episode Highlights
+                ✦ What You Will Witness
               </p>
-              <ul className="space-y-1">
-                {ep.highlights.map((h) => (
+              <ul className="space-y-1.5">
+                {m.highlights.map((h) => (
                   <li
                     key={h}
                     className="flex items-start gap-2 font-body"
                     style={{
-                      fontSize: "0.66rem",
-                      color: "oklch(0.32 0.08 42)",
+                      fontSize: "0.65rem",
+                      color: "oklch(0.72 0.12 54 / 0.85)",
                     }}
                   >
                     <span
-                      style={{
-                        color: `oklch(0.68 0.26 ${ep.hue})`,
-                        flexShrink: 0,
-                      }}
+                      style={{ color: "oklch(0.80 0.30 54)", flexShrink: 0 }}
                     >
                       ✦
                     </span>
@@ -451,53 +481,63 @@ function EpisodeCard({
               </ul>
             </div>
 
-            {/* Gita Verse */}
+            {/* Gita verse */}
             <div
-              className="rounded-lg p-3 mb-4"
+              className="rounded-xl p-3.5 mb-4"
               style={{
-                background: `linear-gradient(135deg, oklch(0.92 0.08 ${ep.hue} / 0.22), oklch(0.96 0.04 62 / 0.18))`,
-                border: `1.5px solid oklch(0.78 0.22 ${ep.hue} / 0.38)`,
-                borderLeft: `4px solid oklch(0.70 0.26 ${ep.hue})`,
+                background:
+                  "linear-gradient(135deg, oklch(0.22 0.12 46 / 0.60), oklch(0.18 0.10 32 / 0.50))",
+                border: "1.5px solid oklch(0.72 0.24 54 / 0.35)",
+                borderLeft: "4px solid oklch(0.78 0.30 54)",
               }}
             >
               <p
-                className="font-display text-[0.55rem] tracking-[0.18em] uppercase font-bold mb-1"
-                style={{ color: `oklch(0.44 0.20 ${ep.hue})` }}
+                className="font-display text-[0.54rem] tracking-[0.18em] uppercase font-bold mb-1.5"
+                style={{ color: "oklch(0.76 0.26 54 / 0.90)" }}
               >
-                📖 {ep.keyGitaVerse.ref}
+                📖 {m.gitaVerse.ref}
               </p>
               <p
                 className="font-body italic leading-relaxed"
-                style={{ fontSize: "0.68rem", color: "oklch(0.26 0.10 36)" }}
+                style={{
+                  fontSize: "0.67rem",
+                  color: "oklch(0.82 0.12 60 / 0.90)",
+                }}
               >
-                "{ep.keyGitaVerse.text}"
+                "{m.gitaVerse.text}"
               </p>
             </div>
 
-            {/* Play CTA */}
+            {/* CTA button */}
             <button
               type="button"
-              onClick={() => onPlay(ep)}
-              className="w-full flex items-center justify-center gap-2.5 py-3.5 font-display font-bold italic tracking-wider uppercase transition-all duration-200 hover:scale-[1.02] hover:shadow-xl"
+              onClick={onPlay}
+              className="w-full flex items-center justify-center gap-3 py-4 font-display font-bold italic tracking-wider uppercase transition-all duration-200 hover:scale-[1.02] hover:shadow-2xl"
               style={{
-                fontSize: "0.78rem",
-                borderRadius: "6px",
-                background: `linear-gradient(135deg, oklch(0.82 0.34 ${ep.hue}), oklch(0.72 0.28 ${ep.hue}))`,
+                fontSize: "0.82rem",
+                borderRadius: "8px",
+                background:
+                  "linear-gradient(135deg, oklch(0.82 0.34 54), oklch(0.74 0.28 46), oklch(0.82 0.34 54))",
+                backgroundSize: "200% 200%",
+                animation: "luxury-border-shift 4s linear infinite",
                 color: "oklch(0.12 0.08 32)",
-                boxShadow: `0 4px 20px oklch(0.65 0.26 ${ep.hue} / 0.40)`,
-                border: `1.5px solid oklch(0.88 0.36 ${ep.hue} / 0.5)`,
+                boxShadow: "0 6px 28px oklch(0.65 0.26 46 / 0.45)",
+                border: "1.5px solid oklch(0.88 0.38 54 / 0.5)",
               }}
-              data-ocid={`videos.episode_play.${ep.episode}`}
+              data-ocid="videos.featured_movie.watch_button"
             >
-              <span style={{ fontSize: "1rem" }}>▶</span>
-              Watch Episode {ep.episode} — Inside App
+              <span style={{ fontSize: "1.1rem" }}>🎬</span>
+              Watch Kurukshetra — Inside the App
+              <span style={{ fontSize: "1.1rem" }}>▶</span>
             </button>
           </div>
 
+          {/* Bottom ornate bar */}
           <div
             style={{
-              height: 3,
-              background: `linear-gradient(90deg, transparent, oklch(0.72 0.26 ${ep.hue} / 0.5), transparent)`,
+              height: 4,
+              background:
+                "linear-gradient(90deg, oklch(0.72 0.30 268), oklch(0.84 0.38 54), oklch(0.72 0.30 32), oklch(0.84 0.38 54), oklch(0.72 0.30 268))",
             }}
           />
         </div>
@@ -509,11 +549,11 @@ function EpisodeCard({
 // ─── Main Page ─────────────────────────────────────────────────────────────────
 
 export function VideosPage() {
-  const [playing, setPlaying] = useState<KurukshetraEpisode | null>(null);
+  const [featuredPlaying, setFeaturedPlaying] = useState(false);
   const [petals, setPetals] = useState(false);
 
-  function handlePlay(ep: KurukshetraEpisode) {
-    setPlaying(ep);
+  function handleFeaturedPlay() {
+    setFeaturedPlaying(true);
     setPetals(true);
     setTimeout(() => setPetals(false), 3200);
   }
@@ -550,13 +590,13 @@ export function VideosPage() {
               textShadow: "0 0 28px oklch(0.82 0.34 32 / 0.4)",
             }}
           >
-            Kurukshetra Sacred Story
+            Kurukshetra — The Sacred Story
           </h1>
           <p
             className="font-body text-xs italic mt-1"
             style={{ color: "oklch(0.50 0.18 36 / 0.80)" }}
           >
-            Season 1 · Episodes 1 & 2 · Available Offline
+            Featured Sacred Film · Plays Inside the App
           </p>
         </motion.div>
 
@@ -574,7 +614,6 @@ export function VideosPage() {
             boxShadow: "0 8px 40px oklch(0.48 0.22 32 / 0.35)",
           }}
         >
-          {/* Sacred radial glow */}
           <div
             className="absolute inset-0"
             style={{
@@ -606,70 +645,54 @@ export function VideosPage() {
             <div
               className="px-3 py-1 rounded-full font-display text-[0.55rem] font-bold tracking-wider uppercase"
               style={{
-                background: "oklch(0.62 0.26 148 / 0.9)",
+                background: "oklch(0.62 0.26 32 / 0.9)",
                 color: "oklch(0.97 0.04 70)",
-                border: "1px solid oklch(0.72 0.24 148 / 0.5)",
+                border: "1px solid oklch(0.72 0.24 32 / 0.5)",
               }}
             >
-              📵 Fully Available Offline
+              ▶ Featured Film · Plays Inside App
             </div>
           </div>
         </motion.div>
       </div>
 
-      {/* Episodes */}
-      <div
-        className="max-w-3xl mx-auto px-4 pb-10 space-y-6"
-        data-ocid="videos.episodes_list"
-      >
-        {EPISODES.map((ep, i) => (
-          <EpisodeCard key={ep.episode} ep={ep} index={i} onPlay={handlePlay} />
-        ))}
+      {/* Featured Movie */}
+      <div className="max-w-3xl mx-auto px-4 pt-2">
+        <FeaturedMovieCard onPlay={handleFeaturedPlay} />
+      </div>
 
-        {/* Coming soon label */}
+      {/* Internet notice */}
+      <div className="max-w-3xl mx-auto px-4 pb-10">
         <motion.div
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true }}
           transition={{ delay: 0.3 }}
-          className="text-center py-6 px-4 rounded-2xl"
+          className="text-center py-4 px-4 rounded-xl"
           style={{
             background:
-              "linear-gradient(135deg, oklch(0.92 0.08 54 / 0.35) 0%, oklch(0.96 0.05 62 / 0.25) 100%)",
-            border: "1.5px dashed oklch(0.72 0.22 50 / 0.50)",
+              "linear-gradient(135deg, oklch(0.92 0.06 54 / 0.30) 0%, oklch(0.96 0.04 62 / 0.20) 100%)",
+            border: "1px solid oklch(0.72 0.18 50 / 0.40)",
           }}
-          data-ocid="videos.coming_soon"
+          data-ocid="videos.internet_notice"
         >
-          <div className="text-3xl mb-2">🎬</div>
           <p
-            className="font-display font-bold italic"
-            style={{ fontSize: "0.88rem", color: "oklch(0.50 0.22 46)" }}
+            className="font-display text-[0.62rem] font-bold italic"
+            style={{ color: "oklch(0.50 0.18 46 / 0.85)" }}
           >
-            More episodes coming soon
-          </p>
-          <p
-            className="font-body text-xs italic mt-1"
-            style={{ color: "oklch(0.46 0.14 44 / 0.80)" }}
-          >
-            Season 1 in progress — 18 days, 18 episodes, the complete
-            Kurukshetra story
-          </p>
-          <p
-            className="font-body text-[10px] italic mt-2"
-            style={{ color: "oklch(0.60 0.20 46 / 0.65)" }}
-          >
-            ✦ Each episode covers one day of the sacred battle ✦
+            📡 Internet connection required · Video streams via YouTube inside
+            the app
           </p>
         </motion.div>
       </div>
 
-      {/* Video Modal */}
+      {/* Video Modal — Featured Film */}
       <AnimatePresence>
-        {playing && (
+        {featuredPlaying && (
           <VideoModal
-            title={playing.title}
-            embedUrl={playing.embedUrl}
-            onClose={() => setPlaying(null)}
+            title={FEATURED_MOVIE.title}
+            embedUrl={FEATURED_MOVIE.embedUrl}
+            onClose={() => setFeaturedPlaying(false)}
           />
         )}
       </AnimatePresence>
