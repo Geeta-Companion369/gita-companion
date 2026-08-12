@@ -205,6 +205,47 @@ const DaiviCharitraPage = lazy(() =>
   })),
 );
 
+const AacharPage = lazy(() =>
+  import("@/pages/Aachar").then((m) => ({ default: m.AacharPage })),
+);
+const DharmaStambhPage = lazy(() =>
+  import("@/pages/DharmaStambh").then((m) => ({ default: m.DharmaStambhPage })),
+);
+const SiddhiPage = lazy(() =>
+  import("@/pages/Siddhi").then((m) => ({ default: m.SiddhiPage })),
+);
+const PitruPage = lazy(() =>
+  import("@/pages/Pitru").then((m) => ({ default: m.PitruPage })),
+);
+const GuruParamparaPage = lazy(() =>
+  import("@/pages/GuruParampara").then((m) => ({
+    default: m.GuruParamparaPage,
+  })),
+);
+const KarmaYogaPage = lazy(() =>
+  import("@/pages/KarmaYoga").then((m) => ({ default: m.KarmaYogaPage })),
+);
+const MaunaPage = lazy(() =>
+  import("@/pages/Mauna").then((m) => ({ default: m.MaunaPage })),
+);
+const ShauchaPage = lazy(() =>
+  import("@/pages/Shaucha").then((m) => ({ default: m.ShauchaPage })),
+);
+const ShodashopacharaPage = lazy(() =>
+  import("@/pages/Shodashopachara").then((m) => ({
+    default: m.ShodashopacharaPage,
+  })),
+);
+const BhavishyaPage = lazy(() =>
+  import("@/pages/Bhavishya").then((m) => ({ default: m.BhavishyaPage })),
+);
+const VratPage = lazy(() =>
+  import("@/pages/Vrat").then((m) => ({ default: m.VratPage })),
+);
+const LibraryPage = lazy(() =>
+  import("@/pages/Library").then((m) => ({ default: m.LibraryPage })),
+);
+
 const LOADER_QUOTES = [
   "Karmaṇy-evādhikāras te — You have the right to act, not to the fruits thereof.",
   "Nainaṁ chindanti śastrāṇi — No weapon can cut the soul. You are eternal.",
@@ -719,6 +760,66 @@ const daiviCharitraRoute = createRoute({
   path: "/daivi-charitra",
   component: DaiviCharitraPage,
 });
+const aacharRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/aachar",
+  component: AacharPage,
+});
+const dharmaStambhRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/dharma-stambh",
+  component: DharmaStambhPage,
+});
+const siddhiRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/siddhi",
+  component: SiddhiPage,
+});
+const pitruRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/pitru",
+  component: PitruPage,
+});
+const guruParamparaRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/guru-parampara",
+  component: GuruParamparaPage,
+});
+const karmaYogaRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/karma-yoga",
+  component: KarmaYogaPage,
+});
+const maunaRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/mauna",
+  component: MaunaPage,
+});
+const shauchaRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/shaucha",
+  component: ShauchaPage,
+});
+const shodashopacharaRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/shodashopachara",
+  component: ShodashopacharaPage,
+});
+const bhavishyaRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/bhavishya",
+  component: BhavishyaPage,
+});
+const vratRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/vrat",
+  component: VratPage,
+});
+const libraryRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/library",
+  component: LibraryPage,
+});
 const routeTree = rootRoute.addChildren([
   homeRoute,
   chapterRoute,
@@ -775,6 +876,18 @@ const routeTree = rootRoute.addChildren([
   kundaliLiteRoute,
   blueprintRoute,
   daiviCharitraRoute,
+  aacharRoute,
+  dharmaStambhRoute,
+  siddhiRoute,
+  pitruRoute,
+  guruParamparaRoute,
+  karmaYogaRoute,
+  maunaRoute,
+  shauchaRoute,
+  shodashopacharaRoute,
+  bhavishyaRoute,
+  vratRoute,
+  libraryRoute,
 ]);
 
 const router = createRouter({ routeTree });

@@ -12,15 +12,21 @@ main = "src/backend/main.mo"
 [canisters.backend.check-stable]
 path = ".old/src/backend/dist/backend.most"
 
+[canisters.backend.migrations]
+chain = "src/backend/migrations"
+check-limit = 1
+
 [toolchain]
-moc = "1.8.2"
-lintoko = "0.7.0"
+moc = "1.11.2"
+lintoko = "0.11.0"
 
 [lint]
 extends = true
 
 [moc]
-args = [ "--default-persistent-actors", "--actor-idl=src/backend/system-idl", "--implicit-package=core", "-no-check-ir", "-E=M0236,M0235,M0223,M0237", "-A=M0198" ]
+args = [ "-W=M0235,M0223,M0236,M0237,M0254", "-A=M0241", "--default-persistent-actors", "--actor-idl=src/backend/system-idl", "--implicit-package=core", "-no-check-ir" ]
 
 [dependencies]
-core = "2.5.0"
+core = "2.6.1"
+caffeineai-oql = "0.4.0"
+caffeineai-object-storage = "1.1.1"

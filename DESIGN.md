@@ -93,8 +93,25 @@ Border-radius: minimal (2–4px). Wax-seal buttons 4px. Pages aged, not modern. 
 ## Motion
 Fade-in 0.3s. Verse cards lift on hover. Krishna pulse 2.5s. OM breathing 3s. Glitter burst 0.8s. Luxury borders 6s cycle. Lotus float 4s. Spring transitions 0.3s. Deity cards scale 105% on hover.
 
+## Pathway Content-Page Patterns (NEW)
+
+Reusable classes for content-rich pathway pages. All sizes derive from the existing `--fs-*` scale — no tiny px.
+
+| Component | Class | Purpose |
+|-----------|-------|---------|
+| Pathway hero | `.pathway-hero` (+ `__title`, `__subtitle`, `__description`) | Page header: title, Sanskrit subtitle, description. ✦ॐ✦ top, glowing gold rule bottom |
+| Content card | `.content-card--item` (+ `__title`, `__description`, `__detail`, `__toggle`) | List item with title, description, expandable detail. Left gold border, hover lift |
+| Scripture citation | `.scripture-citation` | Inline pill badge for sources (e.g. "Bhagavad Gita 2.47"). Gold tint, ❀ prefix |
+| Sanskrit verse | `.sanskrit-verse` | Centered Devanagari verse display. `--fs-verse`, line-height 2.1, parchment bg |
+| Transliteration | `.transliteration-line` | IAST romanization. Italic, `--fs-body`, centered, dashed gold underline |
+| Meaning block | `.meaning-block` (+ `__label`) | Translation/explanation. Left gold border, accent-tinted bg, optional uppercase label |
+| Step list | `.step-list` (+ `__item`, `__item-title`) | Numbered procedural steps (pooja vidhi). CSS counter, gold circular badges |
+| Disclaimer banner | `.disclaimer-banner` (+ `__title`) | Guru-guidance notice (Siddhi pages). ॥ marker, saffron left border |
+
+**Usage:** pathway hero at top → content cards / step lists / verse blocks in body → disclaimer banner where guidance is needed → scripture-citation badges inline beside any sourced claim.
+
 ## Differentiation
-**Serif-first illuminated manuscript** — unmistakable. **Vibrant at full saturation** — glows never dull. **Candlelight luxury atmosphere** — warm glows, inset shadows, aged paper. **Sacred geometry woven** — peacock, lotus, Om, temple arches. **Every pixel divine** — no flat surfaces, no generic buttons. **22 Divine Stories pathway** — each deity has sacred colour palette mapping spiritual archetype to visual experience.
+**Serif-first illuminated manuscript** — unmistakable. **Vibrant at full saturation** — glows never dull. **Candlelight luxury atmosphere** — warm glows, inset shadows, aged paper. **Sacred geometry woven** — peacock, lotus, Om, temple arches. **Every pixel divine** — no flat surfaces, no generic buttons. **22 Divine Stories pathway** — each deity has sacred colour palette mapping spiritual archetype to visual experience. **Content-rich pathway pages** — every page shows real verses, citations, steps, and meanings, never empty placeholders.
 
 ## Signature Details (FINAL ENHANCEMENT)
 - Gold accents: 0.76 C=0.32 H=54 (max saturation radiant glow)

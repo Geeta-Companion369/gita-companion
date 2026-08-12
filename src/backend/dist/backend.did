@@ -1,3 +1,42 @@
+type _ImmutableObjectStorageRefillResult = 
+ record {
+   success: opt bool;
+   topped_up_amount: opt nat;
+ };
+type _ImmutableObjectStorageRefillInformation = record {
+                                                  proposed_top_up_amount:
+                                                   opt nat;};
+type _ImmutableObjectStorageCreateCertificateResult = 
+ record {
+   blob_hash: text;
+   method: text;
+ };
+type YugCycle = 
+ record {
+   characteristics: text;
+   description: text;
+   dharmaQuarter: nat;
+   durationYears: nat;
+   id: text;
+   name: text;
+   sanskritName: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
+ };
+type WorshipStep = 
+ record {
+   description: text;
+   id: text;
+   mantra: text;
+   name: text;
+   procedure: text;
+   sanskritName: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
+   stepNumber: nat;
+ };
 type VerseCommentary = 
  record {
    ramanuja: text;
@@ -13,6 +52,22 @@ type Verse =
    sanskritText: text;
    transliteration: text;
    verseNumber: text;
+ };
+type VedaName = 
+ variant {
+   atharva;
+   rig;
+   sama;
+   yajur;
+ };
+type Value = 
+ variant {
+   "bool": bool;
+   float: float64;
+   "int": int;
+   "nat": nat;
+   "null";
+   "text": text;
  };
 type UserProfileInput = 
  record {
@@ -43,6 +98,20 @@ type UserProfile =
    timezone: text;
    updatedAt: int;
  };
+type UpanishadName = 
+ variant {
+   aitareya;
+   brihadaranyaka;
+   chandogya;
+   isha;
+   katha;
+   kena;
+   mandukya;
+   mundaka;
+   prashna;
+   shvetashvatara;
+   taittiriya;
+ };
 type TransitEvent = 
  record {
    colorCode: text;
@@ -58,6 +127,69 @@ type TimeOfBirth =
    hour: nat;
    minute: nat;
  };
+type TarotReading = 
+ record {
+   draws: vec TarotDraw;
+   guidance: text;
+   id: text;
+   interpretation: text;
+   principalId: text;
+   question: text;
+   readAt: int;
+   spreadType: text;
+ };
+type TarotDraw = 
+ record {
+   cardId: text;
+   isReversed: bool;
+   position: nat;
+   positionName: text;
+ };
+type TarotCard = 
+ record {
+   arcana: text;
+   id: text;
+   imagery: text;
+   name: text;
+   number: nat;
+   reversedMeaning: text;
+   suit: text;
+   symbolism: text;
+   uprightMeaning: text;
+ };
+type SiddhiEntry = 
+ record {
+   category: SiddhiCategory;
+   description: text;
+   guruDisclaimer: text;
+   id: text;
+   name: text;
+   sanskritName: text;
+   significance: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
+ };
+type SiddhiCategory = 
+ variant {
+   kala;
+   mahavidya;
+   nidhi;
+   siddhi;
+ };
+type ShauchaPractice = 
+ record {
+   benefits: vec text;
+   description: text;
+   id: text;
+   kind: text;
+   name: text;
+   practice: text;
+   sanskritName: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
+ };
 type SatsangMessage = 
  record {
    authorName: text;
@@ -65,11 +197,117 @@ type SatsangMessage =
    message: text;
    timestamp: int;
  };
+type SatsangCircle = 
+ record {
+   description: text;
+   iconGlyph: text;
+   id: text;
+   memberCount: nat;
+   name: text;
+ };
+type Sanskaar = 
+ record {
+   description: text;
+   id: text;
+   mantra: text;
+   name: text;
+   procedure: vec text;
+   sanskaarNumber: nat;
+   sanskritName: text;
+   significance: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
+   timing: text;
+ };
+type Sampradaya = 
+ record {
+   founder: text;
+   id: text;
+   lineage: vec text;
+   name: text;
+   philosophy: text;
+   sanskritName: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
+ };
+type RitualExplanation = 
+ record {
+   explanation: text;
+   id: text;
+   relatedDutyIds: vec text;
+   ritualName: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
+   title: text;
+ };
+type Result = 
+ record {
+   hasMore: bool;
+   rows: vec vec Cell;
+ };
 type RemedyReminder = 
  record {
    graha: text;
    isActive: bool;
    reminderTime: text;
+ };
+type QuizQuestion = 
+ record {
+   correctIndex: nat;
+   date: text;
+   explanation: text;
+   id: text;
+   options: vec text;
+   points: nat;
+   question: text;
+   sourceGranth: text;
+   sourceVerse: text;
+ };
+type PuranaName = 
+ variant {
+   agni;
+   bhagavata;
+   bhavishya;
+   brahma;
+   brahmanda;
+   brahmavaivarta;
+   garuda;
+   kurma;
+   linga;
+   markandeya;
+   matsya;
+   narada;
+   padma;
+   shiva;
+   skanda;
+   vamana;
+   varaha;
+   vishnu;
+ };
+type PunyaProfile = 
+ record {
+   badges: vec Badge;
+   currentStreakDays: nat;
+   lastActivityAt: int;
+   longestStreakDays: nat;
+   principalId: text;
+   totalPoints: nat;
+ };
+type PregnancyWeek = 
+ record {
+   development: text;
+   garbhaSanskarTip: text;
+   mantra: text;
+   saadhna: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
+   title: text;
+   trimester: nat;
+   weekNumber: nat;
  };
 type PlanetPlacement = 
  record {
@@ -81,25 +319,108 @@ type PlanetPlacement =
    retrograde: bool;
    sign: nat;
  };
-type PanchangData = 
+type PitruRite = 
  record {
    description: text;
+   id: text;
+   name: text;
+   offerings: vec text;
+   procedure: text;
+   sanskritName: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
+   timing: text;
+ };
+type PanchangData = 
+ record {
+   date: text;
+   description: text;
    karana: text;
+   masa: text;
    moonSign: text;
    nakshatra: text;
+   paksha: text;
+   ritu: text;
    tithi: text;
    tithiNumber: nat;
-   vara: text;
+   vaar: text;
    yoga: text;
+ };
+type NaamPledge = 
+ record {
+   completedCount: nat;
+   displayName: text;
+   isActive: bool;
+   lastUpdatedAt: int;
+   mantraName: text;
+   pledgedAt: int;
+   pledgedCount: nat;
+   principalId: text;
+ };
+type MokshaTeaching = 
+ record {
+   chapter: nat;
+   commentary: text;
+   id: text;
+   sanskritDevanagari: text;
+   sanskritTransliteration: text;
+   simpleMeaning: text;
+   sourceChapter: nat;
+   sourceGranth: text;
+   sourceVerse: text;
+   verse: text;
+ };
+type MaunaPractice = 
+ record {
+   benefits: vec text;
+   description: text;
+   duration: text;
+   id: text;
+   name: text;
+   sanskritName: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
  };
 type MantraEntry = 
  record {
    benefit: text;
-   category: text;
+   category: MantraCategory;
    id: text;
    meaning: text;
    name: text;
+   recommendedCount: nat;
    "text": text;
+ };
+type MantraCategory = 
+ variant {
+   general;
+   mahamantra;
+   protection;
+   sharanam;
+ };
+type LeaderboardEntry = 
+ record {
+   donationCount: nat;
+   donorName: text;
+   donorPrincipal: text;
+   lastDonationAt: int;
+   rank: nat;
+   totalDonation: nat;
+ };
+type LastRiteStep = 
+ record {
+   description: text;
+   id: text;
+   mantra: text;
+   procedure: text;
+   sanskritName: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
+   stepNumber: nat;
+   title: text;
  };
 type KundliData = 
  record {
@@ -116,6 +437,17 @@ type KundliData =
    profileId: principal;
    rulingPlanet: text;
    rulingPlanetGlyph: text;
+ };
+type KarmaType = 
+ record {
+   description: text;
+   id: text;
+   name: text;
+   practice: text;
+   sanskritName: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
  };
 type JournalEntry = 
  record {
@@ -142,6 +474,45 @@ type GuidanceResult =
    keyword: text;
    verse: nat;
  };
+type GranthVerse = 
+ record {
+   chapterId: nat;
+   granthId: text;
+   sanskritDevanagari: text;
+   sanskritTransliteration: text;
+   simpleMeaning: text;
+   sourceChapter: nat;
+   sourceGranth: text;
+   sourceVerse: text;
+   verseId: nat;
+   verseNumber: text;
+ };
+type GranthType = 
+ variant {
+   gita;
+   purana: PuranaName;
+   upanishad: UpanishadName;
+   veda: VedaName;
+ };
+type GranthChapter = 
+ record {
+   chapterId: nat;
+   granthId: text;
+   name: text;
+   sanskritName: text;
+   summary: text;
+   verseCount: nat;
+ };
+type Granth = 
+ record {
+   description: text;
+   granthType: GranthType;
+   id: text;
+   name: text;
+   sanskritName: text;
+   sourceCitation: text;
+   totalChapters: nat;
+ };
 type GrahaRemedyData = 
  record {
    avoidList: vec text;
@@ -158,7 +529,7 @@ type GrahaRemedyData =
  };
 type GalleryImageMeta = 
  record {
-   assetId: text;
+   asset: ExternalBlob;
    caption: text;
    category: text;
    id: nat;
@@ -168,7 +539,7 @@ type GalleryImageMeta =
  };
 type GalleryImageInput = 
  record {
-   assetId: text;
+   asset: ExternalBlob;
    caption: text;
    category: text;
  };
@@ -179,7 +550,12 @@ type Festival =
    meaning: text;
    name: text;
    recommendedVerse: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
+   story: text;
  };
+type ExternalBlob = blob;
 type EmailSubscriber = 
  record {
    active: bool;
@@ -206,6 +582,55 @@ type DonationInfo =
    updatedAt: int;
    upiId: text;
  };
+type DikshaVidhi = 
+ record {
+   description: text;
+   id: text;
+   mantra: text;
+   name: text;
+   prerequisites: vec text;
+   procedure: vec text;
+   sanskritName: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
+ };
+type DharmaPillar = 
+ record {
+   description: text;
+   id: text;
+   name: text;
+   practice: text;
+   sanskritName: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
+ };
+type DharmaBodhStep = 
+ record {
+   guidance: text;
+   id: text;
+   practice: text;
+   question: text;
+   sanskritName: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
+   stepNumber: nat;
+   title: text;
+ };
+type DevlokStage = 
+ record {
+   description: text;
+   id: text;
+   name: text;
+   sanskritName: text;
+   significance: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
+   stageNumber: nat;
+ };
 type DateOfBirth = 
  record {
    day: nat;
@@ -218,6 +643,20 @@ type DashaEntry =
    endDate: int;
    lord: text;
    startDate: int;
+ };
+type DailyDuty = 
+ record {
+   category: text;
+   description: text;
+   id: text;
+   linkedExplanationId: text;
+   name: text;
+   practice: text;
+   sanskritName: text;
+   sourceChapter: text;
+   sourceGranth: text;
+   sourceVerse: text;
+   timing: text;
  };
 type DailyChallenge = 
  record {
@@ -241,6 +680,19 @@ type Chapter =
    summary: text;
    verseCount: nat;
  };
+type Cell = 
+ record {
+   name: text;
+   value: Value;
+ };
+type Badge = 
+ record {
+   description: text;
+   earnedAt: int;
+   iconGlyph: text;
+   id: text;
+   name: text;
+ };
 type AdminConfigInput = 
  record {
    appVersion: text;
@@ -256,38 +708,108 @@ type AdminConfig =
    senderName: text;
  };
 service : {
+  _immutableObjectStorageBlobsAreLive: (hashes: vec blob) -> (vec bool) query;
+  _immutableObjectStorageBlobsToDelete: () -> (vec blob) query;
+  _immutableObjectStorageConfirmBlobDeletion: (blobs: vec blob) -> ();
+  _immutableObjectStorageCreateCertificate: (blobHash: text) ->
+   (_ImmutableObjectStorageCreateCertificateResult);
+  _immutableObjectStorageRefillCashier: (refillInformation:
+   opt _ImmutableObjectStorageRefillInformation) ->
+   (_ImmutableObjectStorageRefillResult);
+  _immutableObjectStorageUpdateGatewayPrincipals: () -> ();
   adminListAllGalleryImages: () -> (vec GalleryImageMeta);
   clearOldMessages: () -> ();
   createJournalEntry: (verseId: text, "text": text, mood: text) ->
    (JournalEntry);
   deleteJournalEntry: (id: text) -> (bool);
+  drawTarot: (spreadType: text, question: text) -> (TarotReading);
+  execute: (qJson: text) -> (Result) query;
   getAdminConfig: () -> (AdminConfig) query;
   getAllGrahaRemedies: () -> (vec GrahaRemedyData) query;
   getChapter: (chapterId: nat) -> (opt Chapter) query;
   getCircleMessages: (circleId: text) -> (vec SatsangMessage) query;
   getConcentrationHistory: (limit: nat) -> (vec ConcentrationSession) query;
   getDailyChallenge: (dateKey: text) -> (opt DailyChallenge) query;
+  getDailyDuty: (id: text) -> (opt DailyDuty) query;
+  getDailyQuiz: (date: text) -> (opt QuizQuestion) query;
+  getDevlokStage: (id: text) -> (opt DevlokStage) query;
+  getDharmaBodhStep: (id: text) -> (opt DharmaBodhStep) query;
+  getDharmaPillar: (id: text) -> (opt DharmaPillar) query;
+  getDikshaVidhi: (id: text) -> (opt DikshaVidhi) query;
   getDonationInfo: () -> (opt DonationInfo) query;
   getFestivals: () -> (vec Festival) query;
   getGalleryUploads: () -> (vec GalleryImageMeta) query;
   getGrahaRemedy: (graha: text) -> (opt GrahaRemedyData) query;
+  getGranth: (granthId: text) -> (opt Granth) query;
+  getGranthChapter: (granthId: text, chapterId: nat) ->
+   (opt GranthChapter) query;
+  getGranthVerse: (granthId: text, chapterId: nat, verseId: nat) ->
+   (opt GranthVerse) query;
   getGuidanceByCategory: (category: text) -> (opt GuidanceResult) query;
   getHeatmapData: (days: nat) -> (vec HeatmapEntry) query;
   getJournalEntries: () -> (vec JournalEntry) query;
+  getKala: (id: text) -> (opt SiddhiEntry) query;
+  getKarmaType: (id: text) -> (opt KarmaType) query;
   getKrishnaGuidance: (keyword: text) -> (opt GuidanceResult) query;
   getKundliData: () -> (opt KundliData) query;
+  getLastRiteStep: (id: text) -> (opt LastRiteStep) query;
+  getLeaderboard: (limit: nat) -> (vec LeaderboardEntry) query;
+  getMahavidya: (id: text) -> (opt SiddhiEntry) query;
   getMantras: () -> (vec MantraEntry) query;
+  getMaunaPractice: (id: text) -> (opt MaunaPractice) query;
+  getMokshaTeaching: (id: text) -> (opt MokshaTeaching) query;
+  getNaamPledges: () -> (vec NaamPledge) query;
+  getNidhi: (id: text) -> (opt SiddhiEntry) query;
+  getPanchaang: (dateStr: text) -> (PanchangData) query;
   getPanchangToday: (date: text) -> (PanchangData) query;
+  getPitruRite: (id: text) -> (opt PitruRite) query;
+  getPregnancyWeek: (weekNumber: nat) -> (opt PregnancyWeek) query;
+  getPunyaProfile: () -> (opt PunyaProfile);
   getReadingStreak: () -> (nat) query;
   getRemedyReminder: () -> (opt RemedyReminder) query;
+  getRitualExplanation: (id: text) -> (opt RitualExplanation) query;
+  getSampradaya: (id: text) -> (opt Sampradaya) query;
+  getSanskaar: (id: text) -> (opt Sanskaar) query;
+  getSatsangCircle: (circleId: text) -> (opt SatsangCircle) query;
+  getShauchaPractice: (id: text) -> (opt ShauchaPractice) query;
+  getSiddhi: (id: text) -> (opt SiddhiEntry) query;
+  getTarotCard: (id: text) -> (opt TarotCard) query;
   getTransitCalendar: (year: nat) -> (vec TransitEvent) query;
   getUserProfile: () -> (opt UserProfile) query;
   getVerse: (chapterId: nat, verseId: nat) -> (opt Verse) query;
   getVerseCommentary: (verseId: text) -> (opt VerseCommentary) query;
+  getWorshipStep: (id: text) -> (opt WorshipStep) query;
+  getYugCycle: (id: text) -> (opt YugCycle) query;
   listChapters: () -> (vec Chapter) query;
+  listDailyDuties: () -> (vec DailyDuty) query;
+  listDevlokStages: () -> (vec DevlokStage) query;
+  listDharmaBodhSteps: () -> (vec DharmaBodhStep) query;
+  listDharmaPillars: () -> (vec DharmaPillar) query;
+  listGranthChapters: (granthId: text) -> (vec GranthChapter) query;
+  listGranthVerses: (granthId: text, chapterId: nat) ->
+   (vec GranthVerse) query;
+  listGranths: () -> (vec Granth) query;
+  listKalas: () -> (vec SiddhiEntry) query;
+  listKarmaTypes: () -> (vec KarmaType) query;
+  listLastRiteSteps: () -> (vec LastRiteStep) query;
+  listMahavidyas: () -> (vec SiddhiEntry) query;
+  listMaunaPractices: () -> (vec MaunaPractice) query;
+  listMokshaTeachings: () -> (vec MokshaTeaching) query;
   listNewsletterSubscribers: () -> (vec EmailSubscriber);
+  listNidhis: () -> (vec SiddhiEntry) query;
+  listPitruRites: () -> (vec PitruRite) query;
+  listPregnancyWeeks: () -> (vec PregnancyWeek) query;
+  listRitualExplanations: () -> (vec RitualExplanation) query;
+  listSampradayas: () -> (vec Sampradaya) query;
+  listSanskaars: () -> (vec Sanskaar) query;
+  listSatsangCircleMetadata: () -> (vec SatsangCircle) query;
   listSatsangCircles: () -> (vec text) query;
+  listShauchaPractices: () -> (vec ShauchaPractice) query;
+  listSiddhis: () -> (vec SiddhiEntry) query;
+  listTarotCards: () -> (vec TarotCard) query;
   listVerses: (chapterId: nat) -> (vec Verse) query;
+  listWorshipSteps: () -> (vec WorshipStep) query;
+  listYugCycles: () -> (vec YugCycle) query;
   postCircleMessage: (circleId: text, authorName: text, message: text) -> ();
   recordConcentrationSession: (durationMinutes: nat, sessionType: text) ->
    (ConcentrationSession);
@@ -296,6 +818,7 @@ service : {
   saveKundliData: (data: KundliData) -> (bool);
   saveRemedyReminder: (graha: text, time: text) -> (bool);
   saveUserProfile: (input: UserProfileInput) -> (bool);
+  schema: () -> (text) query;
   searchJournalEntries: (searchText: text) -> (vec JournalEntry) query;
   setDonationInfo: (input: DonationInfoInput) -> (bool);
   setGalleryImageApproval: (id: nat, approved: bool) -> (bool);

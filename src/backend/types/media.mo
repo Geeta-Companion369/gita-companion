@@ -1,22 +1,26 @@
+import Storage "mo:caffeineai-object-storage/Storage";
+
 module {
   // ─── Gallery Image Upload Metadata ────────────────────────────────────────
   /// Stored after a successful object-storage upload.
-  /// assetId is the ID returned by the object-storage extension.
+  /// `asset` is an ExternalBlob reference round-tripped through the
+  /// object-storage extension (uploadFile/downloadFile callbacks), so the
+  /// image survives page reloads via durable storage.
   public type GalleryImageMeta = {
-    id          : Nat;          // auto-incremented local ID
-    assetId     : Text;         // object-storage asset ID / key
-    uploader    : Principal;    // principal who uploaded
-    category    : Text;         // e.g. "Krishna", "Temple", "Festival"
-    caption     : Text;         // optional display caption
-    isApproved  : Bool;         // admin can approve/hide
-    uploadedAt  : Int;          // Time.now() nanoseconds
+    id          : Nat;                       // auto-incremented local ID
+    asset       : Storage.ExternalBlob;      // object-storage blob reference
+    uploader    : Principal;                 // principal who uploaded
+    category    : Text;                      // e.g. "Krishna", "Temple", "Festival"
+    caption     : Text;                      // optional display caption
+    isApproved  : Bool;                      // admin can approve/hide
+    uploadedAt  : Int;                       // Time.now() nanoseconds
   };
 
   /// Input shape accepted from the frontend when registering a new gallery upload.
   public type GalleryImageInput = {
-    assetId    : Text;
-    category   : Text;
-    caption    : Text;
+    asset     : Storage.ExternalBlob;        // object-storage blob reference
+    category  : Text;
+    caption   : Text;
   };
 
   // ─── Donation QR Code ─────────────────────────────────────────────────────

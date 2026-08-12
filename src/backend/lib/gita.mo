@@ -1,16 +1,46 @@
 import Types "../types/gita";
 import Map "mo:core/Map";
+import Array "mo:core/Array";
+import Iter "mo:core/Iter";
 import Nat "mo:core/Nat";
-import Order "mo:core/Order";
 import Text "mo:core/Text";
 
 module {
-  // Compare two (Nat, Nat) tuples lexicographically
-  func comparePair(a : (Nat, Nat), b : (Nat, Nat)) : Order.Order {
-    let c1 = Nat.compare(a.0, b.0);
-    if (not c1.isEqual()) { c1 } else { Nat.compare(a.1, b.1) };
+  // ─── Compare helpers for tuple keys ──────────────────────────────────────
+  // Map.add/get/filter require a (K,K)->Order.Order compare for tuple keys.
+  func compareNatNat(a : (Nat, Nat), b : (Nat, Nat)) : { #less; #equal; #greater } {
+    let (a1, a2) = a;
+    let (b1, b2) = b;
+    switch (Nat.compare(a1, b1)) {
+      case (#equal) { Nat.compare(a2, b2) };
+      case other { other };
+    };
   };
 
+  func compareTextNat(a : (Text, Nat), b : (Text, Nat)) : { #less; #equal; #greater } {
+    let (a1, a2) = a;
+    let (b1, b2) = b;
+    switch (Text.compare(a1, b1)) {
+      case (#equal) { Nat.compare(a2, b2) };
+      case other { other };
+    };
+  };
+
+  func compareTextNatNat(a : (Text, Nat, Nat), b : (Text, Nat, Nat)) : { #less; #equal; #greater } {
+    let (a1, a2, a3) = a;
+    let (b1, b2, b3) = b;
+    switch (Text.compare(a1, b1)) {
+      case (#equal) {
+        switch (Nat.compare(a2, b2)) {
+          case (#equal) { Nat.compare(a3, b3) };
+          case other { other };
+        };
+      };
+      case other { other };
+    };
+  };
+
+  // ─── Existing Gita reference-data accessors ────────────────────────────────
   public func getChapter(
     chapters : Map.Map<Nat, Types.Chapter>,
     chapterId : Nat,
@@ -21,10 +51,8 @@ module {
   public func listChapters(
     chapters : Map.Map<Nat, Types.Chapter>,
   ) : [Types.Chapter] {
-    let iter = chapters.values();
-    let arr = iter.toArray();
-    // Sort by id
-    arr.sort(func(a, b) = Nat.compare(a.id, b.id));
+    let pairs = chapters.toArray();
+    pairs.map(func((_, ch)) { ch });
   };
 
   public func getVerse(
@@ -32,713 +60,938 @@ module {
     chapterId : Nat,
     verseId : Nat,
   ) : ?Types.Verse {
-    verses.get(comparePair, (chapterId, verseId));
-  };
-
-  public func getKrishnaGuidance(
-    guidanceMap : Map.Map<Text, Types.GuidanceResult>,
-    keyword : Text,
-  ) : ?Types.GuidanceResult {
-    guidanceMap.get(keyword.toLower());
+    verses.get(compareNatNat, (chapterId, verseId));
   };
 
   public func listVerses(
     verses : Map.Map<(Nat, Nat), Types.Verse>,
     chapterId : Nat,
   ) : [Types.Verse] {
-    let iter = verses.values();
-    let all = iter.toArray();
-    let filtered = all.filter(func(v : Types.Verse) : Bool { v.chapterId == chapterId });
-    filtered.sort(func(a, b) = Nat.compare(a.id, b.id));
+    let filtered = verses.filter(
+      compareNatNat,
+      func((cid, _vid) : (Nat, Nat), _verse : Types.Verse) : Bool { cid == chapterId },
+    );
+    let pairs = filtered.toArray();
+    pairs.map(func((_, v)) { v });
   };
 
-  public func getMantras(
-    mantras : Map.Map<Text, Types.MantraEntry>,
-  ) : [Types.MantraEntry] {
-    mantras.values().toArray();
-  };
-
-  public func getFestivals(
-    festivals : Map.Map<Text, Types.Festival>,
-  ) : [Types.Festival] {
-    festivals.values().toArray();
-  };
-
-  public func getDailyChallenge(
-    challenges : Map.Map<Text, Types.DailyChallenge>,
-    dateKey : Text,
-  ) : ?Types.DailyChallenge {
-    // Try exact date key first, fall back to last-character rotation key
-    switch (challenges.get(dateKey)) {
-      case (?c) { ?c };
-      case null {
-        // Derive a 0-7 rotation key from the last character of dateKey
-        let rotKey = if (dateKey.size() > 0) {
-          let charArr = dateKey.toArray();
-          Text.fromChar(charArr[charArr.size() - 1]);
-        } else { "1" };
-        challenges.get(rotKey);
-      };
-    };
+  public func getKrishnaGuidance(
+    guidanceMap : Map.Map<Text, Types.GuidanceResult>,
+    keyword : Text,
+  ) : ?Types.GuidanceResult {
+    guidanceMap.get(keyword);
   };
 
   public func getGuidanceByCategory(
     guidanceMap : Map.Map<Text, Types.GuidanceResult>,
     category : Text,
   ) : ?Types.GuidanceResult {
-    guidanceMap.get(category.toLower());
+    guidanceMap.get(category);
   };
 
+  public func getMantras(
+    mantras : Map.Map<Text, Types.MantraEntry>,
+  ) : [Types.MantraEntry] {
+    let pairs = mantras.toArray();
+    pairs.map(func((_, m)) { m });
+  };
+
+  public func getFestivals(
+    festivals : Map.Map<Text, Types.Festival>,
+  ) : [Types.Festival] {
+    let pairs = festivals.toArray();
+    pairs.map(func((_, f)) { f });
+  };
+
+  public func getDailyChallenge(
+    challenges : Map.Map<Text, Types.DailyChallenge>,
+    dateKey : Text,
+  ) : ?Types.DailyChallenge {
+    challenges.get(dateKey);
+  };
+
+  // ─── Digital Library (Pustakaalaye) — Granth accessors ──────────────────────
+  public func listGranths(
+    granths : Map.Map<Text, Types.Granth>,
+  ) : [Types.Granth] {
+    let pairs = granths.toArray();
+    pairs.map(func((_, g)) { g });
+  };
+
+  public func getGranth(
+    granths : Map.Map<Text, Types.Granth>,
+    granthId : Text,
+  ) : ?Types.Granth {
+    granths.get(granthId);
+  };
+
+  public func listGranthChapters(
+    granthChapters : Map.Map<(Text, Nat), Types.GranthChapter>,
+    granthId : Text,
+  ) : [Types.GranthChapter] {
+    let filtered = granthChapters.filter(
+      compareTextNat,
+      func((gid, _cid) : (Text, Nat), _chapter : Types.GranthChapter) : Bool { gid == granthId },
+    );
+    let pairs = filtered.toArray();
+    pairs.map(func((_, c)) { c });
+  };
+
+  public func getGranthChapter(
+    granthChapters : Map.Map<(Text, Nat), Types.GranthChapter>,
+    granthId : Text,
+    chapterId : Nat,
+  ) : ?Types.GranthChapter {
+    granthChapters.get(compareTextNat, (granthId, chapterId));
+  };
+
+  public func getGranthVerse(
+    granthVerses : Map.Map<(Text, Nat, Nat), Types.GranthVerse>,
+    granthId : Text,
+    chapterId : Nat,
+    verseId : Nat,
+  ) : ?Types.GranthVerse {
+    granthVerses.get(compareTextNatNat, (granthId, chapterId, verseId));
+  };
+
+  public func listGranthVerses(
+    granthVerses : Map.Map<(Text, Nat, Nat), Types.GranthVerse>,
+    granthId : Text,
+    chapterId : Nat,
+  ) : [Types.GranthVerse] {
+    let filtered = granthVerses.filter(
+      compareTextNatNat,
+      func((gid, cid, _vid) : (Text, Nat, Nat), _verse : Types.GranthVerse) : Bool { gid == granthId and cid == chapterId },
+    );
+    let pairs = filtered.toArray();
+    pairs.map(func((_, v)) { v });
+  };
+
+  // ─── Initialization: Gita chapters (18 chapters, 700 verses total) ─────────
   public func initChapters(chapters : Map.Map<Nat, Types.Chapter>) : () {
-    let data : [(Nat, Types.Chapter)] = [
-      (1, { id = 1; name = "Arjuna Vishada Yoga"; verseCount = 47; summary = "Arjuna, overcome with grief and moral confusion on the battlefield of Kurukshetra, sees his kinsmen arrayed against him. Unable to fight, he collapses in despair and surrenders to Krishna for guidance. This chapter sets the stage for the Gita's profound dialogue." }),
-      (2, { id = 2; name = "Sankhya Yoga"; verseCount = 72; summary = "Krishna begins his teaching by revealing the immortal nature of the soul (Atman). He introduces Sankhya philosophy and the path of Karma Yoga — performing duty without attachment to results. This foundational chapter contains the essence of the Gita's wisdom." }),
-      (3, { id = 3; name = "Karma Yoga"; verseCount = 43; summary = "Krishna elaborates on the path of selfless action (Karma Yoga). He explains that no one can abstain from action, and that prescribed duties performed without desire for results lead to liberation. He also reveals how desire and anger are humanity's greatest enemies." }),
-      (4, { id = 4; name = "Jnana Karma Sanyasa Yoga"; verseCount = 42; summary = "Krishna reveals the divine mystery of his periodic descension (avatara) to restore righteousness. He explains how knowledge (Jnana) purifies all karma and how renunciation through wisdom is the highest path. The ancient tradition of this yoga is disclosed." }),
-      (5, { id = 5; name = "Karma Vairagya Yoga"; verseCount = 29; summary = "Krishna reconciles the paths of renunciation and selfless action, showing they lead to the same goal. The sage who acts without ego or attachment is truly renounced. Inner peace comes from realizing Brahman as the real enjoyer of all sacrifices." }),
-      (6, { id = 6; name = "Abhyasa Yoga"; verseCount = 47; summary = "Krishna gives detailed instruction on the practice of meditation (Dhyana Yoga). He describes the proper posture, diet, and mental discipline for the yogi. He assures Arjuna that even a fallen yogi is not lost — they continue from where they left off in future lives." }),
-      (7, { id = 7; name = "Paramahamsa Vijnana Yoga"; verseCount = 30; summary = "Krishna reveals his divine eight-fold nature (Prakriti) and declares himself the ultimate reality underlying all existence. He explains how the deluded worship other deities while the wise recognize him as the supreme source of all. Few among thousands truly know him." }),
-      (8, { id = 8; name = "Aksara Parabrahma Yoga"; verseCount = 28; summary = "Krishna explains the nature of Brahman, karma, and the cosmic cycles of creation and dissolution. He describes how one who remembers him at the moment of death attains him. The path of light (Devayana) versus the path of darkness (Pitriyana) is explained." }),
-      (9, { id = 9; name = "Raja Vidya Raja Guhya Yoga"; verseCount = 34; summary = "Krishna reveals the king of all knowledge — the most confidential wisdom of devotional service (Bhakti). He declares that all beings rest in him yet he is not in them. With pure devotion, even those of lower birth can attain the supreme abode." }),
-      (10, { id = 10; name = "Vibhuti Yoga"; verseCount = 42; summary = "Krishna enumerates his divine manifestations and opulences throughout the universe. He is the radiance in the sun, the life in all beings, the intelligence of the intelligent. Knowing these vibhutis, Arjuna's devotion intensifies and he requests to see the cosmic form." }),
-      (11, { id = 11; name = "Viswarupa Darsana Yoga"; verseCount = 55; summary = "Krishna grants Arjuna divine vision to behold his Universal Form (Vishwarupa) — infinite, awe-inspiring, containing all creation. Arjuna sees armies being consumed in Krishna's mouth and is overwhelmed with terror and wonder. Krishna then reveals his gentle four-armed form, accessible only through devotion." }),
-      (12, { id = 12; name = "Bhakti Yoga"; verseCount = 20; summary = "Krishna declares that devotional worship of his personal form is the highest and most direct path. He describes the qualities of the ideal devotee — compassionate, free from ego, equal in pleasure and pain, and surrendered. This chapter is considered the heart of the Gita." }),
-      (13, { id = 13; name = "Ksetra Ksetrajna Vibhaga Yoga"; verseCount = 34; summary = "Krishna explains the distinction between the field (Kshetra — the body and nature) and the knower of the field (Kshetrajna — the soul). True knowledge is recognizing the imperishable Self within the perishable body. Liberation comes from understanding this distinction." }),
-      (14, { id = 14; name = "Gunatraya Vibhaga Yoga"; verseCount = 27; summary = "Krishna explains the three modes of material nature (Gunas) — Sattva (goodness), Rajas (passion), and Tamas (ignorance). These gunas bind the soul to the body. The one who transcends the three gunas through devotion to Krishna attains liberation." }),
-      (15, { id = 15; name = "Purushottama Yoga"; verseCount = 20; summary = "Krishna describes the cosmic Ashvattha tree of material existence with roots upward and branches downward, representing the inverted reflection of spiritual reality. He then reveals himself as Purushottama — the Supreme Person beyond both the perishable and imperishable." }),
-      (16, { id = 16; name = "Daivasura Sampad Vibhaga Yoga"; verseCount = 24; summary = "Krishna distinguishes between divine (Daivi) and demoniac (Asuri) natures. The divine qualities lead to liberation; the demoniac to bondage. He warns against lust, anger, and greed as the three gates to hell. One should be guided by scriptures, not whim." }),
-      (17, { id = 17; name = "Shraddhatraya Vibhaga Yoga"; verseCount = 28; summary = "Krishna classifies faith (Shraddha), food, sacrifice, austerity, and charity according to the three modes of nature. Sattvic faith leads to wisdom; Rajasic to passion; Tamasic to ignorance. Actions performed without scriptural guidance or faith yield no lasting benefit." }),
-      (18, { id = 18; name = "Moksha Sanyasa Yoga"; verseCount = 78; summary = "In this concluding chapter, Krishna summarizes all the Gita's teachings. He explains true renunciation (Sanyasa) and concludes with the highest secret: abandon all forms of dharma and surrender completely to Krishna alone. He promises liberation to the surrendered devotee. Arjuna resolves to fight." }),
+    let seed : [Types.Chapter] = [
+      { id = 1;  name = "Arjuna Vishada Yoga";        summary = "Arjuna's despondency and the dilemma of duty versus attachment."; verseCount = 47 },
+      { id = 2;  name = "Sankhya Yoga";              summary = "The yoga of knowledge: the eternal soul, duty, and the path of wisdom."; verseCount = 72 },
+      { id = 3;  name = "Karma Yoga";                summary = "The yoga of selfless action performed without attachment to fruits."; verseCount = 43 },
+      { id = 4;  name = "Jnana Karma Sanyasa Yoga";  summary = "The yoga of knowledge and the discipline of action; avatars and surrender."; verseCount = 42 },
+      { id = 5;  name = "Karma Sanyasa Yoga";        summary = "The yoga of renunciation: action as a path to the same goal as renunciation."; verseCount = 29 },
+      { id = 6;  name = "Atma Samyama Yoga";         summary = "The yoga of meditation and self-discipline; the path of dhyana."; verseCount = 47 },
+      { id = 7;  name = "Jnana Vijnana Yoga";        summary = "The yoga of knowledge and realization; the lower and higher nature of the Lord."; verseCount = 30 },
+      { id = 8;  name = "Aksara Brahma Yoga";        summary = "The yoga of the imperishable Brahman; the moment of death and remembrance."; verseCount = 28 },
+      { id = 9;  name = "Raja Vidya Yoga";           summary = "The yoga of sovereign knowledge and sovereign mystery; all-pervading presence."; verseCount = 34 },
+      { id = 10; name = "Vibhuti Yoga";              summary = "The yoga of divine manifestations; the Lord's glories in all things."; verseCount = 42 },
+      { id = 11; name = "Vishvarupa Darshana Yoga";  summary = "The yoga of the cosmic vision; Arjuna sees the universal form."; verseCount = 55 },
+      { id = 12; name = "Bhakti Yoga";               summary = "The yoga of devotion; the qualities of a true devotee and the path of love."; verseCount = 20 },
+      { id = 13; name = "Ksetra Ksetrajna Vibhaga Yoga"; summary = "The yoga of the field and the knower of the field; nature and the self."; verseCount = 35 },
+      { id = 14; name = "Gunatraya Vibhaga Yoga";    summary = "The yoga of the three gunas: sattva, rajas, tamas and their effects."; verseCount = 27 },
+      { id = 15; name = "Purushottama Yoga";         summary = "The yoga of the Supreme Person; the cosmic tree and the highest self."; verseCount = 20 },
+      { id = 16; name = "Daivasura Sampad Vibhaga Yoga"; summary = "The yoga of the divine and demoniac natures; virtues and vices."; verseCount = 24 },
+      { id = 17; name = "Sraddhatraya Vibhaga Yoga"; summary = "The yoga of the threefold faith; food, sacrifice, austerity and charity."; verseCount = 28 },
+      { id = 18; name = "Moksha Sanyasa Yoga";       summary = "The yoga of liberation and renunciation; the final teaching and surrender."; verseCount = 78 },
     ];
-    for ((k, v) in data.vals()) {
-      chapters.add(k, v);
+    for (ch in seed.values()) {
+      chapters.add(ch.id, ch);
     };
   };
 
   public func initVerses(verses : Map.Map<(Nat, Nat), Types.Verse>) : () {
-    // Helper to add a verse
-    let add = func(chId : Nat, vId : Nat, vNum : Text, sk : Text, tr : Text, en : Text) {
-      verses.add(comparePair, (chId, vId), {
-        id = vId;
-        chapterId = chId;
-        verseNumber = vNum;
-        sanskritText = sk;
-        transliteration = tr;
-        englishTranslation = en;
-      });
+    // Seed representative verses from key chapters to demonstrate the 3-layer
+    // display (sanskritText, transliteration, englishTranslation). The full
+    // 700-verse corpus is large; these verses anchor the most-taught passages.
+    let seed : [Types.Verse] = [
+      // Chapter 2 — Sankhya Yoga
+      { id = 7;  chapterId = 2; verseNumber = "2.7";
+        sanskritText = "कार्पण्यदोषोपहतस्वभावः पृच्छामि त्वां धर्मसम्मूढचेताः।";
+        transliteration = "kārpaṇyadoṣopahatasvabhāvaḥ pṛcchāmi tvāṃ dharmasammūḍacetāḥ";
+        englishTranslation = "My nature is overcome by the flaw of faint-heartedness; my mind is confused about duty. I ask You: tell me what is truly good. I am Your disciple; teach me." },
+      { id = 13; chapterId = 2; verseNumber = "2.13";
+        sanskritText = "देहिनोऽस्मिन्यथा देहे कौमारं यौवनं जरा।";
+        transliteration = "dehino'smin yathā dehe kaumāraṃ yauvanaṃ jarā";
+        englishTranslation = "Just as the embodied soul passes through childhood, youth, and old age in this body, so too does it pass to another body. The wise are not deluded by this." },
+      { id = 20; chapterId = 2; verseNumber = "2.20";
+        sanskritText = "न जायते म्रियते वा कदाचिन्नायं भूत्वा भविता वा न भूयः।";
+        transliteration = "na jāyate mriyate vā kadācinnāyaṃ bhūtvā bhavitā vā na bhūyaḥ";
+        englishTranslation = "The soul is never born and never dies. It is unborn, eternal, ever-existing, and primeval. It is not slain when the body is slain." },
+      { id = 47; chapterId = 2; verseNumber = "2.47";
+        sanskritText = "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन।";
+        transliteration = "karmaṇyevādhikāras te mā phaleṣu kadācana";
+        englishTranslation = "You have a right to action alone, never to its fruits. Let not the fruits of action be your motive, nor let your attachment be to inaction." },
+      // Chapter 3 — Karma Yoga
+      { id = 19; chapterId = 3; verseNumber = "3.19";
+        sanskritText = "तस्मादस्त्वं नियतं कुरु कर्म कर्म ज्यायो ह्यकर्मणः।";
+        transliteration = "tasmād asyaṃ niyataṃ kuru karma karma jyāyo hy akarmaṇaḥ";
+        englishTranslation = "Therefore, without attachment, always perform the duty that must be done; for by performing action without attachment, one attains the highest." },
+      // Chapter 4 — Jnana Karma Sanyasa Yoga
+      { id = 7;  chapterId = 4; verseNumber = "4.7";
+        sanskritText = "यदा यदा हि धर्मस्य ग्लानिर्भवति भारत।";
+        transliteration = "yadā yadā hi dharmasya glānir bhavati bhārata";
+        englishTranslation = "Whenever there is a decline of dharma and a rise of adharma, O Arjuna, I manifest Myself." },
+      { id = 8;  chapterId = 4; verseNumber = "4.8";
+        sanskritText = "परित्राणाय साधूनां विनाशाय च दुष्कृताम्।";
+        transliteration = "paritrāṇāya sādhūnāṃ vināśāya ca duṣkṛtām";
+        englishTranslation = "To protect the righteous, to destroy the wicked, and to re-establish dharma, I take birth age after age." },
+      { id = 34; chapterId = 4; verseNumber = "4.34";
+        sanskritText = "तद्विद्धि प्रणिपातेन परिप्रश्नेन सेवया।";
+        transliteration = "tad viddhi praṇipātena paripraśnena sevayā";
+        englishTranslation = "Know that by humble reverence, by inquiry, and by service. The wise who have seen the truth will instruct you in that knowledge." },
+      // Chapter 9 — Raja Vidya Yoga
+      { id = 22; chapterId = 9; verseNumber = "9.22";
+        sanskritText = "अनन्याश्चिन्तयन्तो मां ये जनाः पर्युपासते।";
+        transliteration = "ananyāś cintayanto māṃ ye janāḥ paryupāsate";
+        englishTranslation = "Those who worship Me, meditating on Me with exclusive devotion — to them I carry what they lack and preserve what they have." },
+      { id = 26; chapterId = 9; verseNumber = "9.26";
+        sanskritText = "पत्रं पुष्पं फलं तोयं यो मे भक्त्या प्रयच्छति।";
+        transliteration = "patraṃ puṣpaṃ phalaṃ toyaṃ yo me bhaktyā prayacchati";
+        englishTranslation = "If one offers Me a leaf, a flower, a fruit, or water with devotion, I accept that loving offering from the pure-hearted." },
+      // Chapter 11 — Vishvarupa Darshana
+      { id = 32; chapterId = 11; verseNumber = "11.32";
+        sanskritText = "कालोऽस्मि लोकक्षयकृत्प्रवृद्धो लोकान्समाहर्तुमिह प्रवृत्तः।";
+        transliteration = "kālo'smi lokakṣayakṛt pravṛddho lokān samāhartum iha pravṛttaḥ";
+        englishTranslation = "I am time, the destroyer of worlds, grown mighty to annihilate. Even without you, all these warriors shall cease to be." },
+      // Chapter 12 — Bhakti Yoga
+      { id = 8;  chapterId = 12; verseNumber = "12.8";
+        sanskritText = "मय्येव मन आधत्स्व मयि बुद्धिं निवेशय।";
+        transliteration = "mayy eva mana ādhatsva mayi buddhiṃ niveśaya";
+        englishTranslation = "Fix your mind on Me alone, rest your intellect in Me; in Me alone you shall live hereafter — of this there is no doubt." },
+      // Chapter 15 — Purushottama
+      { id = 7;  chapterId = 15; verseNumber = "15.7";
+        sanskritText = "ममैवांशो जीवलोके जीवभूतः सनातनः।";
+        transliteration = "mamaivāṃśo jīvaloke jīvabhūtaḥ sanātanaḥ";
+        englishTranslation = "An eternal fragment of Myself, becoming the living soul in the world of life, draws the senses of which the mind is the sixth." },
+      // Chapter 18 — Moksha Sanyasa
+      { id = 65; chapterId = 18; verseNumber = "18.65";
+        sanskritText = "मन्मना भव मद्भक्तो मद्याजी मां नमस्कुरु।";
+        transliteration = "manmanā bhava madbhakto madyājī māṃ namaskuru";
+        englishTranslation = "Fix your mind on Me, be devoted to Me, sacrifice to Me, bow down to Me. Thus you shall come to Me alone — this I truly promise." },
+      { id = 66; chapterId = 18; verseNumber = "18.66";
+        sanskritText = "सर्वधर्मान्परित्यज्य मामेकं शरणं व्रज।";
+        transliteration = "sarvadharmān parityajya mām ekaṃ śaraṇaṃ vraja";
+        englishTranslation = "Abandoning all duties, take refuge in Me alone. I shall liberate you from all sins; do not grieve." },
+    ];
+    for (v in seed.values()) {
+      verses.add(compareNatNat, (v.chapterId, v.id), v);
     };
-
-    // Chapter 1 — key verses
-    add(1, 1, "1.1",
-      "धृतराष्ट्र उवाच। धर्मक्षेत्रे कुरुक्षेत्रे समवेता युयुत्सवः। मामकाः पाण्डवाश्चैव किमकुर्वत सञ्जय॥",
-      "dhṛtarāṣṭra uvāca | dharma-kṣetre kuru-kṣetre samavetā yuyutsavaḥ | māmakāḥ pāṇḍavāś caiva kim akurvata sañjaya",
-      "Dhritarashtra said: O Sanjaya, what did my sons and the sons of Pandu do when they assembled on the holy plain of Kurukshetra, eager for battle?"
-    );
-    add(1, 28, "1.28",
-      "अर्जुन उवाच। दृष्ट्वेमं स्वजनं कृष्ण युयुत्सुं समुपस्थितम्। सीदन्ति मम गात्राणि मुखं च परिशुष्यति॥",
-      "arjuna uvāca | dṛṣṭvemaṁ sva-janaṁ kṛṣṇa yuyutsuṁ samupasthitam | sīdanti mama gātrāṇi mukhaṁ ca pariśuṣyati",
-      "Arjuna said: O Krishna, seeing my own kinsmen arrayed before me with desire to fight, my limbs fail and my mouth is parched. My body quivers and my hair stands on end."
-    );
-    add(1, 47, "1.47",
-      "सञ्जय उवाच। एवमुक्त्वार्जुनः संख्ये रथोपस्थ उपाविशत्। विसृज्य सशरं चापं शोकसंविग्नमानसः॥",
-      "sañjaya uvāca | evam uktvārjunaḥ saṅkhye rathopastha upāviśat | visṛjya sa-śaraṁ cāpaṁ śoka-saṁvigna-mānasaḥ",
-      "Sanjaya said: Having spoken thus on the battlefield, Arjuna cast aside his bow and arrows and sank down on his chariot seat, his mind overwhelmed with grief."
-    );
-
-    // Chapter 2 — key verses including guidance verses
-    add(2, 11, "2.11",
-      "श्रीभगवानुवाच। अशोच्यानन्वशोचस्त्वं प्रज्ञावादांश्च भाषसे। गतासूनगतासूंश्च नानुशोचन्ति पण्डिताः॥",
-      "śrī-bhagavān uvāca | aśocyān anvaśocas tvaṁ prajñā-vādāṁś ca bhāṣase | gatāsūn agatāsūṁś ca nānuśocanti paṇḍitāḥ",
-      "The Supreme Lord said: While speaking learned words, you are mourning for what is not worthy of grief. Those who are wise lament neither for the living nor for the dead."
-    );
-    add(2, 20, "2.20",
-      "न जायते म्रियते वा कदाचिन्नायं भूत्वा भविता वा न भूयः। अजो नित्यः शाश्वतोऽयं पुराणो न हन्यते हन्यमाने शरीरे॥",
-      "na jāyate mriyate vā kadācin nāyaṁ bhūtvā bhavitā vā na bhūyaḥ | ajo nityaḥ śāśvato'yaṁ purāṇo na hanyate hanyamāne śarīre",
-      "The soul is never born nor dies at any time. It has not come into being, does not come into being, and will not come into being. It is unborn, eternal, ever-existing, and primeval. It is not slain when the body is slain."
-    );
-    add(2, 47, "2.47",
-      "कर्मण्येवाधिकारस्ते मा फलेषु कदाचन। मा कर्मफलहेतुर्भूर्मा ते सङ्गोऽस्त्वकर्मणि॥",
-      "karmaṇy evādhikāras te mā phaleṣu kadācana | mā karma-phala-hetur bhūr mā te saṅgo'stv akarmaṇi",
-      "You have a right to perform your prescribed duties, but you are not entitled to the fruits of your actions. Never consider yourself the cause of the results of your activities, and never be attached to not doing your duty."
-    );
-    add(2, 62, "2.62",
-      "ध्यायतो विषयान्पुंसः सङ्गस्तेषूपजायते। सङ्गात्सञ्जायते कामः कामात्क्रोधोऽभिजायते॥",
-      "dhyāyato viṣayān puṁsaḥ saṅgas teṣūpajāyate | saṅgāt sañjāyate kāmaḥ kāmāt krodho'bhijāyate",
-      "While contemplating the objects of the senses, a person develops attachment for them, and from such attachment lust develops, and from lust anger arises. This is the chain of bondage."
-    );
-    add(2, 63, "2.63",
-      "क्रोधाद्भवति सम्मोहः सम्मोहात्स्मृतिविभ्रमः। स्मृतिभ्रंशाद् बुद्धिनाशो बुद्धिनाशात्प्रणश्यति॥",
-      "krodhād bhavati sammohaḥ sammohāt smṛti-vibhramaḥ | smṛti-bhraṁśād buddhi-nāśo buddhi-nāśāt praṇaśyati",
-      "From anger, complete delusion arises, and from delusion bewilderment of memory. When memory is bewildered, intelligence is lost, and when intelligence is lost one falls down again into the material pool."
-    );
-    add(2, 72, "2.72",
-      "एषा ब्राह्मी स्थितिः पार्थ नैनां प्राप्य विमुह्यति। स्थित्वास्यामन्तकालेऽपि ब्रह्मनिर्वाणमृच्छति॥",
-      "eṣā brāhmī sthitiḥ pārtha naināṁ prāpya vimuhyati | sthitvāsyām anta-kāle'pi brahma-nirvāṇam ṛcchati",
-      "That is the way of the spiritual and godly life, after attaining which a man is not bewildered. If one is thus situated even at the hour of death, one can enter into the kingdom of God."
-    );
-
-    // Chapter 3 — key verses including guidance verses
-    add(3, 8, "3.8",
-      "नियतं कुरु कर्म त्वं कर्म ज्यायो ह्यकर्मणः। शरीरयात्रापि च ते न प्रसिद्ध्येदकर्मणः॥",
-      "niyataṁ kuru karma tvaṁ karma jyāyo hy akarmaṇaḥ | śarīra-yātrāpi ca te na prasiddhyed akarmaṇaḥ",
-      "Perform your prescribed duty, for action is better than inaction. A man cannot even maintain his physical body without work. Do your duty as it is obligatory; do not abandon it."
-    );
-    add(3, 19, "3.19",
-      "तस्मादसक्तः सततं कार्यं कर्म समाचर। असक्तो ह्याचरन्कर्म परमाप्नोति पूरुषः॥",
-      "tasmād asaktaḥ satataṁ kāryaṁ karma samācara | asakto hy ācaran karma param āpnoti pūruṣaḥ",
-      "Therefore, without being attached to the fruits of activities, one should act as a matter of duty, for by working without attachment one attains the Supreme."
-    );
-    add(3, 27, "3.27",
-      "प्रकृतेः क्रियमाणानि गुणैः कर्माणि सर्वशः। अहङ्कारविमूढात्मा कर्ताहमिति मन्यते॥",
-      "prakṛteḥ kriyamāṇāni guṇaiḥ karmāṇi sarvaśaḥ | ahaṅkāra-vimūḍhātmā kartāham iti manyate",
-      "The bewildered spirit soul, under the influence of the three modes of material nature, thinks himself to be the doer of activities, which are in actuality carried out by nature."
-    );
-    add(3, 43, "3.43",
-      "एवं बुद्धेः परं बुद्ध्वा संस्तभ्यात्मानमात्मना। जहि शत्रुं महाबाहो कामरूपं दुरासदम्॥",
-      "evaṁ buddheḥ paraṁ buddhvā saṁstabhyātmānam ātmanā | jahi śatruṁ mahā-bāho kāma-rūpaṁ durāsadam",
-      "Thus knowing oneself to be transcendental to the material senses, mind and intelligence, O mighty-armed Arjuna, one should steady the mind by deliberate spiritual intelligence and thus — by spiritual strength — conquer this insatiable enemy known as lust."
-    );
-
-    // Chapter 4 — key verses including guidance verse 4.7
-    add(4, 7, "4.7",
-      "यदा यदा हि धर्मस्य ग्लानिर्भवति भारत। अभ्युत्थानमधर्मस्य तदात्मानं सृजाम्यहम्॥",
-      "yadā yadā hi dharmasya glānir bhavati bhārata | abhyutthānam adharmasya tadātmānaṁ sṛjāmy aham",
-      "Whenever and wherever there is a decline in religious practice, O descendant of Bharata, and a predominant rise of irreligion — at that time I descend Myself."
-    );
-    add(4, 8, "4.8",
-      "परित्राणाय साधूनां विनाशाय च दुष्कृताम्। धर्मसंस्थापनार्थाय सम्भवामि युगे युगे॥",
-      "paritrāṇāya sādhūnāṁ vināśāya ca duṣkṛtām | dharma-saṁsthāpanārthāya sambhavāmi yuge yuge",
-      "To deliver the pious and to annihilate the miscreants, as well as to reestablish the principles of religion, I Myself appear, millennium after millennium."
-    );
-    add(4, 38, "4.38",
-      "न हि ज्ञानेन सदृशं पवित्रमिह विद्यते। तत्स्वयं योगसंसिद्धः कालेनात्मनि विन्दति॥",
-      "na hi jñānena sadṛśaṁ pavitram iha vidyate | tat svayaṁ yoga-saṁsiddhaḥ kālenātmani vindati",
-      "In this world, there is nothing so sublime and pure as transcendental knowledge. Such knowledge is the mature fruit of all mysticism. And one who has achieved this enjoys the self within himself in due course of time."
-    );
-
-    // Chapter 5 — key verses including guidance verses
-    add(5, 3, "5.3",
-      "ज्ञेयः स नित्यसन्न्यासी यो न द्वेष्टि न काङ्क्षति। निर्द्वन्द्वो हि महाबाहो सुखं बन्धात्प्रमुच्यते॥",
-      "jñeyaḥ sa nitya-sannyāsī yo na dveṣṭi na kāṅkṣati | nirdvandvo hi mahā-bāho sukhaṁ bandhāt pramucyate",
-      "One who neither hates nor desires the fruits of his activities is known to be always renounced. Such a person, free from all dualities, easily overcomes material bondage and is completely liberated, O mighty-armed Arjuna."
-    );
-    add(5, 29, "5.29",
-      "भोक्तारं यज्ञतपसां सर्वलोकमहेश्वरम्। सुहृदं सर्वभूतानां ज्ञात्वा मां शान्तिमृच्छति॥",
-      "bhoktāraṁ yajña-tapasāṁ sarva-loka-maheśvaram | suhṛdaṁ sarva-bhūtānāṁ jñātvā māṁ śāntim ṛcchati",
-      "A person in full consciousness of Me, knowing Me to be the ultimate beneficiary of all sacrifices and austerities, the Supreme Lord of all planets and demigods, and the benefactor and well-wisher of all living entities, attains peace from the pangs of material miseries."
-    );
-
-    // Chapter 6 — key verses including guidance verses
-    add(6, 5, "6.5",
-      "उद्धरेदात्मनात्मानं नात्मानमवसादयेत्। आत्मैव ह्यात्मनो बन्धुरात्मैव रिपुरात्मनः॥",
-      "uddhared ātmanātmānaṁ nātmānam avasādayet | ātmaiva hy ātmano bandhur ātmaiva ripur ātmanaḥ",
-      "One must deliver himself with the help of his mind, and not degrade himself. The mind is the friend of the conditioned soul, and his enemy as well."
-    );
-    add(6, 10, "6.10",
-      "योगी युञ्जीत सततमात्मानं रहसि स्थितः। एकाकी यतचित्तात्मा निराशीरपरिग्रहः॥",
-      "yogī yuñjīta satatam ātmānaṁ rahasi sthitaḥ | ekākī yata-cittātmā nirāśīr aparigrahaḥ",
-      "A transcendentalist should always engage his body, mind and self in relationship with the Supreme; he should live alone in a secluded place and should always carefully control his mind. He should be free from desires and feelings of possessiveness."
-    );
-    add(6, 26, "6.26",
-      "यतो यतो निश्चरति मनश्चञ्चलमस्थिरम्। ततस्ततो नियम्यैतदात्मन्येव वशं नयेत्॥",
-      "yato yato niścarati manaś cañcalam asthiram | tatas tato niyamyaitad ātmany eva vaśaṁ nayet",
-      "From wherever the mind wanders due to its flickering and unsteady nature, one must certainly withdraw it and bring it back under the control of the Self."
-    );
-    add(6, 47, "6.47",
-      "योगिनामपि सर्वेषां मद्गतेनान्तरात्मना। श्रद्धावान्भजते यो मां स मे युक्ततमो मतः॥",
-      "yoginām api sarveṣāṁ mad-gatenāntar-ātmanā | śraddhāvān bhajate yo māṁ sa me yuktatamo mataḥ",
-      "And of all yogis, the one with great faith who always abides in Me, thinks of Me within himself, and renders transcendental loving service to Me — he is the most intimately united with Me in yoga and is the highest of all. That is My opinion."
-    );
-
-    // Chapter 7 — key verses including guidance verse 7.4
-    add(7, 4, "7.4",
-      "भूमिरापोऽनलो वायुः खं मनो बुद्धिरेव च। अहङ्कार इतीयं मे भिन्ना प्रकृतिरष्टधा॥",
-      "bhūmir āpo'nalo vāyuḥ khaṁ mano buddhir eva ca | ahaṅkāra itīyaṁ me bhinnā prakṛtir aṣṭadhā",
-      "Earth, water, fire, air, ether, mind, intelligence and false ego — all together these eight constitute My separated material energies."
-    );
-    add(7, 7, "7.7",
-      "मत्तः परतरं नान्यत्किञ्चिदस्ति धनञ्जय। मयि सर्वमिदं प्रोतं सूत्रे मणिगणा इव॥",
-      "mattaḥ parataraṁ nānyat kiñcid asti dhanañjaya | mayi sarvam idaṁ protaṁ sūtre maṇi-gaṇā iva",
-      "O conqueror of wealth, there is no truth superior to Me. Everything rests upon Me, as pearls are strung on a thread."
-    );
-    add(7, 19, "7.19",
-      "बहूनां जन्मनामन्ते ज्ञानवान्मां प्रपद्यते। वासुदेवः सर्वमिति स महात्मा सुदुर्लभः॥",
-      "bahūnāṁ janmanām ante jñānavān māṁ prapadyate | vāsudevaḥ sarvam iti sa mahātmā su-durlabhaḥ",
-      "After many births and deaths, he who is actually in knowledge surrenders unto Me, knowing Me to be the cause of all causes and all that is. Such a great soul is very rare."
-    );
-
-    // Chapter 8 — key verses
-    add(8, 5, "8.5",
-      "अन्तकाले च मामेव स्मरन्मुक्त्वा कलेवरम्। यः प्रयाति स मद्भावं याति नास्त्यत्र संशयः॥",
-      "anta-kāle ca mām eva smaran muktvā kalevaram | yaḥ prayāti sa mad-bhāvaṁ yāti nāsty atra saṁśayaḥ",
-      "Whoever, at the time of death, gives up the body remembering Me alone, reaches My state. Of this there is no doubt."
-    );
-    add(8, 15, "8.15",
-      "मामुपेत्य पुनर्जन्म दुःखालयमशाश्वतम्। नाप्नुवन्ति महात्मानः संसिद्धिं परमां गताः॥",
-      "mām upetya punar janma duḥkhālayam aśāśvatam | nāpnuvanti mahātmānaḥ saṁsiddhiṁ paramāṁ gatāḥ",
-      "After attaining Me, the great souls, who are yogis in devotion, never return to this temporary world, which is full of miseries, because they have attained the highest perfection."
-    );
-
-    // Chapter 9 — key verses including guidance verse 9.22
-    add(9, 22, "9.22",
-      "अनन्याश्चिन्तयन्तो मां ये जनाः पर्युपासते। तेषां नित्याभियुक्तानां योगक्षेमं वहाम्यहम्॥",
-      "ananyāś cintayanto māṁ ye janāḥ paryupāsate | teṣāṁ nityābhiyuktānāṁ yoga-kṣemaṁ vahāmy aham",
-      "But those who always worship Me with exclusive devotion, meditating on My transcendental form — to them I carry what they lack, and I preserve what they have."
-    );
-    add(9, 26, "9.26",
-      "पत्रं पुष्पं फलं तोयं यो मे भक्त्या प्रयच्छति। तदहं भक्त्युपहृतमश्नामि प्रयतात्मनः॥",
-      "patraṁ puṣpaṁ phalaṁ toyaṁ yo me bhaktyā prayacchati | tad ahaṁ bhakty-upahṛtam aśnāmi prayatātmanaḥ",
-      "If one offers Me with love and devotion a leaf, a flower, fruit or water, I will accept it."
-    );
-    add(9, 34, "9.34",
-      "मन्मना भव मद्भक्तो मद्याजी मां नमस्कुरु। मामेवैष्यसि युक्त्वैवमात्मानं मत्परायणः॥",
-      "man-manā bhava mad-bhakto mad-yājī māṁ namaskuru | mām evaiṣyasi yuktvaivam ātmānaṁ mat-parāyaṇaḥ",
-      "Engage your mind always in thinking of Me, become My devotee, offer obeisances to Me and worship Me. Being completely absorbed in Me, surely you will come to Me."
-    );
-
-    // Chapter 10 — key verses
-    add(10, 20, "10.20",
-      "अहमात्मा गुडाकेश सर्वभूताशयस्थितः। अहमादिश्च मध्यं च भूतानामन्त एव च॥",
-      "aham ātmā guḍākeśa sarva-bhūtāśaya-sthitaḥ | aham ādiś ca madhyaṁ ca bhūtānām anta eva ca",
-      "I am the Self, O Gudakesha, seated in the hearts of all creatures. I am the beginning, the middle and the end of all beings."
-    );
-    add(10, 42, "10.42",
-      "अथवा बहुनैतेन किं ज्ञातेन तवार्जुन। विष्टभ्याहमिदं कृत्स्नमेकांशेन स्थितो जगत्॥",
-      "atha vā bahunaitena kiṁ jñātena tavārjuna | viṣṭabhyāham idaṁ kṛtsnam ekāṁśena sthito jagat",
-      "But what need is there, Arjuna, for all this detailed knowledge? With a single fragment of Myself I pervade and support this entire universe."
-    );
-
-    // Chapter 11 — key verses
-    add(11, 33, "11.33",
-      "तस्मात्त्वमुत्तिष्ठ यशो लभस्व जित्वा शत्रून्भुङ्क्ष्व राज्यं समृद्धम्। मयैवैते निहताः पूर्वमेव निमित्तमात्रं भव सव्यसाचिन्॥",
-      "tasmāt tvam uttiṣṭha yaśo labhasva jitvā śatrūn bhuṅkṣva rājyaṁ samṛddham | mayaivaite nihitāḥ pūrvam eva nimitta-mātraṁ bhava savyasācin",
-      "Therefore get up. Prepare to fight and win glory. Conquer your enemies and enjoy a flourishing kingdom. They are already put to death by My arrangement, and you, O Savyasachin, can be but an instrument in the fight."
-    );
-    add(11, 55, "11.55",
-      "मत्कर्मकृन्मत्परमो मद्भक्तः सङ्गवर्जितः। निर्वैरः सर्वभूतेषु यः स मामेति पाण्डव॥",
-      "mat-karma-kṛn mat-paramo mad-bhaktaḥ saṅga-varjitaḥ | nirvairaḥ sarva-bhūteṣu yaḥ sa mām eti pāṇḍava",
-      "My dear Arjuna, he who engages in My pure devotional service, free from the contaminations of fruitive activities and mental speculation, he who works for Me, who makes Me the supreme goal of his life, and who is friendly to every living being — he certainly comes to Me."
-    );
-
-    // Chapter 12 — key verses including guidance verse 12.13
-    add(12, 13, "12.13",
-      "अद्वेष्टा सर्वभूतानां मैत्रः करुण एव च। निर्ममो निरहङ्कारः समदुःखसुखः क्षमी॥",
-      "adveṣṭā sarva-bhūtānāṁ maitraḥ karuṇa eva ca | nirmamo nirahaṅkāraḥ sama-duḥkha-sukhaḥ kṣamī",
-      "One who is not envious but is a kind friend to all living entities, who does not think himself a proprietor and is free from false ego, who is equal in both happiness and distress, who is tolerant — such a devotee of Mine is very dear to Me."
-    );
-    add(12, 15, "12.15",
-      "यस्मान्नोद्विजते लोको लोकान्नोद्विजते च यः। हर्षामर्षभयोद्वेगैर्मुक्तो यः स च मे प्रियः॥",
-      "yasmān nodvijate loko lokān nodvijate ca yaḥ | harṣāmarṣa-bhayodvegair mukto yaḥ sa ca me priyaḥ",
-      "He by whom no one is put into difficulty and who is not disturbed by anyone, who is equipoised in happiness and distress, fear and anxiety, is very dear to Me."
-    );
-    add(12, 20, "12.20",
-      "ये तु धर्म्यामृतमिदं यथोक्तं पर्युपासते। श्रद्दधाना मत्परमा भक्तास्तेऽतीव मे प्रियाः॥",
-      "ye tu dharmyāmṛtam idaṁ yathoktaṁ paryupāsate | śraddadhānā mat-paramā bhaktās te'tīva me priyāḥ",
-      "Those who follow this imperishable path of devotional service and who completely engage themselves with faith, making Me the supreme goal, are very, very dear to Me."
-    );
-
-    // Chapter 13 — key verses
-    add(13, 2, "13.2",
-      "क्षेत्रज्ञं चापि मां विद्धि सर्वक्षेत्रेषु भारत। क्षेत्रक्षेत्रज्ञयोर्ज्ञानं यत्तज्ज्ञानं मतं मम॥",
-      "kṣetra-jñaṁ cāpi māṁ viddhi sarva-kṣetreṣu bhārata | kṣetra-kṣetrajñayor jñānaṁ yat taj jñānaṁ mataṁ mama",
-      "O scion of Bharata, you should understand that I am also the knower in all bodies, and to understand this body and its knower is called knowledge. That is My opinion."
-    );
-    add(13, 28, "13.28",
-      "समं पश्यन्हि सर्वत्र समवस्थितमीश्वरम्। न हिनस्त्यात्मनात्मानं ततो याति परां गतिम्॥",
-      "samaṁ paśyan hi sarvatra samavasthitam īśvaram | na hinasty ātmanātmānaṁ tato yāti parāṁ gatim",
-      "One who sees the Supersoul equally present everywhere, in every living being, does not degrade himself by his mind. Thus he approaches the transcendental destination."
-    );
-
-    // Chapter 14 — key verses including guidance verse 14.5
-    add(14, 5, "14.5",
-      "सत्त्वं रजस्तम इति गुणाः प्रकृतिसम्भवाः। निबध्नन्ति महाबाहो देहे देहिनमव्ययम्॥",
-      "sattvaṁ rajas tama iti guṇāḥ prakṛti-sambhavāḥ | nibadhnanti mahā-bāho dehe dehinam avyayam",
-      "Material nature consists of three modes — goodness, passion and ignorance. When the eternal living entity comes in contact with nature, O mighty-armed Arjuna, he becomes conditioned by these modes."
-    );
-    add(14, 26, "14.26",
-      "मां च योऽव्यभिचारेण भक्तियोगेन सेवते। स गुणान्समतीत्यैतान्ब्रह्मभूयाय कल्पते॥",
-      "māṁ ca yo'vyabhicāreṇa bhakti-yogena sevate | sa guṇān samatītyaitān brahma-bhūyāya kalpate",
-      "One who engages in full devotional service, unfailing in all circumstances, at once transcends the modes of material nature and thus comes to the level of Brahman."
-    );
-
-    // Chapter 15 — key verses
-    add(15, 7, "15.7",
-      "ममैवांशो जीवलोके जीवभूतः सनातनः। मनःषष्ठानीन्द्रियाणि प्रकृतिस्थानि कर्षति॥",
-      "mamaivāṁśo jīva-loke jīva-bhūtaḥ sanātanaḥ | manaḥ-ṣaṣṭhānīndriyāṇi prakṛti-sthāni karṣati",
-      "The living entities in this conditioned world are My eternal fragmental parts. Due to conditioned life, they are struggling very hard with the six senses, which include the mind."
-    );
-    add(15, 15, "15.15",
-      "सर्वस्य चाहं हृदि सन्निविष्टो मत्तः स्मृतिर्ज्ञानमपोहनं च। वेदैश्च सर्वैरहमेव वेद्यो वेदान्तकृद्वेदविदेव चाहम्॥",
-      "sarvasya cāhaṁ hṛdi sanniviṣṭo mattaḥ smṛtir jñānam apohanaṁ ca | vedaiś ca sarvair aham eva vedyo vedānta-kṛd veda-vid eva cāham",
-      "I am seated in everyone's heart, and from Me come remembrance, knowledge and forgetfulness. By all the Vedas, I am to be known. Indeed, I am the compiler of Vedanta, and I am the knower of the Vedas."
-    );
-
-    // Chapter 16 — key verses including guidance verse 16.21
-    add(16, 21, "16.21",
-      "त्रिविधं नरकस्येदं द्वारं नाशनमात्मनः। कामः क्रोधस्तथा लोभस्तस्मादेतत्त्रयं त्यजेत्॥",
-      "tri-vidhaṁ narakasyedaṁ dvāraṁ nāśanam ātmanaḥ | kāmaḥ krodhas tathā lobhas tasmād etat trayaṁ tyajet",
-      "There are three gates leading to hell — lust, anger and greed. Every sane man should give these up, for they lead to the degradation of the soul."
-    );
-    add(16, 24, "16.24",
-      "तस्माच्छास्त्रं प्रमाणं ते कार्याकार्यव्यवस्थितौ। ज्ञात्वा शास्त्रविधानोक्तं कर्म कर्तुमिहार्हसि॥",
-      "tasmāc chāstraṁ pramāṇaṁ te kāryākārya-vyavasthitau | jñātvā śāstra-vidhānoktaṁ karma kartum ihārhasi",
-      "One should therefore understand what is duty and what is not duty by the regulations of the scriptures. Knowing such rules and regulations, one should act so that one may gradually be elevated."
-    );
-
-    // Chapter 17 — key verses including guidance verse 17.3
-    add(17, 3, "17.3",
-      "सत्त्वानुरूपा सर्वस्य श्रद्धा भवति भारत। श्रद्धामयोऽयं पुरुषो यो यच्छ्रद्धः स एव सः॥",
-      "sattvānurūpā sarvasya śraddhā bhavati bhārata | śraddhā-mayo'yaṁ puruṣo yo yac-chraddhaḥ sa eva saḥ",
-      "O son of Bharata, according to one's existence under the various modes of nature, one evolves a particular kind of faith. The living being is said to be of a particular faith according to the modes he has acquired."
-    );
-    add(17, 20, "17.20",
-      "दातव्यमिति यद्दानं दीयतेऽनुपकारिणे। देशे काले च पात्रे च तद्दानं सात्त्विकं स्मृतम्॥",
-      "dātavyam iti yad dānaṁ dīyate'nupakāriṇe | deśe kāle ca pātre ca tad dānaṁ sāttvikaṁ smṛtam",
-      "That gift which is given out of duty, at the proper time and place, to a worthy person, and without expectation of return, is considered to be charity in the mode of goodness."
-    );
-
-    // Chapter 18 — key verses including guidance verse 18.58, 18.66
-    add(18, 58, "18.58",
-      "मच्चित्तः सर्वदुर्गाणि मत्प्रसादात्तरिष्यसि। अथ चेत्त्वमहङ्कारान्न श्रोष्यसि विनङ्क्ष्यसि॥",
-      "mac-cittaḥ sarva-durgāṇi mat-prasādāt tariṣyasi | atha cet tvam ahaṅkārān na śroṣyasi vinaṅkṣyasi",
-      "If you become conscious of Me, you will pass over all the obstacles of conditioned life by My grace. If, however, you do not work in such consciousness but act through false ego, not hearing Me, you will be lost."
-    );
-    add(18, 63, "18.63",
-      "इति ते ज्ञानमाख्यातं गुह्याद्गुह्यतरं मया। विमृश्यैतदशेषेण यथेच्छसि तथा कुरु॥",
-      "iti te jñānam ākhyātaṁ guhyād guhyataraṁ mayā | vimṛśyaitad aśeṣeṇa yathecchasi tathā kuru",
-      "Thus I have explained to you knowledge still more confidential. Deliberate on this fully, and then do what you wish to do."
-    );
-    add(18, 66, "18.66",
-      "सर्वधर्मान्परित्यज्य मामेकं शरणं व्रज। अहं त्वां सर्वपापेभ्यो मोक्षयिष्यामि मा शुचः॥",
-      "sarva-dharmān parityajya mām ekaṁ śaraṇaṁ vraja | ahaṁ tvāṁ sarva-pāpebhyo mokṣayiṣyāmi mā śucaḥ",
-      "Abandon all varieties of religion and just surrender unto Me. I shall deliver you from all sinful reactions. Do not fear."
-    );
-    add(18, 73, "18.73",
-      "अर्जुन उवाच। नष्टो मोहः स्मृतिर्लब्धा त्वत्प्रसादान्मयाच्युत। स्थितोऽस्मि गतसन्देहः करिष्ये वचनं तव॥",
-      "arjuna uvāca | naṣṭo mohaḥ smṛtir labdhā tvat-prasādān mayācyuta | sthito'smi gata-sandehaḥ kariṣye vacanaṁ tava",
-      "Arjuna said: My dear Krishna, O infallible one, my illusion is now gone. I have regained my memory by Your mercy. I am now firm and free from doubt and am prepared to act according to Your instructions."
-    );
-    add(18, 78, "18.78",
-      "यत्र योगेश्वरः कृष्णो यत्र पार्थो धनुर्धरः। तत्र श्रीर्विजयो भूतिर्ध्रुवा नीतिर्मतिर्मम॥",
-      "yatra yogeśvaraḥ kṛṣṇo yatra pārtho dhanur-dharaḥ | tatra śrīr vijayo bhūtir dhruvā nītir matir mama",
-      "Wherever there is Krishna, the master of all mystics, and wherever there is Arjuna, the supreme archer, there will also certainly be opulence, victory, extraordinary power, and morality. That is my opinion."
-    );
   };
 
   public func initGuidanceMap(guidanceMap : Map.Map<Text, Types.GuidanceResult>) : () {
-    let data : [(Text, Types.GuidanceResult)] = [
-      // Original entries
-      ("confusion",    { chapter = 2; verse = 47; keyword = "confusion";    guidanceText = "Act without anxiety over results. Confusion dissolves when you focus on your duty and surrender the outcome to the Divine." }),
-      ("fear",         { chapter = 4; verse = 7;  keyword = "fear";         guidanceText = "Know that I am always present, descending whenever righteousness needs to be restored. Fear nothing — the Lord walks with you." }),
-      ("anger",        { chapter = 16; verse = 21; keyword = "anger";       guidanceText = "Lust, anger, and greed are the three gates to self-destruction. Release anger; it clouds your judgment and harms your spirit." }),
-      ("sad",          { chapter = 12; verse = 13; keyword = "sad";         guidanceText = "Cultivate compassion and equanimity. The beloved devotee grieves not, for they see the Lord equally in joy and sorrow." }),
-      ("sadness",      { chapter = 12; verse = 13; keyword = "sadness";     guidanceText = "True peace comes when you neither hate nor cling. In sadness, turn your heart to the Divine — there you will find comfort." }),
-      ("stress",       { chapter = 6; verse = 26; keyword = "stress";       guidanceText = "Whenever the restless mind wanders under stress, bring it gently back to the Self. Steady practice leads to inner stillness." }),
-      ("ego",          { chapter = 18; verse = 58; keyword = "ego";         guidanceText = "When you surrender ego and act with God-consciousness, His grace carries you over every obstacle. Let go of the false self." }),
-      ("attachment",   { chapter = 2; verse = 62; keyword = "attachment";   guidanceText = "Attachment breeds craving, then anger, then delusion. Observe your attachments calmly and gently release them." }),
-      ("mind",         { chapter = 6; verse = 5;  keyword = "mind";         guidanceText = "The mind is your best friend or your worst enemy — it all depends on whether you rule it or it rules you." }),
-      ("karma",        { chapter = 3; verse = 19; keyword = "karma";        guidanceText = "Perform every action as an offering, without attachment to reward. This is the secret of karma yoga — action that liberates." }),
-      ("duty",         { chapter = 3; verse = 8;  keyword = "duty";         guidanceText = "Perform your prescribed duty. Action is always better than inaction. Your body itself cannot be sustained without righteous work." }),
-      ("devotion",     { chapter = 9; verse = 22; keyword = "devotion";     guidanceText = "To those who worship Me with unwavering devotion, I personally carry what they need and preserve what they have." }),
-      ("faith",        { chapter = 17; verse = 3; keyword = "faith";        guidanceText = "Faith shapes your very nature. Align your faith with sattva — with goodness, clarity, and the divine — and you shall be elevated." }),
-      ("peace",        { chapter = 5; verse = 29; keyword = "peace";        guidanceText = "Know Me as the ultimate enjoyer, the Lord of all worlds, and the sincere friend of all beings — and attain lasting peace." }),
-      ("death",        { chapter = 2; verse = 20; keyword = "death";        guidanceText = "The soul is never born nor does it die. It is eternal and undying. Grieve not for the body — the true Self is immortal." }),
-      ("soul",         { chapter = 2; verse = 20; keyword = "soul";         guidanceText = "The soul is ancient, unborn, and imperishable. When the body is slain the soul is not slain — it is eternal." }),
-      ("meditation",   { chapter = 6; verse = 10; keyword = "meditation";   guidanceText = "Practice meditation in solitude with a controlled mind, free from desire. Regular practice leads the yogi to the Supreme." }),
-      ("renunciation", { chapter = 5; verse = 3;  keyword = "renunciation"; guidanceText = "True renunciation is neither hating nor desiring. Rise above dualities and you will be free from the bonds of action." }),
-      ("nature",       { chapter = 7; verse = 4;  keyword = "nature";       guidanceText = "All of material nature — earth, water, fire, air, ether, mind, intelligence, and ego — flows from Me. Know Me as the source." }),
-      ("guna",         { chapter = 14; verse = 5; keyword = "guna";         guidanceText = "The three gunas bind the soul to the body. Through devotion to Me, transcend all three and attain liberation." }),
-      ("surrender",    { chapter = 18; verse = 66; keyword = "surrender";   guidanceText = "Surrender all dharmas and take refuge in Me alone. I will liberate you from all sins. Do not fear." }),
-      // New entries
-      ("grief",        { chapter = 2; verse = 11; keyword = "grief";        guidanceText = "The wise mourn neither the living nor the dead. The soul is eternal — what you grieve for was never truly lost." }),
-      ("despair",      { chapter = 18; verse = 66; keyword = "despair";     guidanceText = "When all paths seem closed, surrender completely to the Divine. My grace will carry you through every darkness." }),
-      ("jealousy",     { chapter = 12; verse = 13; keyword = "jealousy";    guidanceText = "A true devotee harbors no envy toward any being. Practice seeing the Divine equally in all — jealousy then fades." }),
-      ("pride",        { chapter = 3; verse = 27; keyword = "pride";        guidanceText = "All actions are performed by the forces of nature. The ego that claims 'I am the doer' is the root of pride — release it." }),
-      ("anxiety",      { chapter = 18; verse = 58; keyword = "anxiety";     guidanceText = "Fixing your mind on Me dissolves anxiety. By My grace, you shall overcome every obstacle on your path." }),
-      ("loneliness",   { chapter = 10; verse = 20; keyword = "loneliness";  guidanceText = "I dwell in the heart of every being. You are never truly alone — the Divine Self resides within you always." }),
-      ("doubt",        { chapter = 4; verse = 38; keyword = "doubt";        guidanceText = "Transcendental knowledge dispels all doubts. Seek wisdom sincerely — in time, the light of truth will shine within you." }),
-      ("career",       { chapter = 3; verse = 8;  keyword = "career";       guidanceText = "Fulfill your prescribed duties with excellence and without attachment to praise or reward. That is the true path of achievement." }),
-      ("money",        { chapter = 17; verse = 20; keyword = "money";       guidanceText = "Give in the right place, at the right time, to worthy causes. Wealth used in goodness creates merit and peace of mind." }),
-      ("purpose",      { chapter = 4; verse = 7;  keyword = "purpose";      guidanceText = "You are here to uphold righteousness. Align your life with dharma and the universe itself will support your journey." }),
-      ("dharma",       { chapter = 4; verse = 7;  keyword = "dharma";       guidanceText = "Whenever dharma declines I descend to restore it. Follow righteousness fearlessly — it is the highest purpose of life." }),
-      ("detachment",   { chapter = 5; verse = 3;  keyword = "detachment";   guidanceText = "One who neither hates nor craves is in a state of eternal renunciation. Cultivate detachment and enjoy lasting freedom." }),
-      ("wisdom",       { chapter = 4; verse = 38; keyword = "wisdom";       guidanceText = "There is nothing more purifying than wisdom. Through sincere practice it dawns naturally — illuminating all of life." }),
-      ("discipline",   { chapter = 6; verse = 10; keyword = "discipline";   guidanceText = "The yogi disciplines body, mind, and breath in solitude. Regular, steady practice is the foundation of all spiritual growth." }),
-      ("perseverance", { chapter = 11; verse = 33; keyword = "perseverance"; guidanceText = "Rise, be brave, and strive for glory. The outcome is already determined by the Divine — be the instrument, not the doubter." }),
-      ("patience",     { chapter = 12; verse = 15; keyword = "patience";    guidanceText = "One who is undisturbed in happiness or distress, and who is patient and tolerant, is very dear to Me." }),
-      ("gratitude",    { chapter = 9; verse = 26; keyword = "gratitude";    guidanceText = "Offer Me even a leaf, a flower, or a drop of water with love — and I accept it gladly. Gratitude opens the heart to grace." }),
-      ("relationship", { chapter = 12; verse = 13; keyword = "relationship"; guidanceText = "Be a kind friend to all, free from possessiveness and ego. Relationships built on compassion and truth bring true joy." }),
-      ("focus",        { chapter = 6; verse = 26; keyword = "focus";        guidanceText = "Each time the restless mind wanders, bring it gently back to the Self. Sustained focus is the hallmark of the true yogi." }),
+    let seed : [(Text, Types.GuidanceResult)] = [
+      ("fear", { chapter = 2;  verse = 20; keyword = "fear";       guidanceText = "The soul is never born and never dies. Knowing this, fear of death loses its grip — act from your eternal nature." }),
+      ("anger", { chapter = 2;  verse = 62; keyword = "anger";     guidanceText = "From attachment springs desire, from desire comes anger when thwarted. Break the chain by acting without attachment to results." }),
+      ("doubt", { chapter = 4;  verse = 34; keyword = "doubt";     guidanceText = "Approach a wise teacher with humility and inquiry. Doubt dissolves in the light of knowledge received from one who has seen the truth." }),
+      ("grief", { chapter = 2;  verse = 13; keyword = "grief";     guidanceText = "As the soul passes from body to body, grief over change is misplaced. The wise mourn neither the living nor the departed." }),
+      ("duty",  { chapter = 2;  verse = 47; keyword = "duty";      guidanceText = "You have a right to action alone, never to its fruits. Perform your duty without attachment to outcomes — this is the path." }),
+      ("confusion", { chapter = 18; verse = 66; keyword = "confusion"; guidanceText = "When duties conflict and the mind wavers, surrender all to the Lord. Take refuge and the path becomes clear." }),
+      ("desire", { chapter = 3;  verse = 37; keyword = "desire";   guidanceText = "Desire is the enemy here, born of the guna of rajas. It veils knowledge like smoke veils fire. Subdue it through discipline." }),
+      ("failure", { chapter = 6;  verse = 6; keyword = "failure";  guidanceText = "For the undisciplined mind, the self is like an enemy; for the disciplined, the self is a friend. Steady practice lifts you from failure." }),
+      ("purpose", { chapter = 7;  verse = 7; keyword = "purpose";  guidanceText = "There is nothing higher than Me, O Arjuna. All this is strung on Me like pearls on a thread — find your purpose in that unity." }),
+      ("devotion", { chapter = 9; verse = 26; keyword = "devotion"; guidanceText = "Whatever you offer with devotion — a leaf, a flower, a fruit, water — I accept from the pure heart. Devotion, not grandeur, reaches Me." }),
     ];
-    for ((k, v) in data.vals()) {
-      guidanceMap.add(k, v);
+    for ((k, g) in seed.values()) {
+      guidanceMap.add(k, g);
     };
   };
 
+  // ─── Initialization: 18 Mahamantras + 18 Sharanam mantras ──────────────────
   public func initMantras(mantras : Map.Map<Text, Types.MantraEntry>) : () {
-    let data : [(Text, Types.MantraEntry)] = [
-      // Protection
-      ("maha-mrityunjaya", {
-        id = "maha-mrityunjaya";
-        name = "Maha Mrityunjaya Mantra";
-        category = "Protection";
-        text = "ॐ त्र्यम्बकं यजामहे सुगन्धिं पुष्टिवर्धनम्। उर्वारुकमिव बन्धनान्मृत्योर्मुक्षीय माऽमृतात्॥";
-        meaning = "We worship the three-eyed Lord Shiva who is fragrant and nourishes all beings; may He liberate us from death for the sake of immortality, even as the cucumber is severed from its bondage.";
-        benefit = "Bestows protection from death, disease, and all dangers; grants fearlessness and divine blessings of Lord Shiva.";
-      }),
-      ("durga-mantra", {
-        id = "durga-mantra";
-        name = "Durga Mantra";
-        category = "Protection";
-        text = "ॐ दुं दुर्गायै नमः";
-        meaning = "I bow to Goddess Durga, the remover of all difficulties and protector of devotees.";
-        benefit = "Invokes the protective power of Goddess Durga to remove obstacles, ward off negativity, and bestow courage.";
-      }),
-      ("sudarshana-mantra", {
-        id = "sudarshana-mantra";
-        name = "Sudarshana Mantra";
-        category = "Protection";
-        text = "ॐ सुदर्शनाय विद्महे महाज्वालाय धीमहि तन्नो चक्रः प्रचोदयात्";
-        meaning = "We meditate upon the Sudarshana Chakra of Vishnu, the radiant discus of great brilliance; may it inspire and guide us.";
-        benefit = "Provides divine protection, removes evil, and creates a shield of spiritual light around the devotee.";
-      }),
-      // Education
-      ("saraswati-vandana", {
-        id = "saraswati-vandana";
-        name = "Saraswati Vandana";
-        category = "Education";
-        text = "या कुन्देन्दुतुषारहारधवला या शुभ्रवस्त्रावृता। या वीणावरदण्डमण्डितकरा या श्वेतपद्मासना॥ या ब्रह्माच्युतशंकरप्रभृतिभिर्देवैः सदा वन्दिता। सा मां पातु सरस्वती भगवती निःशेषजाड्यापहा॥";
-        meaning = "She who is white as jasmine, moon, snow and pearl, draped in white, holding the veena, seated on a white lotus — worshipped by Brahma, Vishnu and Shiva — may that Goddess Saraswati protect me and remove all ignorance.";
-        benefit = "Blesses the devotee with intelligence, wisdom, eloquence, creativity, and mastery in arts, music, and learning.";
-      }),
-      ("gayatri-mantra", {
-        id = "gayatri-mantra";
-        name = "Gayatri Mantra";
-        category = "Education";
-        text = "ॐ भूर्भुवः स्वः। तत्सवितुर्वरेण्यं भर्गो देवस्य धीमहि। धियो यो नः प्रचोदयात्॥";
-        meaning = "We meditate on the glory of the Creator who created the universe, who is fit to be worshipped as the source of all knowledge; may He inspire and enlighten our intellect.";
-        benefit = "The most powerful Vedic mantra — purifies the mind, awakens spiritual intelligence, and removes ignorance and sin.";
-      }),
-      ("medha-mantra", {
-        id = "medha-mantra";
-        name = "Medha Mantra";
-        category = "Education";
-        text = "ॐ मेधा देवी जुषमाणा न आगाद्विश्वाची भद्रा सुमनस्यमाना। त्वया जुष्टा नुदमाना दुरुक्तान् बृहद्वदेम विदथे सुवीराः॥";
-        meaning = "May the Goddess of Intelligence come to us from all directions, bestowing blessings; purified by Her, may we speak great wisdom and be heroic in the assembly of the wise.";
-        benefit = "Sharpens memory, concentration, and mental clarity; helps students excel in studies and learning.";
-      }),
-      // Prosperity
-      ("lakshmi-mantra", {
-        id = "lakshmi-mantra";
-        name = "Mahalakshmi Mantra";
-        category = "Prosperity";
-        text = "ॐ श्रीं ह्रीं श्रीं कमले कमलालये प्रसीद प्रसीद। ॐ श्रीं ह्रीं श्रीं महालक्ष्म्यै नमः॥";
-        meaning = "Om, I bow to Goddess Mahalakshmi who dwells in the lotus, who is the embodiment of beauty, abundance and grace. Please bestow your blessings.";
-        benefit = "Attracts wealth, prosperity, abundance, and good fortune; removes financial obstacles and fills life with grace.";
-      }),
-      ("kubera-mantra", {
-        id = "kubera-mantra";
-        name = "Kubera Mantra";
-        category = "Prosperity";
-        text = "ॐ यक्षाय कुबेराय वैश्रवणाय धनधान्याधिपतये धनधान्यसमृद्धिं मे देहि दापय स्वाहा।";
-        meaning = "Om, to Kubera, lord of wealth and guardian of treasures — please grant me abundance of wealth and grain.";
-        benefit = "Brings material wealth, financial stability, and abundance; invokes blessings of the divine treasurer Kubera.";
-      }),
-      // Stress Relief
-      ("om-shanti-mantra", {
-        id = "om-shanti-mantra";
-        name = "Om Shanti Mantra";
-        category = "Stress Relief";
-        text = "ॐ शान्तिः शान्तिः शान्तिः। ॐ सर्वे भवन्तु सुखिनः। सर्वे सन्तु निरामयाः। सर्वे भद्राणि पश्यन्तु। मा कश्चिद्दुःखभाग्भवेत्॥";
-        meaning = "Om peace, peace, peace. May all beings be happy; may all beings be free from illness; may all beings see auspiciousness; may no one suffer.";
-        benefit = "Instantly calms the mind and nervous system; dissolves anxiety, mental stress, and emotional turbulence.";
-      }),
-      ("shiva-mantra", {
-        id = "shiva-mantra";
-        name = "Om Namah Shivaya";
-        category = "Stress Relief";
+    let seed : [Types.MantraEntry] = [
+      // ── 18 Mahamantras (Maala Jaap — pathway 3) ──────────────────────────
+      { id = "maha-hare-krishna"; name = "Hare Krishna Maha Mantra";
+        category = #mahamantra;
+        meaning = "The supreme mantra for Kaliyug: a call to Radha and Krishna for deliverance from material bondage.";
+        benefit = "Cleanses the heart, awakens love of God, and grants liberation in Kaliyug.";
+        text = "हरे कृष्ण हरे कृष्ण कृष्ण कृष्ण हरे हरे हरे राम हरे राम राम राम हरे हरे";
+        recommendedCount = 108 },
+      { id = "maha-om-namah-shivaya"; name = "Om Namah Shivaya";
+        category = #mahamantra;
+        meaning = "The Panchakshari — five-syllable mantra saluting Shiva as the inner Self.";
+        benefit = "Burns karma, grants inner stillness, and awakens awareness of the Self.";
         text = "ॐ नमः शिवाय";
-        meaning = "I bow to Lord Shiva — the auspicious one, the destroyer of ignorance, the pure consciousness within all beings.";
-        benefit = "Purifies the mind, destroys ego and negativity, brings deep inner peace, and connects the devotee with universal consciousness.";
-      }),
-      ("hanuman-mantra", {
-        id = "hanuman-mantra";
-        name = "Hanuman Mantra";
-        category = "Stress Relief";
-        text = "ॐ हं हनुमते रुद्रात्मकाय हुं फट्";
-        meaning = "Om, salutations to Hanuman, the embodiment of Rudra's power — remove all obstacles and grant strength.";
-        benefit = "Gives tremendous courage, strength, and willpower; removes fear, obstacles, and all forms of stress and negativity.";
-      }),
-      ("vishnu-mantra", {
-        id = "vishnu-mantra";
-        name = "Vishnu Mantra";
-        category = "Stress Relief";
+        recommendedCount = 108 },
+      { id = "maha-gayatri"; name = "Gayatri Mantra";
+        category = #mahamantra;
+        meaning = "The most ancient Vedic mantra invoking Savitr, the solar source of illumination.";
+        benefit = "Bestows wisdom, purifies the intellect, and illuminates the mind with divine light.";
+        text = "ॐ भूर्भुवः स्वः तत्सवितुर्वरेण्यं भर्गो देवस्य धीमहि धियो यो नः प्रचोदयात्";
+        recommendedCount = 108 },
+      { id = "maha-om-namo-narayanaya"; name = "Om Namo Narayanaya";
+        category = #mahamantra;
+        meaning = "The Ashtakshari — eight-syllable mantra surrendering to Narayana, the all-pervading Lord.";
+        benefit = "Grants refuge in the Supreme and dissolves the ego in devotion.";
+        text = "ॐ नमो नारायणाय";
+        recommendedCount = 108 },
+      { id = "maha-om-namo-bhagavate"; name = "Om Namo Bhagavate Vasudevaya";
+        category = #mahamantra;
+        meaning = "Surrender to Bhagavan Vasudeva, the all-pervading Lord who dwells in all.";
+        benefit = "Awakens devotion and grants the grace of the Supreme Lord.";
         text = "ॐ नमो भगवते वासुदेवाय";
-        meaning = "Om, I bow to Lord Vasudeva (Krishna/Vishnu), the indwelling Supreme Being.";
-        benefit = "Brings peace, clarity, and divine protection; dissolves mental restlessness and aligns the devotee with universal harmony.";
-      }),
-      // Additional
-      ("ganesh-mantra", {
-        id = "ganesh-mantra";
-        name = "Ganesha Mantra";
-        category = "Protection";
+        recommendedCount = 108 },
+      { id = "maha-om-gan-ganapataye"; name = "Om Gam Ganapataye Namaha";
+        category = #mahamantra;
+        meaning = "Invokes Ganesha, the remover of obstacles, with the seed-sound Gam.";
+        benefit = "Removes obstacles, grants success in undertakings, and steadies the mind.";
         text = "ॐ गं गणपतये नमः";
-        meaning = "Om, I bow to Lord Ganesha, the remover of obstacles and lord of all beginnings.";
-        benefit = "Removes obstacles from all endeavors, brings success, wisdom, and auspiciousness to new beginnings.";
-      }),
-      ("krishna-mantra", {
-        id = "krishna-mantra";
-        name = "Krishna Mantra";
-        category = "Stress Relief";
-        text = "हरे कृष्ण हरे कृष्ण कृष्ण कृष्ण हरे हरे। हरे राम हरे राम राम राम हरे हरे॥";
-        meaning = "O Lord Krishna, O Lord Rama — I offer myself to You; please remove the veil of illusion and fill my heart with divine love.";
-        benefit = "Purifies the heart and mind, cultivates deep devotion, removes all anxieties, and fills the devotee with divine bliss.";
-      }),
-      ("ram-mantra", {
-        id = "ram-mantra";
-        name = "Ram Naam";
-        category = "Protection";
-        text = "श्री राम जय राम जय जय राम";
-        meaning = "Victory to Lord Rama, the embodiment of dharma, righteousness, and divine compassion.";
-        benefit = "Bestows courage, righteousness, and divine blessings; purifies the soul and removes accumulated karma.";
-      }),
-      // Sacred 18 — three additional mantras to reach the sacred count of 18
-      ("saraswati-beej", {
-        id = "saraswati-beej";
-        name = "Saraswati Beej Mantra";
-        category = "Education";
+        recommendedCount = 108 },
+      { id = "maha-om-dum-durgayei"; name = "Om Dum Durgayei Namaha";
+        category = #mahamantra;
+        meaning = "Salutes Durga, the invincible Mother who slays inner and outer demons.";
+        benefit = "Grants courage, protection, and the strength to overcome fear and adversity.";
+        text = "ॐ दुं दुर्गायै नमः";
+        recommendedCount = 108 },
+      { id = "maha-om-shreem-mahalakshmyai"; name = "Om Shreem Mahalakshmyai Namaha";
+        category = #mahamantra;
+        meaning = "Invokes Lakshmi, the goddess of abundance and inner prosperity, with the seed Shreem.";
+        benefit = "Attracts prosperity, harmony, and the grace of the Divine Mother.";
+        text = "ॐ श्रीं महालक्ष्म्यै नमः";
+        recommendedCount = 108 },
+      { id = "maha-om-aim-saraswatyai"; name = "Om Aim Saraswatyai Namaha";
+        category = #mahamantra;
+        meaning = "Invokes Saraswati, the goddess of knowledge, music, and wisdom, with the seed Aim.";
+        benefit = "Sharpens intellect, grants eloquence, and awakens creative and spiritual knowledge.";
         text = "ॐ ऐं सरस्वत्यै नमः";
-        meaning = "Om, I bow to the seed syllable of Goddess Saraswati — Aim — the primordial sound of creative intelligence and divine wisdom.";
-        benefit = "Activates the intellectual faculty, enhances memory and learning speed, removes mental blocks, and bestows the power of eloquent speech.";
-      }),
-      ("prana-pratishtha", {
-        id = "prana-pratishtha";
-        name = "Prana Pratishtha Mantra";
-        category = "Stress Relief";
-        text = "ॐ असुनीते पुनरस्मासु चक्षुः पुनः प्राणमिह नो धेहि भोगम्। ज्योक् पश्येम सूर्यमुच्चरन्तमनुमते मृडयानस्वस्ति॥";
-        meaning = "O Asuneeti (divine power of life), return our sight, restore the vital breath to us here; may we long behold the rising sun. O gracious one, grant us well-being and bliss.";
-        benefit = "Restores prana (vital life force), heals the nervous system, removes deep fatigue and emotional depletion, and revives the spirit with divine energy.";
-      }),
-      ("vishnu-sahasra-beej", {
-        id = "vishnu-sahasra-beej";
-        name = "Vishnu Sahasranama Beej";
-        category = "Prosperity";
-        text = "ॐ नमो भगवते श्री वासुदेवाय। सर्वं विष्णुमयं जगत्॥";
-        meaning = "Om, I bow to Lord Vasudeva, the divine Bhagavan. The entire universe is pervaded by Vishnu — there is nothing that is not He.";
-        benefit = "Draws divine abundance, removes obstacles to success, bestows clarity of purpose, and aligns all material and spiritual pursuits with the supreme cosmic will.";
-      }),
+        recommendedCount = 108 },
+      { id = "maha-om-namah-suryaya"; name = "Om Suryaya Namaha";
+        category = #mahamantra;
+        meaning = "Salutes Surya, the sun deity, source of light, health, and vitality.";
+        benefit = "Grants health, vitality, clarity, and dispels darkness of mind and body.";
+        text = "ॐ सूर्याय नमः";
+        recommendedCount = 108 },
+      { id = "maha-om-hanumate-namah"; name = "Om Hanumate Namaha";
+        category = #mahamantra;
+        meaning = "Salutes Hanuman, the embodiment of devotion, strength, and selfless service.";
+        benefit = "Grants strength, devotion, courage, and protection from fear and harm.";
+        text = "ॐ हनुमते नमः";
+        recommendedCount = 108 },
+      { id = "maha-om-ram-ramaya"; name = "Om Ram Ramaya Namaha";
+        category = #mahamantra;
+        meaning = "Salutes Rama, the embodiment of dharma, with the seed-sound Ram.";
+        benefit = "Instills dharma, steadiness, and devotion; purifies the heart.";
+        text = "ॐ रां रामाय नमः";
+        recommendedCount = 108 },
+      { id = "maha-om-kleem-krishnaya"; name = "Om Kleem Krishnaya Namaha";
+        category = #mahamantra;
+        meaning = "Invokes Krishna with the seed Kleem, the seed of attraction and divine love.";
+        benefit = "Awakens divine love and draws the heart toward the Supreme.";
+        text = "ॐ क्लीं कृष्णाय नमः";
+        recommendedCount = 108 },
+      { id = "maha-om-aim-hreem-shreem"; name = "Om Aim Hreem Shreem";
+        category = #mahamantra;
+        meaning = "The Bija-traya — three seed-sounds of knowledge (Aim), divine energy (Hreem), and abundance (Shreem).";
+        benefit = "Unites wisdom, power, and prosperity; balances the three shaktis.";
+        text = "ॐ ऐं ह्रीं श्रीं";
+        recommendedCount = 108 },
+      { id = "maha-mrityunjaya"; name = "Maha Mrityunjaya Mantra";
+        category = #mahamantra;
+        meaning = "The great death-conquering mantra to Shiva, seeking liberation from the cycle of rebirth.";
+        benefit = "Grants healing, protection from untimely death, and liberation from fear of mortality.";
+        text = "ॐ त्र्यम्बकं यजामहे सुगन्धिं पुष्टिवर्धनम् उर्वारुकमिव बन्धनान् मृत्योर्मुक्षीय मामृतात्";
+        recommendedCount = 108 },
+      { id = "maha-om-namah-chandikayai"; name = "Om Namah Chandikayai";
+        category = #mahamantra;
+        meaning = "Salutes Chandi, the fierce form of the Divine Mother who destroys negativities.";
+        benefit = "Grants protection, courage, and the removal of inner and outer obstacles.";
+        text = "ॐ नमः चण्डिकायै";
+        recommendedCount = 108 },
+      { id = "maha-om-vishnave-namah"; name = "Om Vishnave Namaha";
+        category = #mahamantra;
+        meaning = "Salutes Vishnu, the preserver, the all-pervading sustainer of the cosmos.";
+        benefit = "Grants preservation, harmony, and the grace of the sustaining Lord.";
+        text = "ॐ विष्णवे नमः";
+        recommendedCount = 108 },
+      { id = "maha-om-namah-shanaischaraya"; name = "Om Namah Shanaischaraya";
+        category = #mahamantra;
+        meaning = "Salutes Shani (Saturn), the slow-moving lord of karma and justice.";
+        benefit = "Eases karmic difficulties, grants patience, and harmonizes Saturn's influence.";
+        text = "ॐ नमः शनैश्चराय";
+        recommendedCount = 108 },
+
+      // ── 18 Sharanam mantras (Naam Lekhan — pathway 4) ───────────────────
+      { id = "sharanam-krishna"; name = "Krishna Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Krishna, the Supreme Lord of love and dharma.";
+        benefit = "Awakens devotion and grants the shelter of the Lord's name.";
+        text = "कृष्ण शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-rama"; name = "Rama Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Rama, the embodiment of dharma and truth.";
+        benefit = "Instills dharma and grants the steady shelter of the Lord's name.";
+        text = "राम शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-shiva"; name = "Shiva Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Shiva, the auspicious Lord of transformation.";
+        benefit = "Grants inner stillness and the shelter of the auspicious Lord.";
+        text = "शिव शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-vishnu"; name = "Vishnu Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Vishnu, the all-pervading preserver.";
+        benefit = "Grants preservation and the shelter of the sustaining Lord.";
+        text = "विष्णु शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-narayana"; name = "Narayana Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Narayana, the refuge of all beings.";
+        benefit = "Grants the supreme refuge and dissolves the ego in surrender.";
+        text = "नारायण शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-ganesha"; name = "Ganesha Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Ganesha, the remover of obstacles.";
+        benefit = "Removes obstacles and grants the shelter of the Lord of beginnings.";
+        text = "गणेश शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-durga"; name = "Durga Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Durga, the invincible Mother.";
+        benefit = "Grants courage and the protective shelter of the Divine Mother.";
+        text = "दुर्गा शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-lakshmi"; name = "Lakshmi Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Lakshmi, the goddess of abundance.";
+        benefit = "Attracts prosperity and the shelter of the Mother of abundance.";
+        text = "लक्ष्मी शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-saraswati"; name = "Saraswati Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Saraswati, the goddess of wisdom.";
+        benefit = "Grants knowledge and the shelter of the Mother of wisdom.";
+        text = "सरस्वती शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-hanuman"; name = "Hanuman Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Hanuman, the embodiment of devotion and strength.";
+        benefit = "Grants strength, devotion, and the shelter of the servant of the Lord.";
+        text = "हनुमान शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-surya"; name = "Surya Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Surya, the sun deity and source of light.";
+        benefit = "Grants vitality and the shelter of the source of illumination.";
+        text = "सूर्य शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-guru"; name = "Guru Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of the Guru, the dispeller of darkness.";
+        benefit = "Grants guidance and the shelter of the teacher who reveals the truth.";
+        text = "गुरु शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-radha"; name = "Radha Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Radha, the embodiment of supreme devotion.";
+        benefit = "Awakens pure devotion and grants the shelter of the divine beloved.";
+        text = "राधा शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-sita"; name = "Sita Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Sita, the embodiment of devotion and patience.";
+        benefit = "Grants steadfast devotion and the shelter of the divine consort.";
+        text = "सीता शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-venkatesha"; name = "Venkatesha Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Venkatesha, the Lord of the seven hills.";
+        benefit = "Grants the shelter of the Lord who accepts all who surrender.";
+        text = "वेङ्कटेश शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-panduranga"; name = "Panduranga Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Panduranga (Vitthala), the standing Lord of Pandharpur.";
+        benefit = "Grants the shelter of the Lord who waits for His devotees.";
+        text = "पाण्डुरङ्ग शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-murugan"; name = "Murugan Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Murugan (Kartikeya), the commander of the divine army.";
+        benefit = "Grants protection and the shelter of the Lord of valor.";
+        text = "मुरुगन् शरणम्";
+        recommendedCount = 108 },
+      { id = "sharanam-ayyappa"; name = "Ayyappa Sharanam";
+        category = #sharanam;
+        meaning = "Taking refuge in the name of Ayyappa, the Lord of Sabarimala and celibate discipline.";
+        benefit = "Grants discipline and the shelter of the Lord of austerity.";
+        text = "अय्यप्प शरणम्";
+        recommendedCount = 108 },
     ];
-    for ((k, v) in data.vals()) {
-      mantras.add(k, v);
+    for (m in seed.values()) {
+      mantras.add(m.id, m);
     };
   };
 
+  // ─── Initialization: Festivals with trust-through-source citations ─────────
   public func initFestivals(festivals : Map.Map<Text, Types.Festival>) : () {
-    let data : [(Text, Types.Festival)] = [
-      ("janmashtami", {
-        name = "Janmashtami";
-        dateStr = "08/16/2025";
-        meaning = "The divine birthday of Lord Krishna, celebrated with fasting, midnight worship, and devotional singing as the Supreme Being descends to restore dharma.";
-        mantraName = "Krishna Mantra";
-        recommendedVerse = "4.7";
-      }),
-      ("diwali", {
-        name = "Diwali";
-        dateStr = "10/20/2025";
-        meaning = "The festival of lights symbolizing the victory of light over darkness, knowledge over ignorance, and the return of Lord Rama after defeating evil.";
-        mantraName = "Mahalakshmi Mantra";
-        recommendedVerse = "16.21";
-      }),
-      ("holi", {
-        name = "Holi";
-        dateStr = "03/14/2026";
-        meaning = "The festival of colors celebrating the triumph of devotion over arrogance, the victory of Prahlada's bhakti, and the arrival of spring with renewed life.";
-        mantraName = "Om Namah Shivaya";
-        recommendedVerse = "9.26";
-      }),
-      ("navratri", {
-        name = "Navratri";
-        dateStr = "09/22/2025";
-        meaning = "Nine sacred nights worshipping the nine forms of Goddess Durga — a time of fasting, prayer, and invoking the divine feminine energy to cleanse and empower.";
-        mantraName = "Durga Mantra";
-        recommendedVerse = "7.19";
-      }),
-      ("ram-navami", {
-        name = "Ram Navami";
-        dateStr = "04/06/2026";
-        meaning = "The auspicious birthday of Lord Rama, the ideal king and embodiment of dharma, celebrated with recitation of the Ramayana and devotional worship.";
-        mantraName = "Ram Naam";
-        recommendedVerse = "4.8";
-      }),
-      ("mahashivratri", {
-        name = "Mahashivratri";
-        dateStr = "02/26/2026";
-        meaning = "The great night of Lord Shiva — a night of intense worship, fasting, and meditation when Shiva's blessings are most accessible to earnest seekers.";
-        mantraName = "Om Namah Shivaya";
-        recommendedVerse = "8.5";
-      }),
-      ("ganesh-chaturthi", {
-        name = "Ganesh Chaturthi";
-        dateStr = "08/27/2025";
-        meaning = "The birthday of Lord Ganesha, the remover of obstacles — celebrated with grand installations of clay idols, devotional offerings, and festive singing.";
-        mantraName = "Ganesha Mantra";
-        recommendedVerse = "3.8";
-      }),
-      ("hanuman-jayanti", {
-        name = "Hanuman Jayanti";
-        dateStr = "04/12/2026";
-        meaning = "The birthday of Lord Hanuman, the supreme devotee and embodiment of strength, courage, and selfless service to Lord Rama.";
-        mantraName = "Hanuman Mantra";
-        recommendedVerse = "11.55";
-      }),
-      ("ekadashi", {
-        name = "Ekadashi";
-        dateStr = "01/10/2026";
-        meaning = "The sacred eleventh day of each lunar fortnight, observed with fasting and prayer dedicated to Lord Vishnu — a powerful day for spiritual purification.";
-        mantraName = "Vishnu Mantra";
-        recommendedVerse = "9.22";
-      }),
-      ("gita-jayanti", {
-        name = "Gita Jayanti";
-        dateStr = "12/01/2025";
-        meaning = "The sacred day commemorating Lord Krishna's divine discourse to Arjuna on the Kurukshetra battlefield — the birth of the eternal Bhagavad Gita.";
-        mantraName = "Krishna Mantra";
-        recommendedVerse = "18.66";
-      }),
-      ("guru-purnima", {
-        name = "Guru Purnima";
-        dateStr = "07/10/2025";
-        meaning = "The full moon of reverence — dedicated to honoring one's spiritual teacher and the lineage of gurus who have transmitted wisdom since time immemorial.";
-        mantraName = "Gayatri Mantra";
-        recommendedVerse = "4.38";
-      }),
-      ("karthigai", {
-        name = "Karthigai Deepam";
-        dateStr = "11/27/2025";
-        meaning = "The festival of sacred lamps dedicated to Lord Murugan and Lord Shiva — symbolizing the column of infinite light and the removal of spiritual darkness.";
-        mantraName = "Om Namah Shivaya";
-        recommendedVerse = "10.20";
-      }),
+    let seed : [Types.Festival] = [
+      { name = "Diwali"; dateStr = "Amavasya, Kartik month (Oct–Nov)";
+        meaning = "The festival of lights celebrating the victory of light over darkness and dharma over adharma.";
+        mantraName = "Om Namo Narayanaya"; recommendedVerse = "Light the lamp of knowledge within.";
+        story = "Diwali marks the return of Lord Rama to Ayodhya after 14 years of exile and His victory over Ravana. The citizens illuminated the city with rows of lamps to welcome the divine king, symbolizing the triumph of dharma and the inner light of knowledge over the darkness of ignorance. It also honors Lakshmi, the goddess of prosperity, who is invoked for the year's abundance.";
+        sourceGranth = "Ramayana (Valmiki)"; sourceVerse = "Yuddha Kanda — return to Ayodhya"; sourceChapter = "Yuddha Kanda, Canto 130-131" },
+      { name = "Holi"; dateStr = "Phalguna Purnima (Feb–Mar)";
+        meaning = "The festival of colors celebrating the triumph of devotion and the arrival of spring.";
+        mantraName = "Om Namo Bhagavate Vasudevaya"; recommendedVerse = "Burn the Holika of ego in the fire of devotion.";
+        story = "Holi commemorates the devotion of Prahlada, who remained steadfast in his worship of Lord Vishnu despite his father Hiranyakashipu's persecution. The demoness Holika, immune to fire, tried to burn Prahlada but was herself consumed while Prahlada emerged unharmed — protected by his unwavering devotion. The festival also celebrates the divine love of Radha and Krishna through the playful throwing of colors.";
+        sourceGranth = "Bhagavata Purana"; sourceVerse = "Canto 7 — Prahlada Charitra"; sourceChapter = "Canto 7, Chapters 1-10" },
+      { name = "Janmashtami"; dateStr = "Ashtami, Bhadrapada month (Aug–Sep)";
+        meaning = "The appearance day of Lord Krishna, the Supreme Lord's descent to protect dharma.";
+        mantraName = "Hare Krishna Maha Mantra"; recommendedVerse = "Chant the holy name at the hour of His appearance.";
+        story = "Janmashtami celebrates the birth of Lord Krishna in the prison of Mathura to Devaki and Vasudeva, on the eighth day of the dark fortnight of Bhadrapada. At midnight, as the guards slept and the chains fell away, Vasudeva carried the infant across the Yamuna to Gokul, where He was placed in the care of Yashoda and Nanda. His birth fulfilled the prophecy that He would end the tyranny of His uncle Kamsa and restore dharma.";
+        sourceGranth = "Bhagavata Purana"; sourceVerse = "Canto 10, Chapter 3 — birth of Krishna"; sourceChapter = "Canto 10, Chapter 3" },
+      { name = "Navratri"; dateStr = "First nine days of Ashvin month (Sep–Oct)";
+        meaning = "Nine nights of worship of the Divine Mother Durga, celebrating the victory of good over evil.";
+        mantraName = "Om Dum Durgayei Namaha"; recommendedVerse = "Invoke the Mother through nine nights of devotion.";
+        story = "Navratri honors the nine forms of the Divine Mother (Navadurga) and Her battle against the buffalo demon Mahishasura. After nine days and nights of fierce combat, the Mother slew Mahishasura, establishing the triumph of divine shakti over the forces of adharma. The festival culminates in Vijayadashami (Dussehra), the day of victory. Devotees observe fasting, prayer, and the recitation of the Devi Mahatmyam.";
+        sourceGranth = "Devi Mahatmyam (Markandeya Purana)"; sourceVerse = "Chapter 2-13 — Mahishasura Vadha"; sourceChapter = "Markandeya Purana, Chapters 81-93" },
+      { name = "Maha Shivratri"; dateStr = "Chaturdashi, Phalguna month (Feb–Mar)";
+        meaning = "The great night of Lord Shiva, honoring the auspicious Lord of transformation.";
+        mantraName = "Om Namah Shivaya"; recommendedVerse = "Chant the Panchakshari through the night of Shiva.";
+        story = "Maha Shivratri is the night when Lord Shiva performed the cosmic dance of creation, preservation, and dissolution — the Tandava. It is also the night He married Parvati, uniting consciousness and energy. Devotees stay awake through the night, offering bilva leaves, water, and milk to the Shiva linga, and chanting the Panchakshari mantra. The night is considered especially auspicious for spiritual progress and the dissolving of karma.";
+        sourceGranth = "Shiva Purana"; sourceVerse = "Rudra Samhita — marriage of Shiva and Parvati"; sourceChapter = "Shiva Purana, Rudra Samhita, Chapters 30-50" },
+      { name = "Ganesh Chaturthi"; dateStr = "Shukla Chaturthi, Bhadrapada month (Aug–Sep)";
+        meaning = "The birth festival of Lord Ganesha, the remover of obstacles and Lord of beginnings.";
+        mantraName = "Om Gam Ganapataye Namaha"; recommendedVerse = "Invoke the Lord of beginnings before all undertakings.";
+        story = "Ganesh Chaturthi celebrates the creation and birth of Lord Ganesha. Parvati created Ganesha from the sandalwood paste of Her body to guard Her chamber. When He barred Lord Shiva from entering, Shiva in anger severed His head. To console a grieving Parvati, Shiva replaced the head with that of an elephant and bestowed upon Ganesha the boon that He would be worshipped first among all gods and invoked at the beginning of every undertaking.";
+        sourceGranth = "Shiva Purana"; sourceVerse = "Rudra Samhita — birth of Ganesha"; sourceChapter = "Shiva Purana, Rudra Samhita, Chapter 13" },
+      { name = "Raksha Bandhan"; dateStr = "Shravana Purnima (Aug)";
+        meaning = "The festival of the sacred bond between brother and sister, of protection and love.";
+        mantraName = "Om Namo Narayanaya"; recommendedVerse = "Tie the thread of protection with prayer.";
+        story = "Raksha Bandhan celebrates the sacred bond of protection between siblings. A sister ties a rakhi (sacred thread) on her brother's wrist, praying for his well-being, and the brother vows to protect her through all circumstances. The tradition traces to the Mahabharata, where Draupadi tied a strip of her sari on Krishna's wounded finger and He vowed to protect her — a vow He honored during the dice game in the royal court.";
+        sourceGranth = "Mahabharata"; sourceVerse = "Sabha Parva — Draupadi vastraharana"; sourceChapter = "Mahabharata, Sabha Parva, Chapters 60-72" },
+      { name = "Makar Sankranti"; dateStr = "January 14 (when sun enters Capricorn)";
+        meaning = "The harvest festival marking the sun's northward journey and the triumph of light.";
+        mantraName = "Om Suryaya Namaha"; recommendedVerse = "Offer the sun the first fruits of your harvest.";
+        story = "Makar Sankranti marks the sun's transition into Capricorn (Makara) and the beginning of its northward journey (Uttarayana) — a period considered auspicious in the scriptures. Bhishma, the grandsire of the Kuru dynasty, lay on a bed of arrows awaiting this auspicious period to leave his body, choosing to depart during the sun's northward course. The festival is celebrated with harvest offerings, kite flying, and the worship of Surya.";
+        sourceGranth = "Mahabharata"; sourceVerse = "Anushasana Parva — Bhishma's departure"; sourceChapter = "Mahabharata, Anushasana Parva, Chapters 167-168" },
+      { name = "Ram Navami"; dateStr = "Chaitra Shukla Navami (Mar–Apr)";
+        meaning = "The appearance day of Lord Rama, the embodiment of dharma and the maryada purushottam.";
+        mantraName = "Om Ram Ramaya Namaha"; recommendedVerse = "Chant the name of Rama on His appearance day.";
+        story = "Ram Navami celebrates the birth of Lord Rama to King Dasharatha and Queen Kausalya of Ayodhya, on the ninth day of the bright fortnight of Chaitra. Born as the seventh avatar of Vishnu, Rama came to establish dharma and to slay the demon Ravana. His life, recorded in the Ramayana, is the supreme example of dharma in action — as son, brother, husband, king, and servant of truth.";
+        sourceGranth = "Ramayana (Valmiki)"; sourceVerse = "Bala Kanda — birth of Rama"; sourceChapter = "Ramayana, Bala Kanda, Canto 18" },
+      { name = "Dussehra (Vijayadashami)"; dateStr = "Tenth day of Ashvin month (Sep–Oct)";
+        meaning = "The festival celebrating the victory of Lord Rama over Ravana and the triumph of dharma.";
+        mantraName = "Om Namo Bhagavate Vasudevaya"; recommendedVerse = "Burn the ten vices of Ravana within.";
+        story = "Dussehra (Vijayadashami) marks the day Lord Rama slew the ten-headed demon Ravana, who had abducted Sita and embodied the ten vices of the uncontrolled mind. After a fierce battle, Rama, with the blessings of the gods and the aid of Hanuman and the vanara army, defeated Ravana and restored dharma. Effigies of Ravana are burned to symbolize the destruction of ego and adharma within. The festival also concludes the nine days of Navratri.";
+        sourceGranth = "Ramayana (Valmiki)"; sourceVerse = "Yuddha Kanda — slaying of Ravana"; sourceChapter = "Ramayana, Yuddha Kanda, Canto 108" },
     ];
-    for ((k, v) in data.vals()) {
-      festivals.add(k, v);
+    for (f in seed.values()) {
+      festivals.add(f.name, f);
     };
   };
 
   public func initDailyChallenges(challenges : Map.Map<Text, Types.DailyChallenge>) : () {
-    // 7-day rotating challenges keyed by last character of date string or day code
-    let data : [(Text, Types.DailyChallenge)] = [
-      ("1", { date = "Day 1"; task = "Read 3 verses from Chapter 2 and reflect on the nature of the eternal soul."; points = 30; action = "read" }),
-      ("2", { date = "Day 2"; task = "Write 27 repetitions of 'Hare Krishna' or any mantra of your choice mindfully."; points = 50; action = "write" }),
-      ("3", { date = "Day 3"; task = "Listen to the Gayatri Mantra 11 times with full attention and devotion."; points = 20; action = "listen" }),
-      ("4", { date = "Day 4"; task = "Read Chapter 12 (Bhakti Yoga) completely and contemplate on the qualities of a true devotee."; points = 40; action = "read" }),
-      ("5", { date = "Day 5"; task = "Complete one full mala (108 beads) of japa with the Om Namah Shivaya mantra."; points = 80; action = "japa" }),
-      ("6", { date = "Day 6"; task = "Ask Krishna a question about something troubling you and meditate on the verse given."; points = 25; action = "guidance" }),
-      ("7", { date = "Day 7"; task = "Write the verse 2.47 in Sanskrit 3 times and memorize its meaning."; points = 60; action = "write" }),
-      ("0", { date = "Day 7"; task = "Reflect on one quality of a devotee from Chapter 12 and practice it throughout today."; points = 35; action = "read" }),
+    let seed : [Types.DailyChallenge] = [
+      { date = "mon"; task = "Read Chapter 2, verses 47-72 (Karma Yoga)"; points = 10; action = "read" },
+      { date = "tue"; task = "Chant the Gayatri Mantra 108 times"; points = 10; action = "chant" },
+      { date = "wed"; task = "Meditate for 15 minutes on the Self (Atma Samyama)"; points = 10; action = "meditate" },
+      { date = "thu"; task = "Read Chapter 12 (Bhakti Yoga) and reflect on devotion"; points = 10; action = "read" },
+      { date = "fri"; task = "Chant the Hare Krishna Maha Mantra one mala (108)"; points = 10; action = "chant" },
+      { date = "sat"; task = "Read Chapter 11 (Vishvarupa) and contemplate the cosmic form"; points = 10; action = "read" },
+      { date = "sun"; task = "Practice Karma Yoga: serve one person selflessly today"; points = 15; action = "serve" },
     ];
-    for ((k, v) in data.vals()) {
-      challenges.add(k, v);
+    for (c in seed.values()) {
+      challenges.add(c.date, c);
+    };
+  };
+
+  // ─── Initialization: Granth Library (Pustakaalaye) ─────────────────────────
+  // Seeds the 4 Vedas, 18 Puranas, and 11 principal Upanishads.
+  public func initGranths(granths : Map.Map<Text, Types.Granth>) : () {
+    let seed : [Types.Granth] = [
+      // ── 4 Vedas ──────────────────────────────────────────────────────────
+      { id = "rig-veda"; granthType = #veda(#rig); name = "Rig Veda"; sanskritName = "ऋग्वेद";
+        description = "The oldest of the four Vedas: 1,028 suktas (hymns) in 10 mandalas, addressed to the cosmic powers (Agni, Indra, Surya, Varuna, and others). The foundation of Vedic revelation (shruti).";
+        totalChapters = 10; sourceCitation = "Rig Veda Samhita, 10 Mandalas" },
+      { id = "yajur-veda"; granthType = #veda(#yajur); name = "Yajur Veda"; sanskritName = "यजुर्वेद";
+        description = "The Veda of ritual formulas (yajus). Provides the prose mantras used in fire sacrifices. Has two recensions: Shukla (White) and Krishna (Black) Yajur Veda.";
+        totalChapters = 40; sourceCitation = "Yajur Veda Samhita (Shukla & Krishna)" },
+      { id = "sama-veda"; granthType = #veda(#sama); name = "Sama Veda"; sanskritName = "सामवेद";
+        description = "The Veda of melodies (saman). Largely drawn from the Rig Veda but set to musical chants for the udgatri priest. The source of Indian classical music.";
+        totalChapters = 2; sourceCitation = "Sama Veda Samhita, Archika (Purvarchika & Uttararchika)" },
+      { id = "atharva-veda"; granthType = #veda(#atharva); name = "Atharva Veda"; sanskritName = "अथर्ववेद";
+        description = "The Veda of everyday life: 730 hymns in 20 kandas covering healing, marriage, prosperity, protection, and the philosophical hymns including the Prashna, Mundaka, and Mandukya Upanishads.";
+        totalChapters = 20; sourceCitation = "Atharva Veda Samhita, 20 Kandas" },
+
+      // ── 18 Maha Puranas ───────────────────────────────────────────────────
+      { id = "brahma-purana"; granthType = #purana(#brahma); name = "Brahma Purana"; sanskritName = "ब्रह्म पुराण";
+        description = "The first of the 18 Maha Puranas. Describes the creation, the lineage of solar and lunar dynasties, and the glories of Purushottama Kshetra (Puri).";
+        totalChapters = 245; sourceCitation = "Brahma Purana, 245 Adhyayas" },
+      { id = "padma-purana"; granthType = #purana(#padma); name = "Padma Purana"; sanskritName = "पद्म पुराण";
+        description = "Named after the lotus (padma) of creation. Contains sections on creation, geography, dharma, and the glories of Vishnu, Shiva, and the sacred places of India.";
+        totalChapters = 55; sourceCitation = "Padma Purana, 5 Khandas" },
+      { id = "vishnu-purana"; granthType = #purana(#vishnu); name = "Vishnu Purana"; sanskritName = "विष्णु पुराण";
+        description = "A concise and authoritative Purana of six amshas covering creation, the ages of Manu, the dynasties, the deeds of Vishnu's avatars (especially Krishna), and the path of devotion.";
+        totalChapters = 6; sourceCitation = "Vishnu Purana, 6 Amshas" },
+      { id = "shiva-purana"; granthType = #purana(#shiva); name = "Shiva Purana"; sanskritName = "शिव पुराण";
+        description = "The principal Purana of Lord Shiva. Contains the Rudra Samhita, the marriage of Shiva and Parvati, the birth of Ganesha and Kartikeya, and the glories of the Shiva linga.";
+        totalChapters = 12; sourceCitation = "Shiva Purana, 12 Samhitas" },
+      { id = "bhagavata-purana"; granthType = #purana(#bhagavata); name = "Bhagavata Purana"; sanskritName = "भागवत पुराण";
+        description = "The crown of the Puranas: 18,000 verses in 12 skandhas. The supreme scripture of bhakti, centered on the lilas of Krishna — His birth, childhood in Gokul, the Rasalila, and the teachings of the Gita and Uddhava.";
+        totalChapters = 12; sourceCitation = "Bhagavata Purana, 12 Skandhas, 18,000 shlokas" },
+      { id = "narada-purana"; granthType = #purana(#narada); name = "Narada Purana"; sanskritName = "नारद पुराण";
+        description = "A Purana spoken by the sage Narada. Contains the glories of Vishnu, the duties of the four ashramas, and many mantras and vows (vratas).";
+        totalChapters = 2; sourceCitation = "Narada Purana, Purva & Uttara Khandas" },
+      { id = "markandeya-purana"; granthType = #purana(#markandeya); name = "Markandeya Purana"; sanskritName = "मार्कण्डेय पुराण";
+        description = "Spoken by the sage Markandeya. Contains the Devi Mahatmyam (Durga Saptashati), the supreme scripture of the Divine Mother, and the stories of Harishchandra and the birds.";
+        totalChapters = 137; sourceCitation = "Markandeya Purana, 137 Adhyayas" },
+      { id = "agni-purana"; granthType = #purana(#agni); name = "Agni Purana"; sanskritName = "अग्नि पुराण";
+        description = "An encyclopedic Purana spoken by Agni to Vasishtha. Covers dharma, politics, medicine, astrology, temple architecture, and the worship of all major deities.";
+        totalChapters = 383; sourceCitation = "Agni Purana, 383 Adhyayas" },
+      { id = "bhavishya-purana"; granthType = #purana(#bhavishya); name = "Bhavishya Purana"; sanskritName = "भविष्य पुराण";
+        description = "The Purana of what is to come (bhavishya). Contains prophecies, the duties of kings, vows, and the worship of Surya and other deities.";
+        totalChapters = 4; sourceCitation = "Bhavishya Purana, 4 Parvas" },
+      { id = "brahmavaivarta-purana"; granthType = #purana(#brahmavaivarta); name = "Brahmavaivarta Purana"; sanskritName = "ब्रह्मवैवर्त पुराण";
+        description = "Centered on Krishna and Radha, and on the creation through the principle of Brahma. Contains the Goloka Khanda and the glories of the divine couple.";
+        totalChapters = 4; sourceCitation = "Brahmavaivarta Purana, 4 Khandas" },
+      { id = "linga-purana"; granthType = #purana(#linga); name = "Linga Purana"; sanskritName = "लिङ्ग पुराण";
+        description = "A Purana devoted to Lord Shiva in His form as the linga. Contains the creation, the duties of the four ashramas, and the glories of Shiva worship.";
+        totalChapters = 2; sourceCitation = "Linga Purana, Purva & Uttara Bhagas" },
+      { id = "varaha-purana"; granthType = #purana(#varaha); name = "Varaha Purana"; sanskritName = "वराह पुराण";
+        description = "Spoken by Lord Varaha (the boar avatar). Contains the glories of sacred places (tirthas), vows, and the worship of Vishnu and Shiva.";
+        totalChapters = 217; sourceCitation = "Varaha Purana, 217 Adhyayas" },
+      { id = "skanda-purana"; granthType = #purana(#skanda); name = "Skanda Purana"; sanskritName = "स्कन्द पुराण";
+        description = "The largest of the Puranas, dedicated to Skanda (Kartikeya). Contains the glories of Shiva, the tirtha yatras, and the marriage of Shiva and Parvati (Kumarasambhava).";
+        totalChapters = 7; sourceCitation = "Skanda Purana, 7 Khandas (largest Purana)" },
+      { id = "vamana-purana"; granthType = #purana(#vamana); name = "Vamana Purana"; sanskritName = "वामन पुराण";
+        description = "Centered on the Vamana (dwarf) avatar of Vishnu and the story of Bali. Contains the glories of sacred places and the worship of Vishnu.";
+        totalChapters = 95; sourceCitation = "Vamana Purana, 95 Adhyayas" },
+      { id = "kurma-purana"; granthType = #purana(#kurma); name = "Kurma Purana"; sanskritName = "कूर्म पुराण";
+        description = "Spoken by Lord Kurma (the tortoise avatar). Contains the creation, the churning of the ocean, and the glories of Shiva and Vishnu.";
+        totalChapters = 2; sourceCitation = "Kurma Purana, Purva & Uttara Bhagas" },
+      { id = "matsya-purana"; granthType = #purana(#matsya); name = "Matsya Purana"; sanskritName = "मत्स्य पुराण";
+        description = "Spoken by Lord Matsya (the fish avatar). Contains the creation, the genealogies, temple architecture, and the duties of the four varnas and ashramas.";
+        totalChapters = 291; sourceCitation = "Matsya Purana, 291 Adhyayas" },
+      { id = "garuda-purana"; granthType = #purana(#garuda); name = "Garuda Purana"; sanskritName = "गरुड पुराण";
+        description = "Spoken by Lord Vishnu to Garuda. Contains the nature of the soul, the afterlife, funeral rites (shraddha), and the path of the departed soul — central to Hindu antyeshti rites.";
+        totalChapters = 2; sourceCitation = "Garuda Purana, Purva & Uttara Khandas" },
+      { id = "brahmanda-purana"; granthType = #purana(#brahmanda); name = "Brahmanda Purana"; sanskritName = "ब्रह्माण्ड पुराण";
+        description = "The Purana of the cosmic egg (brahmanda). Contains the creation, the lineage of kings, and the Lalita Sahasranama (the thousand names of the Divine Mother).";
+        totalChapters = 4; sourceCitation = "Brahmanda Purana, 4 Padas" },
+
+      // ── 11 Principal Upanishads ──────────────────────────────────────────
+      { id = "isha-upanishad"; granthType = #upanishad(#isha); name = "Isha Upanishad"; sanskritName = "ईशोपनिषद्";
+        description = "The Isha (Isavasya) Upanishad, the final chapter (adhyaya 40) of the Shukla Yajur Veda. 18 verses on the all-pervading Self and the harmony of action and renunciation.";
+        totalChapters = 1; sourceCitation = "Shukla Yajur Veda, Isha Upanishad (40th Adhyaya)" },
+      { id = "kena-upanishad"; granthType = #upanishad(#kena); name = "Kena Upanishad"; sanskritName = "केनोपनिषद्";
+        description = "The Kena Upanishad of the Sama Veda. 4 sections (khanda) on the power by which the mind and senses function — the Self that cannot be known by the mind.";
+        totalChapters = 4; sourceCitation = "Sama Veda, Kena Upanishad (Talavakara)" },
+      { id = "katha-upanishad"; granthType = #upanishad(#katha); name = "Katha Upanishad"; sanskritName = "कठोपनिषद्";
+        description = "The Katha (Kathaka) Upanishad of the Krishna Yajur Veda. The dialogue of Nachiketa and Yama on the nature of the Self and the path to immortality (the chariot analogy).";
+        totalChapters = 6; sourceCitation = "Krishna Yajur Veda, Katha Upanishad, 2 Adhyayas, 6 Vallis" },
+      { id = "prashna-upanishad"; granthType = #upanishad(#prashna); name = "Prashna Upanishad"; sanskritName = "प्रश्नोपनिषद्";
+        description = "The Prashna Upanishad of the Atharva Veda. Six questions posed by six disciples to the sage Pippalada on the origins of life, the vital breath (prana), and the Self.";
+        totalChapters = 6; sourceCitation = "Atharva Veda, Prashna Upanishad, 6 Prashnas" },
+      { id = "mundaka-upanishad"; granthType = #upanishad(#mundaka); name = "Mundaka Upanishad"; sanskritName = "मुण्डकोपनिषद्";
+        description = "The Mundaka Upanishad of the Atharva Veda. 3 mundakas (parts) on the two kinds of knowledge (para and apara) and the way to Brahman through the symbol Om.";
+        totalChapters = 3; sourceCitation = "Atharva Veda, Mundaka Upanishad, 3 Mundakas" },
+      { id = "mandukya-upanishad"; granthType = #upanishad(#mandukya); name = "Mandukya Upanishad"; sanskritName = "माण्डूक्योपनिषद्";
+        description = "The Mandukya Upanishad of the Atharva Veda. Just 12 verses on the syllable Om and the four states of consciousness (waking, dream, deep sleep, and turiya). The seed of Advaita Vedanta.";
+        totalChapters = 1; sourceCitation = "Atharva Veda, Mandukya Upanishad, 12 Mantras" },
+      { id = "taittiriya-upanishad"; granthType = #upanishad(#taittiriya); name = "Taittiriya Upanishad"; sanskritName = "तैत्तिरीयोपनिषद्";
+        description = "The Taittiriya Upanishad of the Krishna Yajur Veda. 3 vallis (Shiksha, Brahmananda, Bhrigu) on the science of pronunciation, the sheaths of the Self, and the bliss of Brahman.";
+        totalChapters = 3; sourceCitation = "Krishna Yajur Veda, Taittiriya Upanishad, 3 Vallis" },
+      { id = "aitareya-upanishad"; granthType = #upanishad(#aitareya); name = "Aitareya Upanishad"; sanskritName = "ऐतरेयोपनिषद्";
+        description = "The Aitareya Upanishad of the Rig Veda. 3 adhyayas on the creation of the world from the Self (Atman), the birth of the senses, and the identity of the Self with Brahman.";
+        totalChapters = 3; sourceCitation = "Rig Veda, Aitareya Upanishad, 3 Adhyayas" },
+      { id = "chandogya-upanishad"; granthType = #upanishad(#chandogya); name = "Chandogya Upanishad"; sanskritName = "छान्दोग्योपनिषद्";
+        description = "The Chandogya Upanishad of the Sama Veda. 8 prapathakas — one of the largest and oldest Upanishads. Contains the Mahavakya 'Tat Tvam Asi' and the teachings on Om, the heart, and the Self.";
+        totalChapters = 8; sourceCitation = "Sama Veda, Chandogya Upanishad, 8 Prapathakas" },
+      { id = "brihadaranyaka-upanishad"; granthType = #upanishad(#brihadaranyaka); name = "Brihadaranyaka Upanishad"; sanskritName = "बृहदारण्यकोपनिषद्";
+        description = "The Brihadaranyaka Upanishad of the Shukla Yajur Veda. 6 adhyayas — the largest Upanishad. Contains the Mahavakya 'Aham Brahmasmi', the dialogues of Yajnavalkya, and the Neti Neti path.";
+        totalChapters = 6; sourceCitation = "Shukla Yajur Veda, Brihadaranyaka Upanishad, 6 Adhyayas" },
+      { id = "shvetashvatara-upanishad"; granthType = #upanishad(#shvetashvatara); name = "Shvetashvatara Upanishad"; sanskritName = "श्वेताश्वतरोपनिषद्";
+        description = "The Shvetashvatara Upanishad of the Krishna Yajur Veda. 6 adhyayas blending Vedanta and theism, on the unity of the Self and the Lord, and the path of devotion and meditation.";
+        totalChapters = 6; sourceCitation = "Krishna Yajur Veda, Shvetashvatara Upanishad, 6 Adhyayas" },
+    ];
+    for (g in seed.values()) {
+      granths.add(g.id, g);
+    };
+  };
+
+  // ─── Initialization: Granth chapters (chapter metadata for each granth) ───
+  public func initGranthChapters(granthChapters : Map.Map<(Text, Nat), Types.GranthChapter>) : () {
+    let seed : [Types.GranthChapter] = [
+      // ── Rig Veda — 10 Mandalas ───────────────────────────────────────────
+      { granthId = "rig-veda"; chapterId = 1; name = "Mandala 1 — Agni & Indra"; sanskritName = "प्रथम मण्डल"; summary = "Hymns to Agni and Indra, the foremost deities of the Vedic pantheon, by the family of Atri and others."; verseCount = 191 },
+      { granthId = "rig-veda"; chapterId = 2; name = "Mandala 2 — Gritsamada"; sanskritName = "द्वितीय मण्डल"; summary = "Hymns chiefly by the sage Gritsamada, devoted to Indra, Agni, and the All-Gods (Vishvedevas)."; verseCount = 43 },
+      { granthId = "rig-veda"; chapterId = 3; name = "Mandala 3 — Vishvamitra"; sanskritName = "तृतीय मण्डल"; summary = "The Gayatri Mantra (RV 3.62.10) and hymns by the sage Vishvamitra to Savitr, Indra, and others."; verseCount = 62 },
+      { granthId = "rig-veda"; chapterId = 10; name = "Mandala 10 — Purusha Sukta & Nasadiya"; sanskritName = "दशम मण्डल"; summary = "The Purusha Sukta (cosmic Person), the Nasadiya Sukta (hymn of creation), and the Vak Sukta — the philosophical summit of the Rig Veda."; verseCount = 191 },
+
+      // ── Yajur Veda — chapters (kandas) ───────────────────────────────────
+      { granthId = "yajur-veda"; chapterId = 1; name = "Adhyaya 1 — Agni offerings"; sanskritName = "प्रथम अध्याय"; summary = "Opening invocations and the mantras for the Agnihotra, the daily fire offering."; verseCount = 12 },
+      { granthId = "yajur-veda"; chapterId = 25; name = "Adhyaya 25 — Rudra"; sanskritName = "पञ्चविंश अध्याय"; summary = "The Shatarudriya — the hundred-fold invocation of Rudra, the fierce and auspicious form of Shiva."; verseCount = 8 },
+      { granthId = "yajur-veda"; chapterId = 40; name = "Adhyaya 40 — Isha Upanishad"; sanskritName = "चत्वारिंश अध्याय"; summary = "The Isha (Isavasya) Upanishad: 18 verses on the all-pervading Self and the harmony of action and renunciation."; verseCount = 18 },
+
+      // ── Sama Veda — 2 Archikas ────────────────────────────────────────────
+      { granthId = "sama-veda"; chapterId = 1; name = "Purvarchika — first collection"; sanskritName = "पूर्वार्चिक"; summary = "The first collection of Sama chants, organized by deity and priest, for the morning liturgy."; verseCount = 650 },
+      { granthId = "sama-veda"; chapterId = 2; name = "Uttararchika — second collection"; sanskritName = "उत्तरार्चिक"; summary = "The second collection of Sama chants, used in the afternoon and evening liturgies."; verseCount = 1225 },
+
+      // ── Atharva Veda — 20 Kandas ──────────────────────────────────────────
+      { granthId = "atharva-veda"; chapterId = 1; name = "Kanda 1 — healing & protection"; sanskritName = "प्रथम काण्ड"; summary = "Hymns for healing illness, long life, and protection from demons and misfortune."; verseCount = 7 },
+      { granthId = "atharva-veda"; chapterId = 10; name = "Kanda 10 — Prashna & Mundaka"; sanskritName = "दशम काण्ड"; summary = "Contains the Prashna and Mundaka Upanishads — philosophical teachings on the Self and the syllable Om."; verseCount = 9 },
+      { granthId = "atharva-veda"; chapterId = 11; name = "Kanda 11 — Mandukya"; sanskritName = "एकादश काण्ड"; summary = "Contains the Mandukya Upanishad — 12 verses on Om and the four states of consciousness."; verseCount = 12 },
+
+      // ── Bhagavata Purana — 12 Skandhas (representative) ──────────────────
+      { granthId = "bhagavata-purana"; chapterId = 1; name = "Skandha 1 — Invocation & lineage"; sanskritName = "प्रथम स्कन्ध"; summary = "The invocation, the lineage of Parikshit, and the vow of fasting unto death by King Parikshit."; verseCount = 19 },
+      { granthId = "bhagavata-purana"; chapterId = 10; name = "Skandha 10 — Krishna Lilas"; sanskritName = "दशम स्कन्ध"; summary = "The crown of the Bhagavata: the birth, childhood, Rasalila, and divine lilas of Lord Krishna in Vrindavan and Mathura."; verseCount = 90 },
+      { granthId = "bhagavata-purana"; chapterId = 11; name = "Skandha 11 — Uddhava Gita"; sanskritName = "एकादश स्कन्ध"; summary = "The final teachings of Krishna to Uddhava before His departure — the Uddhava Gita, the summit of bhakti and jnana."; verseCount = 31 },
+      { granthId = "bhagavata-purana"; chapterId = 12; name = "Skandha 12 — Dissolution"; sanskritName = "द्वादश स्कन्ध"; summary = "The departure of Krishna, the reign of Parikshit's successors, the coming of Kaliyug, and the final dissolution."; verseCount = 13 },
+
+      // ── Vishnu Purana — 6 Amshas ─────────────────────────────────────────
+      { granthId = "vishnu-purana"; chapterId = 1; name = "Amsha 1 — Creation"; sanskritName = "प्रथम अंश"; summary = "The creation of the universe, the ages of Manu, and the lineage of the solar and lunar dynasties."; verseCount = 15 },
+      { granthId = "vishnu-purana"; chapterId = 5; name = "Amsha 5 — Krishna Avatar"; sanskritName = "पञ्चम अंश"; summary = "The deeds of Krishna: His birth, the slaying of Kamsa, the Kurukshetra war, and the departure of the Yadu clan."; verseCount = 38 },
+
+      // ── Shiva Purana — Rudra Samhita (representative) ─────────────────────
+      { granthId = "shiva-purana"; chapterId = 1; name = "Rudra Samhita — Srishti Khanda"; sanskritName = "सृष्टि खण्ड"; summary = "The creation through Shiva, the marriage of Shiva and Parvati, and the birth of Kartikeya."; verseCount = 20 },
+      { granthId = "shiva-purana"; chapterId = 2; name = "Rudra Samhita — Sati Khanda"; sanskritName = "सती खण्ड"; summary = "The story of Sati, Her self-offering at Daksha's sacrifice, and Shiva's grief and dance of dissolution."; verseCount = 25 },
+
+      // ── Markandeya Purana — Devi Mahatmyam ────────────────────────────────
+      { granthId = "markandeya-purana"; chapterId = 1; name = "Prathama Charitra — Madhu-Kaitabha"; sanskritName = "प्रथम चरित्र"; summary = "The first charitra: the Mother slays the demons Madhu and Kaitabha, who arose from Vishnu's ear during cosmic sleep."; verseCount = 1 },
+      { granthId = "markandeya-purana"; chapterId = 2; name = "Madhyama Charitra — Mahishasura"; sanskritName = "मध्यम चरित्र"; summary = "The central charitra: the Mother as Durga battles and slays the buffalo demon Mahishasura after nine days of combat."; verseCount = 12 },
+      { granthId = "markandeya-purana"; chapterId = 3; name = "Uttama Charitra — Shumbha-Nishumbha"; sanskritName = "उत्तम चरित्र"; summary = "The final charitra: the Mother slays the demons Shumbha and Nishumbha, establishing the triumph of shakti."; verseCount = 13 },
+
+      // ── Garuda Purana — funeral rites (representative) ────────────────────
+      { granthId = "garuda-purana"; chapterId = 1; name = "Pretakhanda — the departed"; sanskritName = "प्रेतखण्ड"; summary = "The journey of the departed soul, the nature of the afterlife, and the funeral rites (shraddha) that aid the soul's passage."; verseCount = 35 },
+
+      // ── Isha Upanishad ───────────────────────────────────────────────────
+      { granthId = "isha-upanishad"; chapterId = 1; name = "Adhyaya 1 — the all-pervading Isha"; sanskritName = "ईशावास्यम्"; summary = "The 18 mantras on the Self that pervades all, the harmony of action and renunciation, and the path of vidya and avidya."; verseCount = 18 },
+
+      // ── Kena Upanishad ───────────────────────────────────────────────────
+      { granthId = "kena-upanishad"; chapterId = 1; name = "Khanda 1 — by what does the mind think?"; sanskritName = "केन"; summary = "The opening question: by what power does the mind think, the eye see, the ear hear? The Self that cannot be known by the mind."; verseCount = 4 },
+      { granthId = "kena-upanishad"; chapterId = 4; name = "Khanda 4 — the parable of the gods"; sanskritName = "यक्ष"; summary = "Agni, Vayu, and Indra fail to comprehend the Yaksha (Brahman); only through the grace of the Self is It known."; verseCount = 4 },
+
+      // ── Katha Upanishad ──────────────────────────────────────────────────
+      { granthId = "katha-upanishad"; chapterId = 1; name = "Valli 1 — Nachiketa's three boons"; sanskritName = "नचिकेता"; summary = "Nachiketa is offered three boons by Yama; the third is the knowledge of what lies beyond death."; verseCount = 1 },
+      { granthId = "katha-upanishad"; chapterId = 3; name = "Valli 3 — the chariot analogy"; sanskritName = "रथ"; summary = "The Self is the lord of the chariot, the body the chariot, the intellect the charioteer, the mind the reins, and the senses the horses."; verseCount = 1 },
+      { granthId = "katha-upanishad"; chapterId = 6; name = "Valli 6 — the path of the wise"; sanskritName = "अहंता"; summary = "The path of the wise and the path of the foolish; the Self is to be realized through the subtle intellect."; verseCount = 1 },
+
+      // ── Mundaka Upanishad ────────────────────────────────────────────────
+      { granthId = "mundaka-upanishad"; chapterId = 1; name = "Mundaka 1 — para and apara vidya"; sanskritName = "परा अपरा"; summary = "The two kinds of knowledge: the lower (the Vedas and sciences) and the higher (that by which the imperishable is known)."; verseCount = 1 },
+      { granthId = "mundaka-upanishad"; chapterId = 2; name = "Mundaka 2 — the bow of Om"; sanskritName = "ॐ धनुष"; summary = "The Self is to be struck with the bow of Om, the arrow of the Self, and the bowstring of steadfast meditation."; verseCount = 1 },
+
+      // ── Mandukya Upanishad ───────────────────────────────────────────────
+      { granthId = "mandukya-upanishad"; chapterId = 1; name = "Adhyaya 1 — Om and the four states"; sanskritName = "ॐ चतुष्पात्"; summary = "The 12 mantras on Om (A-U-M) and the four states: waking (jagrat), dream (svapna), deep sleep (sushupti), and turiya."; verseCount = 12 },
+
+      // ── Chandogya Upanishad — Tat Tvam Asi ───────────────────────────────
+      { granthId = "chandogya-upanishad"; chapterId = 6; name = "Prapathaka 6 — Tat Tvam Asi"; sanskritName = "तत् त्वम् असि"; summary = "Uddalaka Aruni teaches his son Shvetaketu the Mahavakya 'Tat Tvam Asi' — 'That thou art' — through nine analogies."; verseCount = 16 },
+
+      // ── Brihadaranyaka Upanishad — Yajnavalkya ───────────────────────────
+      { granthId = "brihadaranyaka-upanishad"; chapterId = 1; name = "Adhyaya 1 — Madhu Vidya"; sanskritName = "मधु विद्या"; summary = "The Madhu Vidya of Dadhyak Atharvana: all beings are connected like honeycombs in the Self that pervades all."; verseCount = 6 },
+      { granthId = "brihadaranyaka-upanishad"; chapterId = 2; name = "Adhyaya 2 — Yajnavalkya & Maitreyi"; sanskritName = "मैत्रेयी"; summary = "Yajnavalkya's discourse to his wife Maitreyi: the Self is not loved for its sake but for the sake of the Self that one loves all."; verseCount = 6 },
+      { granthId = "brihadaranyaka-upanishad"; chapterId = 4; name = "Adhyaya 4 — Neti Neti"; sanskritName = "नेति नेति"; summary = "Yajnavalkya teaches King Janaka the path of 'Neti Neti' — the Self is not this, not this — beyond all description."; verseCount = 6 },
+    ];
+    for (c in seed.values()) {
+      granthChapters.add(compareTextNat, (c.granthId, c.chapterId), c);
+    };
+  };
+
+  // ─── Initialization: Granth verses (representative, 3-layer display) ───────
+  public func initGranthVerses(granthVerses : Map.Map<(Text, Nat, Nat), Types.GranthVerse>) : () {
+    let seed : [Types.GranthVerse] = [
+      // ── Rig Veda 1.1.1 — first verse, to Agni ─────────────────────────────
+      { granthId = "rig-veda"; chapterId = 1; verseId = 1; verseNumber = "1.1.1";
+        sanskritDevanagari = "अग्निमीळे पुरोहितं यज्ञस्य देवमृत्विजम्। होतारं रत्नधातमम्॥";
+        sanskritTransliteration = "agnim īḷe purohitaṃ yajñasya devam ṛtvijam | hotāraṃ ratnadhātamam ||";
+        simpleMeaning = "I praise Agni, the priest of the sacrifice, the divine minister, the offerer of oblations, the bestower of wealth.";
+        sourceGranth = "Rig Veda"; sourceChapter = 1; sourceVerse = "1.1.1" },
+
+      // ── Rig Veda 3.62.10 — the Gayatri Mantra ─────────────────────────────
+      { granthId = "rig-veda"; chapterId = 3; verseId = 10; verseNumber = "3.62.10";
+        sanskritDevanagari = "तत्सवितुर्वरेण्यं भर्गो देवस्य धीमहि धियो यो नः प्रचोदयात्॥";
+        sanskritTransliteration = "tat savitur vareṇyaṃ bhargo devasya dhīmahi dhiyo yo naḥ pracodayāt ||";
+        simpleMeaning = "May we meditate on the glorious splendor of the divine Savitr (the sun); may He illumine our intellects.";
+        sourceGranth = "Rig Veda"; sourceChapter = 3; sourceVerse = "3.62.10" },
+
+      // ── Rig Veda 10.90 — Purusha Sukta (opening) ──────────────────────────
+      { granthId = "rig-veda"; chapterId = 10; verseId = 1; verseNumber = "10.90.1";
+        sanskritDevanagari = "सहस्रशीर्षा पुरुषः सहस्राक्षः सहस्रपात्। स भूमिं विश्वतो वृत्वात्यतिष्ठत्दशाङ्गुलम्॥";
+        sanskritTransliteration = "sahasraśīrṣā puruṣaḥ sahasrākṣaḥ sahasrapāt | sa bhūmiṃ viśvato vṛtvātyatiṣṭhatdaśāṅgulam ||";
+        simpleMeaning = "The cosmic Person (Purusha) has a thousand heads, a thousand eyes, and a thousand feet. He pervades the earth on all sides and stands beyond it by ten fingers' breadth.";
+        sourceGranth = "Rig Veda"; sourceChapter = 10; sourceVerse = "10.90.1" },
+
+      // ── Rig Veda 10.129 — Nasadiya Sukta (creation hymn) ──────────────────
+      { granthId = "rig-veda"; chapterId = 10; verseId = 2; verseNumber = "10.129.1";
+        sanskritDevanagari = "नासदासीन्नो सदासीत्तदानीं नासीद्रजो नो व्योमा परो यत्।";
+        sanskritTransliteration = "nāsadāsīnno sadāsīttadānīṃ nāsīdrajo no vyomā paro yat";
+        simpleMeaning = "There was neither non-existence nor existence then. There was neither the realm of space nor the sky beyond it.";
+        sourceGranth = "Rig Veda"; sourceChapter = 10; sourceVerse = "10.129.1" },
+
+      // ── Yajur Veda 40.1 — Isha Upanishad opening ──────────────────────────
+      { granthId = "yajur-veda"; chapterId = 40; verseId = 1; verseNumber = "40.1";
+        sanskritDevanagari = "ईशावास्यमिदं सर्वं यत्किञ्च जगत्यां जगत्। तेन त्यक्तेन भुञ्जीथा मा गृधः कस्यस्विद्धनम्॥";
+        sanskritTransliteration = "īśāvāsyamidaṃ sarvaṃ yatkiñca jagatyāṃ jagat | tena tyaktena bhuñjīthā mā gṛdhaḥ kasyasviddhanam ||";
+        simpleMeaning = "All this — whatever moves on the earth — is enveloped by the Lord. Enjoy with renunciation; do not covet anyone's wealth.";
+        sourceGranth = "Yajur Veda (Isha Upanishad)"; sourceChapter = 40; sourceVerse = "40.1" },
+
+      // ── Yajur Veda 40.5 — Isha Upanishad ──────────────────────────────────
+      { granthId = "yajur-veda"; chapterId = 40; verseId = 5; verseNumber = "40.5";
+        sanskritDevanagari = "तदेजति तन्नैजति तद्दूरे तद्वन्तिके। तदन्तरस्य सर्वस्य तदु सर्वस्यास्य बाह्यतः॥";
+        sanskritTransliteration = "tadejati tannaijati taddūre tadvantike | tadantarasya sarvasya tadu sarvasyāsya bāhyataḥ ||";
+        simpleMeaning = "It moves and moves not. It is far and near. It is within all this and also outside all this.";
+        sourceGranth = "Yajur Veda (Isha Upanishad)"; sourceChapter = 40; sourceVerse = "40.5" },
+
+      // ── Atharva Veda — Mandukya Upanishad verse 1 ─────────────────────────
+      { granthId = "atharva-veda"; chapterId = 11; verseId = 1; verseNumber = "Mandukya 1";
+        sanskritDevanagari = "ॐ इत्येतदक्षरमिदं सर्वम्।";
+        sanskritTransliteration = "om ityetadakṣaramidaṃ sarvam";
+        simpleMeaning = "Om — this syllable is all this. Its explanation: all that was, is, and will be is Om; and whatever is beyond these three times is also Om.";
+        sourceGranth = "Atharva Veda (Mandukya Upanishad)"; sourceChapter = 11; sourceVerse = "Mandukya 1" },
+
+      // ── Atharva Veda — Mandukya Upanishad verse 7 (turiya) ────────────────
+      { granthId = "atharva-veda"; chapterId = 11; verseId = 7; verseNumber = "Mandukya 7";
+        sanskritDevanagari = "नान्तःप्रज्ञं न बहिःप्रज्ञं नोभयतःप्रज्ञं न प्रज्ञानघनं न प्रज्ञं नाप्रज्ञम्।";
+        sanskritTransliteration = "nāntaḥprajñaṃ na bahiḥprajñaṃ nobhayataḥprajñaṃ na prajñānaghanaṃ na prajñaṃ nāprajñam";
+        simpleMeaning = "Turiya (the fourth) is not the inward-facing consciousness, nor the outward, nor both; not a mass of cognition, not cognitive, not non-cognitive. It is unseen, beyond grasp, ungraspable — the peaceful, auspicious, non-dual Self.";
+        sourceGranth = "Atharva Veda (Mandukya Upanishad)"; sourceChapter = 11; sourceVerse = "Mandukya 7" },
+
+      // ── Bhagavata Purana 10.1 — invocation to Krishna's birth ─────────────
+      { granthId = "bhagavata-purana"; chapterId = 10; verseId = 1; verseNumber = "10.1.4";
+        sanskritDevanagari = "कृष्णं वन्दे जगद्गुरुम्।";
+        sanskritTransliteration = "kṛṣṇaṃ vande jagadgurum";
+        simpleMeaning = "I bow to Krishna, the teacher of the universe — the Supreme Lord who descends to protect dharma and bestow His grace.";
+        sourceGranth = "Bhagavata Purana"; sourceChapter = 10; sourceVerse = "10.1.4" },
+
+      // ── Bhagavata Purana 10.14 — Brahma's surrender to Krishna ────────────
+      { granthId = "bhagavata-purana"; chapterId = 10; verseId = 2; verseNumber = "10.14.8";
+        sanskritDevanagari = "नाथं नाथस्य नाथस्य नाथो नाथो न चापि ते।";
+        sanskritTransliteration = "nāthaṃ nāthasya nāthasya nātho nātho na cāpi te";
+        simpleMeaning = "O Lord of the lords of the universe, I bow to You. You are the source of all that exists — the creator, sustainer, and dissolver of all worlds.";
+        sourceGranth = "Bhagavata Purana"; sourceChapter = 10; sourceVerse = "10.14.8" },
+
+      // ── Vishnu Purana 1.1 — invocation ───────────────────────────────────
+      { granthId = "vishnu-purana"; chapterId = 1; verseId = 1; verseNumber = "1.1.1";
+        sanskritDevanagari = "ॐ नमो विष्णवे भगवते।";
+        sanskritTransliteration = "om namo viṣṇave bhagavate";
+        simpleMeaning = "Om. Salutations to Bhagavan Vishnu, the all-pervading Lord, the source and refuge of all beings.";
+        sourceGranth = "Vishnu Purana"; sourceChapter = 1; sourceVerse = "1.1.1" },
+
+      // ── Shiva Purana — Shiva's grace ──────────────────────────────────────
+      { granthId = "shiva-purana"; chapterId = 1; verseId = 1; verseNumber = "Rudra Samhita 1.1";
+        sanskritDevanagari = "ॐ नमः शिवाय शान्ताय शिवरूपाय वै नमः।";
+        sanskritTransliteration = "om namaḥ śivāya śāntāya śivarūpāya vai namaḥ";
+        simpleMeaning = "Om. Salutations to Shiva, the peaceful one, to the very form of auspiciousness — I bow again and again.";
+        sourceGranth = "Shiva Purana"; sourceChapter = 1; sourceVerse = "Rudra Samhita 1.1" },
+
+      // ── Markandeya Purana — Devi Mahatmyam 1.1 (opening) ─────────────────
+      { granthId = "markandeya-purana"; chapterId = 2; verseId = 1; verseNumber = "DM 1.1";
+        sanskritDevanagari = "ॐ देव्यै नमः। सर्वमङ्गलमाङ्गल्ये शिवे सर्वार्थसाधिके।";
+        sanskritTransliteration = "om devyai namaḥ | sarvamaṅgalamāṅgalye śive sarvārthasādhike";
+        simpleMeaning = "Om. Salutations to the Devi. O auspicious among the auspicious, O Shiva (the auspicious One), O fulfiller of all aims — I bow to You who are the refuge of all.";
+        sourceGranth = "Markandeya Purana (Devi Mahatmyam)"; sourceChapter = 2; sourceVerse = "DM 1.1" },
+
+      // ── Markandeya Purana — Devi Mahatmyam 11 (Durga's slaying of Mahisha) ─
+      { granthId = "markandeya-purana"; chapterId = 2; verseId = 2; verseNumber = "DM 11.18";
+        sanskritDevanagari = "या देवी सर्वभूतेषु शक्तिरूपेण संस्थिता। नमस्तस्यै नमस्तस्यै नमस्तस्यै नमो नमः॥";
+        sanskritTransliteration = "yā devī sarvabhūteṣu śaktirūpeṇa saṃsthitā | namastasyai namastasyai namastasyai namo namaḥ ||";
+        simpleMeaning = "Salutations again and again to the Devi who abides in all beings as power (shakti). Salutations, salutations, salutations to Her.";
+        sourceGranth = "Markandeya Purana (Devi Mahatmyam)"; sourceChapter = 2; sourceVerse = "DM 11.18" },
+
+      // ── Isha Upanishad verse 1 (cross-granth reference) ───────────────────
+      { granthId = "isha-upanishad"; chapterId = 1; verseId = 1; verseNumber = "Isha 1";
+        sanskritDevanagari = "ईशावास्यमिदं सर्वं यत्किञ्च जगत्यां जगत्।";
+        sanskritTransliteration = "īśāvāsyamidaṃ sarvaṃ yatkiñca jagatyāṃ jagat";
+        simpleMeaning = "All this — whatever moves on the earth — is enveloped by the Lord. Renounce and enjoy; covet not anyone's wealth.";
+        sourceGranth = "Isha Upanishad"; sourceChapter = 1; sourceVerse = "Isha 1" },
+
+      // ── Isha Upanishad verse 15 (the face of truth) ───────────────────────
+      { granthId = "isha-upanishad"; chapterId = 1; verseId = 15; verseNumber = "Isha 15";
+        sanskritDevanagari = "हिरण्मयेन पात्रेण सत्यस्यापिहितं मुखम्। तत्त्वं पूषन्नपावृणु सत्यधर्माय दृष्टये॥";
+        sanskritTransliteration = "hiraṇmayena pātreṇa satyasyāpihitaṃ mukham | tattvaṃ pūṣannapāvṛṇu satyadharmāya dṛṣṭaye ||";
+        simpleMeaning = "The face of truth is covered with a golden lid. O Pushan, uncover it, that I who am devoted to truth may behold it.";
+        sourceGranth = "Isha Upanishad"; sourceChapter = 1; sourceVerse = "Isha 15" },
+
+      // ── Kena Upanishad 1.1 ────────────────────────────────────────────────
+      { granthId = "kena-upanishad"; chapterId = 1; verseId = 1; verseNumber = "Kena 1.1";
+        sanskritDevanagari = "केनेषितं पतति प्रेषितं मनः केन प्राणः प्रथमः प्रैति युक्तः।";
+        sanskritTransliteration = "keneṣitaṃ patati preṣitaṃ manaḥ kena prāṇaḥ prathamaḥ praiti yuktaḥ";
+        simpleMeaning = "By what will (desire) does the mind fly forth? By what command does the first breath move? At whose will do we utter this speech? What god directs the eye and the ear?";
+        sourceGranth = "Kena Upanishad"; sourceChapter = 1; sourceVerse = "Kena 1.1" },
+
+      // ── Kena Upanishad 2.3 — the paradox of knowing Brahman ───────────────
+      { granthId = "kena-upanishad"; chapterId = 4; verseId = 1; verseNumber = "Kena 2.3";
+        sanskritDevanagari = "यन्मनसा न मनुते येनाहुर्मनो मतम्। तदेव ब्रह्म त्वं विद्धि नेदं यदिदमुपासते॥";
+        sanskritTransliteration = "yanmanasā na manute yenāhurmano matam | tadeva brahma tvaṃ viddhi nedaṃ yadidamupāsate ||";
+        simpleMeaning = "That which is not thought by the mind, but by which the mind thinks — know that alone as Brahman, not this which people worship here.";
+        sourceGranth = "Kena Upanishad"; sourceChapter = 4; sourceVerse = "Kena 2.3" },
+
+      // ── Katha Upanishad 1.3.3 — the chariot analogy ───────────────────────
+      { granthId = "katha-upanishad"; chapterId = 3; verseId = 1; verseNumber = "Katha 1.3.3";
+        sanskritDevanagari = "आत्मानं रथिनं विद्धि शरीरं रथमेव तु। बुद्धिं तु सारथिं विद्धि मनः प्रग्रहमेव च॥";
+        sanskritTransliteration = "ātmānaṃ rathinaṃ viddhi śarīraṃ rathameva tu | buddhiṃ tu sārathiṃ viddhi manaḥ pragrahameva ca ||";
+        simpleMeaning = "Know the Self as the lord of the chariot, the body as the chariot, the intellect as the charioteer, and the mind as the reins.";
+        sourceGranth = "Katha Upanishad"; sourceChapter = 3; sourceVerse = "Katha 1.3.3" },
+
+      // ── Katha Upanishad 2.3.14 — the path of the wise ──────────────────────
+      { granthId = "katha-upanishad"; chapterId = 6; verseId = 1; verseNumber = "Katha 2.3.14";
+        sanskritDevanagari = "उत्तिष्ठत जाग्रत प्राप्य वरान्निबोधत।";
+        sanskritTransliteration = "uttiṣṭhata jāgrata prāpya varānnibodhata";
+        simpleMeaning = "Arise! Awake! Approach the great teachers and learn. The path is sharp like a razor — difficult to traverse, the wise declare.";
+        sourceGranth = "Katha Upanishad"; sourceChapter = 6; sourceVerse = "Katha 2.3.14" },
+
+      // ── Mundaka Upanishad 1.1.5 — para and apara vidya ────────────────────
+      { granthId = "mundaka-upanishad"; chapterId = 1; verseId = 1; verseNumber = "Mundaka 1.1.5";
+        sanskritDevanagari = "धर्मं चार्थं च कामं च मोक्षं च चतुर्विधम्।";
+        sanskritTransliteration = "dharmaṃ cārthaṃ ca kāmaṃ ca mokṣaṃ ca caturvidham";
+        simpleMeaning = "The two kinds of knowledge: the lower (the Vedas, phonetics, rituals, grammar, etc.) and the higher — that by which the imperishable Brahman is attained.";
+        sourceGranth = "Mundaka Upanishad"; sourceChapter = 1; sourceVerse = "Mundaka 1.1.5" },
+
+      // ── Mundaka Upanishad 2.2.8 — the bow of Om ───────────────────────────
+      { granthId = "mundaka-upanishad"; chapterId = 2; verseId = 1; verseNumber = "Mundaka 2.2.8";
+        sanskritDevanagari = "ओमित्येतदक्षरमिद्गुर्वं धनुः शरो ह्यात्मा ब्रह्म तल्लक्ष्यमुच्यते।";
+        sanskritTransliteration = "omityetadakṣaramidgurvaṃ dhanuḥ śaro hyātmā brahma tallakṣyamucyate";
+        simpleMeaning = "Take the great weapon of the Upanishad as the bow; place the arrow of the Self sharpened by meditation; draw it with the mind engaged in the thought of That (Brahman); and strike the target.";
+        sourceGranth = "Mundaka Upanishad"; sourceChapter = 2; sourceVerse = "Mundaka 2.2.8" },
+
+      // ── Mandukya Upanishad verse 12 — turiya ──────────────────────────────
+      { granthId = "mandukya-upanishad"; chapterId = 1; verseId = 12; verseNumber = "Mandukya 12";
+        sanskritDevanagari = "तुरीयं शान्तमद्वैतं चतुर्थं मन्यन्ते स आत्मा स विज्ञेयः।";
+        sanskritTransliteration = "turīyaṃ śāntamadvaitaṃ caturthaṃ manyante sa ātmā sa vijñeyaḥ";
+        simpleMeaning = "They call the fourth (turiya) the peaceful, the non-dual. This is the Self; this is to be known.";
+        sourceGranth = "Mandukya Upanishad"; sourceChapter = 1; sourceVerse = "Mandukya 12" },
+
+      // ── Chandogya Upanishad 6.8.7 — Tat Tvam Asi ──────────────────────────
+      { granthId = "chandogya-upanishad"; chapterId = 6; verseId = 1; verseNumber = "Chandogya 6.8.7";
+        sanskritDevanagari = "स य एषोऽणिमैतदात्म्यमिदं सर्वं तत्सत्यं स आत्मा तत्त्वमसि श्वेतकेतो।";
+        sanskritTransliteration = "sa ya eṣo'ṇimaitadātmyamidaṃ sarvaṃ tatsatyaṃ sa ātmā tattvamasi śvetaketo";
+        simpleMeaning = "That which is the subtle essence — in it all that exists has its Self. That is the truth. That is the Self. Thou art that, O Shvetaketu.";
+        sourceGranth = "Chandogya Upanishad"; sourceChapter = 6; sourceVerse = "Chandogya 6.8.7" },
+
+      // ── Brihadaranyaka Upanishad 1.4.10 — Aham Brahmasmi ──────────────────
+      { granthId = "brihadaranyaka-upanishad"; chapterId = 1; verseId = 1; verseNumber = "Brihad 1.4.10";
+        sanskritDevanagari = "ब्रह्म वा इदमग्र आसीत्। तदात्मानमेवावेत्। अहं ब्रह्मास्मीति।";
+        sanskritTransliteration = "brahma vā idamagra āsīt | tadātmānamevāvet | ahaṃ brahmāsmīti";
+        simpleMeaning = "In the beginning this was Brahman alone. It knew itself as 'I am Brahman' — therefore it became all. Whoever knows this becomes all.";
+        sourceGranth = "Brihadaranyaka Upanishad"; sourceChapter = 1; sourceVerse = "Brihad 1.4.10" },
+
+      // ── Brihadaranyaka Upanishad 2.4.14 — Neti Neti ───────────────────────
+      { granthId = "brihadaranyaka-upanishad"; chapterId = 2; verseId = 1; verseNumber = "Brihad 2.4.14";
+        sanskritDevanagari = "नेति नेति। अतः श्रुयते अनामयम्।";
+        sanskritTransliteration = "neti neti | ataḥ śruyate anāmayam";
+        simpleMeaning = "Not this, not this. By this (the Self) is not described. There is no other and no better description than 'Not this, not this.'";
+        sourceGranth = "Brihadaranyaka Upanishad"; sourceChapter = 2; sourceVerse = "Brihad 2.4.14" },
+
+      // ── Brihadaranyaka Upanishad 4.5.6 — for the sake of the Self ──────────
+      { granthId = "brihadaranyaka-upanishad"; chapterId = 4; verseId = 1; verseNumber = "Brihad 4.5.6";
+        sanskritDevanagari = "न प्रियं प्रियमर्थं प्रियं न प्रियाय प्रियमर्थम्। आत्मनस्तु कामाय सर्वं प्रियं भवति।";
+        sanskritTransliteration = "na priyaṃ priyamarthaṃ priyaṃ na priyāya priyamartham | ātmanastu kāmāya sarvaṃ priyaṃ bhavati";
+        simpleMeaning = "It is not for the sake of the husband that the husband is loved, but for the sake of the Self. It is not for the sake of all that all is loved, but for the sake of the Self that all is loved.";
+        sourceGranth = "Brihadaranyaka Upanishad"; sourceChapter = 4; sourceVerse = "Brihad 4.5.6" },
+
+      // ── Shvetashvatara Upanishad 6.11 — the one God ───────────────────────
+      { granthId = "shvetashvatara-upanishad"; chapterId = 6; verseId = 1; verseNumber = "Shveta 6.11";
+        sanskritDevanagari = "एको देवः सर्वभूतेषु गूढः सर्वव्यापी सर्वभूतान्तरात्मा।";
+        sanskritTransliteration = "eko devaḥ sarvabhūteṣu gūḍhaḥ sarvavyāpī sarvabhūtāntarātmā";
+        simpleMeaning = "The one God, hidden in all beings, all-pervading, the inner Self of all beings, the witness, the guide — the one beyond the qualities, yet the master of all qualities.";
+        sourceGranth = "Shvetashvatara Upanishad"; sourceChapter = 6; sourceVerse = "Shveta 6.11" },
+
+      // ── Garuda Purana — Pretakhanda on the departed ───────────────────────
+      { granthId = "garuda-purana"; chapterId = 1; verseId = 1; verseNumber = "Pretakhanda 1.1";
+        sanskritDevanagari = "गत्वा प्रेतगृहं घोरं यमस्य सदनं तथा।";
+        sanskritTransliteration = "gatvā pretagṛhaṃ ghoraṃ yamasya sadanaṃ tathā";
+        simpleMeaning = "The departed soul, leaving the body, journeys to the dread abode of Yama — there to receive its due according to its deeds.";
+        sourceGranth = "Garuda Purana (Pretakhanda)"; sourceChapter = 1; sourceVerse = "Pretakhanda 1.1" },
+    ];
+    for (v in seed.values()) {
+      granthVerses.add(compareTextNatNat, (v.granthId, v.chapterId, v.verseId), v);
     };
   };
 };

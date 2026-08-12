@@ -5,6 +5,11 @@ import List "mo:core/List";
 
 mixin (
   circleMessages : Map.Map<Text, List.List<Types.SatsangMessage>>,
+  satsangCircles : Map.Map<Text, Types.SatsangCircle>,
+  quizzes : Map.Map<Text, Types.QuizQuestion>,
+  leaderboard : List.List<Types.LeaderboardEntry>,
+  pledges : Map.Map<Text, Types.NaamPledge>,
+  punyaProfiles : Map.Map<Text, Types.PunyaProfile>,
 ) {
   /// Post a message to a satsang circle.
   public func postCircleMessage(circleId : Text, authorName : Text, message : Text) : async () {
@@ -24,5 +29,34 @@ mixin (
   /// List all 18 satsang circle IDs.
   public query func listSatsangCircles() : async [Text] {
     SatsangLib.listCircleIds();
+  };
+
+  // ─── 18 Chat Circles metadata ───────────────────────────────────────────────
+  public query func listSatsangCircleMetadata() : async [Types.SatsangCircle] {
+    SatsangLib.listSatsangCircles(satsangCircles);
+  };
+
+  public query func getSatsangCircle(circleId : Text) : async ?Types.SatsangCircle {
+    SatsangLib.getSatsangCircle(satsangCircles, circleId);
+  };
+
+  // ─── Daily Quiz ──────────────────────────────────────────────────────────────
+  public query func getDailyQuiz(date : Text) : async ?Types.QuizQuestion {
+    SatsangLib.getDailyQuiz(quizzes, date);
+  };
+
+  // ─── Donation Leaderboard ───────────────────────────────────────────────────
+  public query func getLeaderboard(limit : Nat) : async [Types.LeaderboardEntry] {
+    SatsangLib.getDonationLeaderboard(leaderboard, limit);
+  };
+
+  // ─── Naam Pledge Counter ────────────────────────────────────────────────────
+  public query func getNaamPledges() : async [Types.NaamPledge] {
+    SatsangLib.listNaamPledges(pledges);
+  };
+
+  // ─── Punya Profile (points / badges / streaks) ─────────────────────────────
+  public shared ({ caller }) func getPunyaProfile() : async ?Types.PunyaProfile {
+    SatsangLib.getPunyaProfile(punyaProfiles, caller.toText());
   };
 };

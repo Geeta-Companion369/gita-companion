@@ -30,7 +30,14 @@ mixin (
   /// Return Panchang data for a given date string in YYYY-MM-DD format.
   /// Calculated server-side from Vedic lunar calendar formulas.
   public shared query func getPanchangToday(date : Text) : async Types.PanchangData {
-    KGLib.getPanchang(date)
+    KGLib.getPanchaang(date)
+  };
+
+  /// Return the full Panchaang (9 limbs) for the requested date string in
+  /// YYYY-MM-DD format. Date-parameterized accessor for the expanded
+  /// PanchangData type.
+  public shared query func getPanchaang(dateStr : Text) : async Types.PanchangData {
+    KGLib.getPanchaang(dateStr)
   };
 
   // ─── Transit Calendar ──────────────────────────────────────────────────────

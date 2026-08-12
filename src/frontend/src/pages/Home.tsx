@@ -1,9 +1,12 @@
+import type { DailyChallenge, Festival, PanchangData } from "@/backend";
 import { LotusParticles } from "@/components/LotusParticles";
+import { Calendar } from "@/components/ui/calendar";
 import { useLastRead } from "@/hooks/use-last-read";
 import { usePoints } from "@/hooks/use-points";
 import { useStreak } from "@/hooks/use-streak";
 import { useUserProfile } from "@/hooks/use-user-profile";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { getBackend } from "@/lib/backend-client";
+import { useNavigate } from "@tanstack/react-router";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useRef, useState } from "react";
 
@@ -307,13 +310,67 @@ const FESTIVALS: Array<{
   },
 ];
 
-function getTodayPanchang() {
-  const now = new Date();
-  const day = now.getDay();
-  const month = now.getMonth();
-  const date = now.getDate();
-  const tithiNum = (date - 1) % 30;
-  const nakshatraIdx = Math.floor((month * 30 + date - 1) * 0.9125) % 27;
+// ─── Panchaang derivation helpers (client-side) ──────────────────────────────
+// Backend getPanchangToday returns: tithi, tithiNumber, vara, nakshatra, yoga,
+// karana, moonSign, description. We derive paksha, masa, ritu client-side.
+
+// Six Vedic ritus (seasons), each spanning ~2 sidereal months.
+const RITU_NAMES = [
+  { sa: "वसंत", en: "Vasanta — Spring" }, // Feb–Mar, Mar–Apr
+  { sa: "ग्रीष्म", en: "Grishma — Summer" }, // Apr–May, May–Jun
+  { sa: "वर्षा", en: "Varsha — Monsoon" }, // Jun–Jul, Jul–Aug
+  { sa: "शरद", en: "Sharad — Autumn" }, // Aug–Sep, Sep–Oct
+  { sa: "हेमंत", en: "Hemanta — Early Winter" }, // Oct–Nov, Nov–Dec
+  { sa: "शिशिर", en: "Shishira — Late Winter" }, // Dec–Jan, Jan–Feb
+];
+
+// Lunar masa names (Chaitra starts the Vedic year ~mid-March).
+const LUNAR_MASA_NAMES = [
+  "चैत्र",
+  "वैशाख",
+  "ज्येष्ठ",
+  "आषाढ़",
+  "श्रावण",
+  "भाद्रपद",
+  "अश्विन",
+  "कार्तिक",
+  "मार्गशीर्ष",
+  "पौष",
+  "माघ",
+  "फाल्गुन",
+];
+
+function derivePaksha(tithiNumber: number): { sa: string; en: string } {
+  // Krishna paksha = waning phase (tithi 1–15 of the dark fortnight)
+  // Shukla paksha = waxing phase (tithi 1–15 of the bright fortnight)
+  // Backend tithiNumber cycles 1..30 across the lunar month.
+  if (tithiNumber < 15) {
+    return { sa: "शुक्ल पक्ष", en: "Shukla Paksha — Waxing phase" };
+  }
+  return { sa: "कृष्ण पक्ष", en: "Krishna Paksha — Waning phase" };
+}
+
+function deriveMasa(date: Date): { sa: string; en: string } {
+  // Approximate lunar masa from Gregorian month. Chaitra begins ~mid-March,
+  // so we offset by ~0.5 month. Each masa maps to one Gregorian month.
+  const monthIdx = (date.getMonth() + 9) % 12; // Jan→Libra offset
+  const masa = LUNAR_MASA_NAMES[monthIdx] ?? "चैत्र";
+  return { sa: masa, en: masa };
+}
+
+function deriveRitu(date: Date): { sa: string; en: string } {
+  // Ritu index: Vasanta starts ~Feb 20. Each ritu spans 2 Gregorian months.
+  // Shift so that mid-Feb (month 1) → Vasanta (index 0).
+  const rituIdx = Math.floor(((date.getMonth() + 10) % 12) / 2);
+  return RITU_NAMES[rituIdx] ?? RITU_NAMES[0];
+}
+
+function getTodayPanchang(date: Date = new Date()) {
+  const day = date.getDay();
+  const month = date.getMonth();
+  const dateNum = date.getDate();
+  const tithiNum = (dateNum - 1) % 30;
+  const nakshatraIdx = Math.floor((month * 30 + dateNum - 1) * 0.9125) % 27;
   const rahuKaalHours: Record<number, string> = {
     0: "4:30 PM – 6:00 PM",
     1: "7:30 AM – 9:00 AM",
@@ -324,7 +381,7 @@ function getTodayPanchang() {
     6: "9:00 AM – 10:30 AM",
   };
   const todayFestival = FESTIVALS.find(
-    (f) => f.month === month && Math.abs(f.day - date) <= 1,
+    (f) => f.month === month && Math.abs(f.day - dateNum) <= 1,
   );
   return {
     tithi: TITHI_NAMES[tithiNum] ?? "प्रतिपदा",
@@ -631,6 +688,7 @@ function SplashScreen({ onDone }: { onDone: () => void }) {
 
 // ─── Verse Carousel ────────────────────────────────────────────────────────────
 function DailyVerseCarousel() {
+  const navigate = useNavigate();
   const [idx, setIdx] = useState(
     () => new Date().getDate() % DAILY_VERSES.length,
   );
@@ -748,6 +806,26 @@ function DailyVerseCarousel() {
         >
           "{verse?.translation}"
         </p>
+        <div className="flex justify-center mt-4">
+          <button
+            type="button"
+            onClick={() =>
+              navigate({
+                to: "/chapter/$id",
+                params: { id: String(verse?.chapter ?? 1) },
+              })
+            }
+            data-ocid="home.verse-read-chapter-link"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full font-body text-[12px] font-bold italic transition-all duration-200"
+            style={{
+              background: "oklch(0.80 0.28 52 / 0.18)",
+              border: "1.5px solid oklch(0.72 0.30 50 / 0.55)",
+              color: "oklch(0.30 0.18 42)",
+            }}
+          >
+            📖 Read full Chapter {verse?.chapter} →
+          </button>
+        </div>
       </motion.div>
       <div className="flex justify-center gap-2 mt-4">
         {DAILY_VERSES.map((v, i) => (
@@ -771,21 +849,164 @@ function DailyVerseCarousel() {
   );
 }
 
-// ─── Today's Sacred Blessing (Panchang) ───────────────────────────────────────
+// ─── Today's Sacred Blessing (Panchaang) ───────────────────────────────────────
+type PanchaangElement = {
+  icon: string;
+  sa: string;
+  en: string;
+  meaning: string;
+  source: string;
+};
+
 function TodaysBlessingCard() {
-  const panchang = getTodayPanchang();
-  const now = new Date();
-  const dateStr = now.toLocaleDateString("en-IN", {
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(
+    () => new Date(),
+  );
+  const [showCalendar, setShowCalendar] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Backend panchaang fields (tithi, vara, nakshatra, yoga, karana, moonSign,
+  // description, tithiNumber, masa, ritu, paksha). Null until first fetch.
+  const [backend, setBackend] = useState<{
+    tithi: string;
+    vara: string;
+    nakshatra: string;
+    yoga: string;
+    karana: string;
+    moonSign: string;
+    description: string;
+    tithiNumber: number;
+    masa: string;
+    ritu: string;
+    paksha: string;
+  } | null>(null);
+
+  // Fetch backend panchaang whenever the selected date changes.
+  useEffect(() => {
+    if (!selectedDate) return;
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    const dateStr = selectedDate.toISOString().split("T")[0];
+    getBackend()
+      .getPanchangToday(dateStr)
+      .then((p) => {
+        if (cancelled) return;
+        setBackend({
+          tithi: p.tithi,
+          vara: p.vaar,
+          nakshatra: p.nakshatra,
+          yoga: p.yoga,
+          karana: p.karana,
+          moonSign: p.moonSign,
+          description: p.description,
+          tithiNumber: Number(p.tithiNumber),
+          masa: p.masa,
+          ritu: p.ritu,
+          paksha: p.paksha,
+        });
+        setLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setError("Unable to fetch Panchaang for this date.");
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedDate]);
+
+  // Client-side derivations (paksha, masa, ritu) as fallback. The backend
+  // PanchangData also returns masa, ritu, paksha — prefer those when present.
+  const derived = getTodayPanchang(selectedDate ?? new Date());
+  const paksha = backend?.paksha
+    ? { sa: backend.paksha, en: backend.paksha }
+    : backend
+      ? derivePaksha(backend.tithiNumber)
+      : { sa: "—", en: "—" };
+  const masa = backend?.masa
+    ? { sa: backend.masa, en: backend.masa }
+    : deriveMasa(selectedDate ?? new Date());
+  const ritu = backend?.ritu
+    ? { sa: backend.ritu, en: backend.ritu }
+    : deriveRitu(selectedDate ?? new Date());
+
+  const dateStr = (selectedDate ?? new Date()).toLocaleDateString("en-IN", {
     weekday: "long",
     day: "numeric",
     month: "long",
     year: "numeric",
   });
 
+  // All 8 Panchaang elements — backend values where available, derived otherwise.
+  const elements: PanchaangElement[] = [
+    {
+      icon: "🌙",
+      sa: backend?.tithi ?? derived.tithi,
+      en: "Tithi — Lunar Day",
+      meaning: backend?.tithi ?? derived.tithi,
+      source: "Backend",
+    },
+    {
+      icon: "🌗",
+      sa: paksha.sa,
+      en: paksha.en,
+      meaning: paksha.en,
+      source: "Derived",
+    },
+    {
+      icon: "📅",
+      sa: backend?.vara ?? derived.vaar,
+      en: "Vaar — Weekday",
+      meaning: backend?.vara ?? derived.vaar,
+      source: "Backend",
+    },
+    {
+      icon: "☀️",
+      sa: masa.sa,
+      en: masa.en,
+      meaning: `Masa — ${masa.en}`,
+      source: "Derived",
+    },
+    {
+      icon: "🍂",
+      sa: ritu.sa,
+      en: ritu.en,
+      meaning: `Ritu — ${ritu.en}`,
+      source: "Derived",
+    },
+    {
+      icon: "⭐",
+      sa: backend?.nakshatra ?? derived.nakshatra,
+      en: "Nakshatra — Lunar Mansion",
+      meaning: backend?.nakshatra ?? derived.nakshatra,
+      source: "Backend",
+    },
+    {
+      icon: "🧘",
+      sa: backend?.yoga ?? "—",
+      en: "Yoga — Auspicious Union",
+      meaning: backend?.yoga ?? "—",
+      source: "Backend",
+    },
+    {
+      icon: "⏳",
+      sa: backend?.karana ?? "—",
+      en: "Karana — Half-Tithi",
+      meaning: backend?.karana ?? "—",
+      source: "Backend",
+    },
+  ];
+
   return (
-    <Link to="/calendar" data-ocid="home.todays-blessing.link">
+    <div
+      className="relative overflow-hidden transition-all duration-200"
+      data-ocid="home.todays-blessing.card"
+    >
       <div
-        className="relative overflow-hidden transition-all duration-200 hover:scale-[1.01]"
+        className="relative overflow-hidden"
         style={{
           background:
             "linear-gradient(160deg, oklch(0.94 0.08 268 / 0.96) 0%, oklch(0.92 0.10 260 / 0.96) 100%)",
@@ -805,63 +1026,198 @@ function TodaysBlessingCard() {
               "linear-gradient(90deg, oklch(0.78 0.32 54), oklch(0.66 0.28 268), oklch(0.72 0.26 46), oklch(0.66 0.28 268), oklch(0.78 0.32 54))",
           }}
         />
-        <div className="flex items-center justify-between mb-3">
-          <div className="flex items-center gap-2">
+
+        {/* Header — title + date picker trigger */}
+        <div className="flex items-center justify-between mb-3 gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             <span style={{ fontSize: "1.5rem" }}>🌅</span>
-            <div>
+            <div className="min-w-0">
               <p
-                className="font-display text-[10px] tracking-[0.22em] uppercase font-bold"
+                className="font-display text-[11px] tracking-[0.22em] uppercase font-bold"
                 style={{ color: "oklch(0.32 0.22 268 / 0.95)" }}
               >
                 ✦ Today's Sacred Blessing
               </p>
               <p
-                className="font-body text-[10px] italic"
+                className="font-body text-[11px] italic truncate"
                 style={{ color: "oklch(0.38 0.12 52 / 0.85)" }}
               >
                 {dateStr}
               </p>
             </div>
           </div>
-          <span
-            style={{ color: "oklch(0.40 0.22 268 / 0.75)", fontSize: "1rem" }}
+          <button
+            type="button"
+            onClick={() => setShowCalendar((s) => !s)}
+            aria-label={showCalendar ? "Close date picker" : "Open date picker"}
+            aria-expanded={showCalendar}
+            data-ocid="home.todays-blessing.datepicker_toggle"
+            className="flex items-center gap-1.5 px-3 py-2 rounded-full text-[12px] font-body font-bold transition-all duration-200 shrink-0"
+            style={{
+              background: showCalendar
+                ? "oklch(0.76 0.28 268 / 0.25)"
+                : "oklch(0.80 0.28 268 / 0.15)",
+              border: "1.5px solid oklch(0.72 0.30 268 / 0.50)",
+              color: "oklch(0.30 0.18 268)",
+            }}
           >
-            →
-          </span>
+            📅 {showCalendar ? "Close" : "Pick Date"}
+          </button>
         </div>
+
+        {/* Date picker — prominent, allows future-date selection */}
+        <AnimatePresence>
+          {showCalendar && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.25 }}
+              className="overflow-hidden mb-3"
+              data-ocid="home.todays-blessing.datepicker"
+            >
+              <div
+                className="flex justify-center p-2 rounded"
+                style={{
+                  background: "oklch(0.96 0.06 268 / 0.55)",
+                  border: "1px solid oklch(0.60 0.22 268 / 0.35)",
+                }}
+              >
+                <Calendar
+                  mode="single"
+                  selected={selectedDate}
+                  onSelect={(d) => {
+                    if (d) {
+                      setSelectedDate(d);
+                      setShowCalendar(false);
+                    }
+                  }}
+                  disabled={(date) =>
+                    date < new Date(new Date().setHours(0, 0, 0, 0))
+                  }
+                  initialFocus
+                  aria-label="Select a date for Panchaang"
+                />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Loading / error states */}
+        {loading && (
+          <div
+            className="flex items-center justify-center gap-2 px-2.5 py-2 rounded mb-3"
+            style={{
+              background: "oklch(0.92 0.08 268 / 0.50)",
+              border: "1px solid oklch(0.60 0.22 268 / 0.35)",
+            }}
+            data-ocid="home.todays-blessing.loading_state"
+          >
+            <span style={{ fontSize: "0.85rem" }}>⏳</span>
+            <p
+              className="font-body text-[12px] italic"
+              style={{ color: "oklch(0.32 0.18 268)" }}
+            >
+              Fetching Panchaang for {dateStr}…
+            </p>
+          </div>
+        )}
+        {error && !loading && (
+          <div
+            className="flex items-center justify-center gap-2 px-2.5 py-2 rounded mb-3"
+            style={{
+              background: "oklch(0.92 0.10 18 / 0.50)",
+              border: "1px solid oklch(0.58 0.22 18 / 0.40)",
+            }}
+            data-ocid="home.todays-blessing.error_state"
+          >
+            <span style={{ fontSize: "0.85rem" }}>⚠️</span>
+            <p
+              className="font-body text-[12px] italic"
+              style={{ color: "oklch(0.32 0.20 18)" }}
+            >
+              {error} Showing derived Panchaang instead.
+            </p>
+          </div>
+        )}
+
+        {/* Full Panchaang — all 8 elements in a 2-column grid */}
         <div className="grid grid-cols-2 gap-2 mb-3">
-          {[
-            { icon: "🌙", label: "तिथि", value: panchang.tithi },
-            { icon: "⭐", label: "नक्षत्र", value: panchang.nakshatra },
-            { icon: "📅", label: "वार", value: panchang.vaar },
-            { icon: "☀️", label: "मास", value: `${panchang.month} माह` },
-          ].map((item) => (
+          {elements.map((item, i) => (
             <div
-              key={item.label}
-              className="flex items-center gap-2 px-2.5 py-1.5 rounded"
+              key={item.en}
+              data-ocid={`home.todays-blessing.element.${i}`}
+              className="flex items-start gap-2 px-2.5 py-2 rounded"
               style={{
                 background: "oklch(0.90 0.08 268 / 0.55)",
                 border: "1px solid oklch(0.60 0.22 268 / 0.35)",
               }}
             >
-              <span style={{ fontSize: "0.85rem" }}>{item.icon}</span>
-              <div className="min-w-0">
+              <span style={{ fontSize: "1rem", lineHeight: 1.2 }}>
+                {item.icon}
+              </span>
+              <div className="min-w-0 flex-1">
                 <p
-                  className="font-body text-[9px] tracking-widest uppercase"
+                  className="font-body text-[10px] tracking-widest uppercase"
                   style={{ color: "oklch(0.36 0.14 268 / 0.80)" }}
                 >
-                  {item.label}
+                  {item.en}
                 </p>
                 <p
-                  className="font-body text-[12px] font-bold"
+                  className="font-body text-[14px] font-bold leading-tight"
                   style={{ color: "oklch(0.18 0.16 42)" }}
                 >
-                  {item.value}
+                  {item.sa}
+                </p>
+                <p
+                  className="font-body text-[9px] italic"
+                  style={{ color: "oklch(0.40 0.14 52 / 0.75)" }}
+                >
+                  {item.source}
                 </p>
               </div>
             </div>
           ))}
         </div>
+
+        {/* Moon sign + description from backend */}
+        {backend?.moonSign && (
+          <div
+            className="flex items-center gap-2 px-2.5 py-1.5 rounded mb-2.5"
+            style={{
+              background: "oklch(0.92 0.10 200 / 0.50)",
+              border: "1px solid oklch(0.58 0.22 200 / 0.40)",
+            }}
+          >
+            <span style={{ fontSize: "0.85rem" }}>🌕</span>
+            <p
+              className="font-body text-[11px] italic"
+              style={{ color: "oklch(0.28 0.16 200)" }}
+            >
+              <span className="font-bold">चंद्र राशि (Moon Sign):</span>{" "}
+              {backend.moonSign}
+            </p>
+          </div>
+        )}
+        {backend?.description && (
+          <div
+            className="flex items-start gap-2 px-2.5 py-1.5 rounded mb-2.5"
+            style={{
+              background: "oklch(0.94 0.10 54 / 0.50)",
+              border: "1px solid oklch(0.70 0.26 52 / 0.38)",
+            }}
+          >
+            <span style={{ fontSize: "0.85rem" }}>📜</span>
+            <p
+              className="font-body text-[11px] italic leading-relaxed"
+              style={{ color: "oklch(0.22 0.14 40)" }}
+            >
+              {backend.description}
+            </p>
+          </div>
+        )}
+
+        {/* Rahu Kaal */}
         <div
           className="flex items-center gap-2 px-2.5 py-1.5 rounded mb-2.5"
           style={{
@@ -874,12 +1230,14 @@ function TodaysBlessingCard() {
             className="font-body text-[11px] italic"
             style={{ color: "oklch(0.32 0.20 18)" }}
           >
-            <span className="font-bold">रहु काल:</span> {panchang.rahuKaal} —
+            <span className="font-bold">रहु काल:</span> {derived.rahuKaal} —
             Avoid new auspicious work during this time
           </p>
         </div>
+
+        {/* Day blessing */}
         <div
-          className="flex items-center gap-2 px-2.5 py-1.5 rounded"
+          className="flex items-center gap-2 px-2.5 py-1.5 rounded mb-2.5"
           style={{
             background: "oklch(0.94 0.10 54 / 0.50)",
             border: "1px solid oklch(0.70 0.26 52 / 0.38)",
@@ -888,21 +1246,23 @@ function TodaysBlessingCard() {
           <span style={{ fontSize: "0.85rem" }}>🙏</span>
           <div className="min-w-0">
             <p
-              className="font-body text-[10px]"
+              className="font-body text-[11px]"
               style={{ color: "oklch(0.20 0.12 40)" }}
             >
               <span
                 className="font-bold"
-                style={{ color: panchang.dayBlessing?.color }}
+                style={{ color: derived.dayBlessing?.color }}
               >
-                {panchang.dayBlessing?.deity}
+                {derived.dayBlessing?.deity}
               </span>
               {" — "}
-              {panchang.dayBlessing?.blessing}
+              {derived.dayBlessing?.blessing}
             </p>
           </div>
         </div>
-        {panchang.festival && (
+
+        {/* Festival (if any) */}
+        {derived.festival && (
           <div
             className="mt-2 flex items-center gap-2 px-2.5 py-1.5 rounded"
             style={{
@@ -915,18 +1275,257 @@ function TodaysBlessingCard() {
               className="font-body text-[11px] italic font-bold"
               style={{ color: "oklch(0.22 0.14 40)" }}
             >
-              {panchang.festival.name} — {panchang.festival.desc}
+              {derived.festival.name} — {derived.festival.desc}
             </p>
           </div>
         )}
+
         <p
           className="font-body text-[10px] italic text-center mt-2"
           style={{ color: "oklch(0.40 0.14 52 / 0.75)" }}
         >
-          Tap to open full Panchang Calendar →
+          ✦ Select any date above to view its full Panchaang ✦
         </p>
       </div>
-    </Link>
+    </div>
+  );
+}
+
+// ─── Daily Sankalp Challenge ──────────────────────────────────────────────────
+function DailyChallengeCard() {
+  const [challenge, setChallenge] = useState<DailyChallenge | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const todayISO = new Date().toISOString().split("T")[0];
+    setLoading(true);
+    setError(null);
+    getBackend()
+      .getDailyChallenge(todayISO)
+      .then((c) => {
+        if (cancelled) return;
+        setChallenge(c);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setError("Today's sankalp could not be loaded.");
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <div
+        className="content-card--item"
+        data-ocid="home.daily-challenge.loading_state"
+        aria-busy="true"
+      >
+        <p className="content-card__title">Today's Sankalp</p>
+        <p className="content-card__description" style={{ opacity: 0.6 }}>
+          Loading today's resolve…
+        </p>
+      </div>
+    );
+  }
+
+  if (error || !challenge) {
+    return (
+      <div
+        className="content-card--item"
+        data-ocid="home.daily-challenge.error_state"
+      >
+        <p className="content-card__title">Today's Sankalp</p>
+        <p className="content-card__description">
+          {error ?? "No challenge today."}
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="content-card--item" data-ocid="home.daily-challenge.card">
+      <p
+        className="font-display text-xs font-bold italic tracking-[0.18em] uppercase mb-2"
+        style={{ color: "oklch(0.72 0.22 32)" }}
+      >
+        ✦ Aaj ka Sankalp · Today's Resolve ✦
+      </p>
+      <h3 className="content-card__title">{challenge.task}</h3>
+      <p className="content-card__description">{challenge.action}</p>
+      <div
+        className="flex items-center justify-between mt-3 pt-3 border-t border-dashed"
+        style={{ borderColor: "oklch(0.76 0.26 54 / 0.35)" }}
+      >
+        <span className="scripture-citation">{challenge.date}</span>
+        <span
+          className="font-display font-bold tracking-wide"
+          style={{
+            fontSize: "var(--fs-label)",
+            color: "oklch(0.62 0.24 32)",
+          }}
+          data-ocid="home.daily-challenge.points"
+        >
+          +{Number(challenge.points)} punya
+        </span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Festival Reflection ──────────────────────────────────────────────────────
+function FestivalReflectionCard() {
+  const [festival, setFestival] = useState<Festival | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    const todayISO = new Date().toISOString().split("T")[0];
+    setLoading(true);
+    setError(null);
+    getBackend()
+      .getFestivals()
+      .then((festivals) => {
+        if (cancelled) return;
+        const match = (festivals as Festival[]).find(
+          (f) => f.dateStr === todayISO,
+        );
+        setFestival(match ?? null);
+        setLoading(false);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setError("Festival reflection could not be loaded.");
+        setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  if (loading) {
+    return (
+      <div
+        className="content-card--item"
+        data-ocid="home.festival-reflection.loading_state"
+        aria-busy="true"
+      >
+        <p className="content-card__title">Festival Reflection</p>
+        <p className="content-card__description" style={{ opacity: 0.6 }}>
+          Loading today's sacred occasion…
+        </p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div
+        className="content-card--item"
+        data-ocid="home.festival-reflection.error_state"
+      >
+        <p className="content-card__title">Festival Reflection</p>
+        <p className="content-card__description">{error}</p>
+      </div>
+    );
+  }
+
+  // No festival today — show a daily dharmic reflection fallback.
+  if (!festival) {
+    return (
+      <div
+        className="content-card--item"
+        data-ocid="home.festival-reflection.fallback"
+      >
+        <p
+          className="font-display text-xs font-bold italic tracking-[0.18em] uppercase mb-2"
+          style={{ color: "oklch(0.72 0.22 32)" }}
+        >
+          ✦ Aaj ka Dharmic Bhāvnā ✦
+        </p>
+        <h3 className="content-card__title">A Daily Reflection</h3>
+        <p className="content-card__description">
+          No festival is observed today, yet every day is sacred for the devotee
+          who remembers the Lord. Perform your duties as an offering, without
+          attachment to their fruit — this is the essence of Karma Yoga.
+        </p>
+        <p className="meaning-block">
+          <span className="meaning-block__label">Reflection</span>
+          Whatever you do, whatever you eat, whatever you offer or give away,
+          and whatever austerities you perform — do that, O son of Kunti, as an
+          offering to Me.
+        </p>
+        <span className="scripture-citation">Bhagavad Gita 9.27</span>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="content-card--item"
+      data-ocid="home.festival-reflection.card"
+    >
+      <p
+        className="font-display text-xs font-bold italic tracking-[0.18em] uppercase mb-2"
+        style={{ color: "oklch(0.72 0.22 32)" }}
+      >
+        ✦ Aaj ka Utsav · Today's Festival ✦
+      </p>
+      <h3 className="content-card__title">{festival.name}</h3>
+      <p className="content-card__description">{festival.story}</p>
+      <p className="meaning-block">
+        <span className="meaning-block__label">Meaning</span>
+        {festival.meaning}
+      </p>
+      {festival.mantraName && (
+        <p className="content-card__description">
+          <span
+            className="font-display font-bold"
+            style={{ color: "oklch(0.62 0.24 32)" }}
+          >
+            Mantra:
+          </span>{" "}
+          {festival.mantraName}
+        </p>
+      )}
+      {festival.recommendedVerse && (
+        <p className="content-card__description">
+          <span
+            className="font-display font-bold"
+            style={{ color: "oklch(0.62 0.24 32)" }}
+          >
+            Recommended Verse:
+          </span>{" "}
+          {festival.recommendedVerse}
+        </p>
+      )}
+      <div
+        className="flex flex-wrap items-center gap-2 mt-3 pt-3 border-t border-dashed"
+        style={{ borderColor: "oklch(0.76 0.26 54 / 0.35)" }}
+      >
+        <span className="scripture-citation">
+          {festival.sourceGranth}
+          {festival.sourceChapter && festival.sourceChapter !== "0"
+            ? ` ${festival.sourceChapter}.${festival.sourceVerse}`
+            : ""}
+        </span>
+        <span
+          className="font-display italic"
+          style={{
+            fontSize: "var(--fs-label)",
+            color: "oklch(0.55 0.10 52)",
+          }}
+        >
+          {festival.dateStr}
+        </span>
+      </div>
+    </div>
   );
 }
 
@@ -1332,6 +1931,18 @@ export function HomePage() {
             />
           </div>
           <TodaysBlessingCard />
+        </motion.section>
+
+        {/* Daily Sankalp Challenge & Festival Reflection */}
+        <motion.section
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mb-6 grid gap-4 sm:grid-cols-2"
+          data-ocid="home.daily-practice"
+        >
+          <DailyChallengeCard />
+          <FestivalReflectionCard />
         </motion.section>
 
         <motion.div

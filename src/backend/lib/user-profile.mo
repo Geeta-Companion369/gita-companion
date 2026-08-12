@@ -274,7 +274,7 @@ module {
 
     // Build sequence of dashas: start from the first dasha (partially elapsed)
     // We generate enough dashas to find current maha+antar+pratyantar
-    var dashaSeq : [var (Text, Float, Float)] = Array.tabulate<(Text, Float, Float)>(
+    var dashaSeq : [var (Text, Float, Float)] = Array.tabulate(
       20,
       func(i) {
         let idx = (lordIdx + i) % 9;
@@ -320,7 +320,7 @@ module {
 
     // Antardasha within mahadasha: cycle of 9 lords, each proportional share
     let antarCursorStart = mahaStart;
-    var antarSeq : [var (Text, Float, Float)] = Array.tabulate<(Text, Float, Float)>(
+    var antarSeq : [var (Text, Float, Float)] = Array.tabulate(
       9,
       func(j) {
         let lordI = (mahaIdx + j) % 9; // start antar from mahadasha lord
@@ -350,7 +350,7 @@ module {
     let antardasha = makeDasha(antarLord, antarDur, antarStart);
 
     // Pratyantardasha within antardasha
-    var pratySeq : [var (Text, Float, Float)] = Array.tabulate<(Text, Float, Float)>(
+    var pratySeq : [var (Text, Float, Float)] = Array.tabulate(
       9,
       func(k) {
         let lordI = (antarIdx + k) % 9;

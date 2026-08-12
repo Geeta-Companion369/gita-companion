@@ -1,6 +1,9 @@
-// ─── Gallery Page — 2 Sections: 100 Krishna Photos + 18 Story Cards ──────────
+import { ExternalBlob, type GalleryImageMeta } from "@/backend";
+import { getBackend } from "@/lib/backend-client";
+// ─── Gallery Page — 2 Sections: Krishna Photos + 18 Story Cards ───────────────
 import { AnimatePresence, motion } from "motion/react";
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -9,6 +12,23 @@ interface KrishnaPhoto {
   src: string;
   caption: string;
   captionHindi: string;
+}
+
+// ─── Backend → PhotoCard mapping ──────────────────────────────────────────────
+// GalleryImageMeta.asset is an ExternalBlob whose bytes are durably persisted
+// in object-storage. The downloadFile callback in backend-client.ts
+// deserializes those bytes back into an ExternalBlob on read; getDirectURL()
+// on it returns a browser-loadable object URL we surface as the <img src>.
+// The caption falls back to the original filename.
+
+function metaToPhoto(meta: GalleryImageMeta): KrishnaPhoto {
+  const caption = meta.caption || "Krishna Darshan";
+  return {
+    id: `gallery-${meta.id.toString()}`,
+    src: meta.asset.getDirectURL(),
+    caption,
+    captionHindi: caption,
+  };
 }
 
 interface StoryCard {
@@ -22,612 +42,9 @@ interface StoryCard {
   accentHue: number;
 }
 
-// ─── 100 Krishna Photos ──────────────────────────────────────────────────────
-// Sourced from Wikimedia Commons public domain
-
-const KRISHNA_PHOTOS: KrishnaPhoto[] = [
-  // ─── Krishna Alone / Flute / Childhood ───────────────────────────────────────
-  {
-    id: "k1",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Krishna-Arjun.jpg/640px-Krishna-Arjun.jpg",
-    caption: "Krishna & Arjuna",
-    captionHindi: "श्री कृष्ण",
-  },
-  {
-    id: "k2",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Lord_Krishna_with_cow.jpg/640px-Lord_Krishna_with_cow.jpg",
-    caption: "Krishna with Cow",
-    captionHindi: "गोपाल",
-  },
-  {
-    id: "k3",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Radha_krishna.jpg/640px-Radha_krishna.jpg",
-    caption: "Radha Krishna",
-    captionHindi: "राधे कृष्ण",
-  },
-  {
-    id: "k4",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/LakshmiNarayana.jpg/640px-LakshmiNarayana.jpg",
-    caption: "Lakshmi Narayana",
-    captionHindi: "लक्ष्मी नारायण",
-  },
-  {
-    id: "k5",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
-    caption: "Narayana",
-    captionHindi: "नारायण",
-  },
-  {
-    id: "k6",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
-    caption: "Radha Krishna in the Grove",
-    captionHindi: "वन विहार",
-  },
-  {
-    id: "k7",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg/640px-Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg",
-    caption: "Radha Krishna on Swing",
-    captionHindi: "राधा कृष्ण झूला",
-  },
-  {
-    id: "k8",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
-    caption: "Tanjore Radha Krishna",
-    captionHindi: "तंजावुर कृष्ण",
-  },
-  {
-    id: "k9",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Pichwai_painting.jpg/640px-Pichwai_painting.jpg",
-    caption: "Pichwai Srinathji",
-    captionHindi: "श्रीनाथजी",
-  },
-  {
-    id: "k10",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg/640px-Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg",
-    caption: "Divine Dance",
-    captionHindi: "दिव्य नृत्य",
-  },
-  {
-    id: "k11",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Lakshmi_by_Raja_Ravi_Varma.jpg/640px-Lakshmi_by_Raja_Ravi_Varma.jpg",
-    caption: "Goddess Lakshmi",
-    captionHindi: "महालक्ष्मी",
-  },
-  {
-    id: "k12",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Saraswati_by_Raja_Ravi_Varma.jpg/640px-Saraswati_by_Raja_Ravi_Varma.jpg",
-    caption: "Goddess Saraswati",
-    captionHindi: "सरस्वती",
-  },
-  {
-    id: "k13",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg/640px-Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg",
-    caption: "Lord Ganesha",
-    captionHindi: "गणेश",
-  },
-  {
-    id: "k14",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Lord_Hanuman.jpg/640px-Lord_Hanuman.jpg",
-    caption: "Hanuman Ji",
-    captionHindi: "हनुमान",
-  },
-  {
-    id: "k15",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Maa_Durga_with_all_Weapons.jpg/640px-Maa_Durga_with_all_Weapons.jpg",
-    caption: "Maa Durga",
-    captionHindi: "दुर्गा माता",
-  },
-  {
-    id: "k16",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Konarka_Surya_statue.jpg/640px-Konarka_Surya_statue.jpg",
-    caption: "Surya Narayan",
-    captionHindi: "सूर्य भगवान",
-  },
-  {
-    id: "k17",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Lord_Rama_with_arrow.jpg/640px-Lord_Rama_with_arrow.jpg",
-    caption: "Lord Rama",
-    captionHindi: "श्री राम",
-  },
-  {
-    id: "k18",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Shani_graha.jpg/640px-Shani_graha.jpg",
-    caption: "Shani Dev",
-    captionHindi: "शनि देव",
-  },
-  {
-    id: "k19",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/57/Krishna_butter.jpg/640px-Krishna_butter.jpg",
-    caption: "Venugopala",
-    captionHindi: "वेणुगोपाल",
-  },
-  {
-    id: "k20",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Krishna_Govardhan_Puja.jpg/640px-Krishna_Govardhan_Puja.jpg",
-    caption: "Govardhandhari",
-    captionHindi: "गोवर्धनधारी",
-  },
-  {
-    id: "k21",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ae/Krishna-and-Radha-1800.jpg/640px-Krishna-and-Radha-1800.jpg",
-    caption: "Rasa Lila",
-    captionHindi: "रास लीला",
-  },
-  {
-    id: "k22",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Baby_Krishna.jpg/640px-Baby_Krishna.jpg",
-    caption: "Bala Krishna",
-    captionHindi: "बाल कृष्ण",
-  },
-  {
-    id: "k23",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Vishwaroopa.jpg/640px-Vishwaroopa.jpg",
-    caption: "Vishwaroopa",
-    captionHindi: "विश्वरूप",
-  },
-  {
-    id: "k24",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/cb/Dwarka_temple.jpg/640px-Dwarka_temple.jpg",
-    caption: "Dwarkadhish",
-    captionHindi: "द्वारकाधीश",
-  },
-  {
-    id: "k25",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6e/Madhubani_Painting.jpg/640px-Madhubani_Painting.jpg",
-    caption: "Madhubani Art",
-    captionHindi: "मधुबनी",
-  },
-  {
-    id: "k26",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg/640px-Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg",
-    caption: "Basohli Krishna",
-    captionHindi: "बसोहली",
-  },
-  {
-    id: "k27",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Krishna-Arjun.jpg/640px-Krishna-Arjun.jpg",
-    caption: "Yashoda Maiya",
-    captionHindi: "यशोदा मैया",
-  },
-  {
-    id: "k28",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
-    caption: "Kaliya Mardan",
-    captionHindi: "कालिया मर्दन",
-  },
-  {
-    id: "k29",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Radha_krishna.jpg/640px-Radha_krishna.jpg",
-    caption: "Putana Vadh",
-    captionHindi: "पूतना वध",
-  },
-  {
-    id: "k30",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/LakshmiNarayana.jpg/640px-LakshmiNarayana.jpg",
-    caption: "Krishna Sudama",
-    captionHindi: "कृष्ण सुदामा",
-  },
-  {
-    id: "k31",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
-    caption: "Kamsa Vadh",
-    captionHindi: "कंस वध",
-  },
-  {
-    id: "k32",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
-    caption: "Gita Upadesh",
-    captionHindi: "गीता उपदेश",
-  },
-  {
-    id: "k33",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Pichwai_painting.jpg/640px-Pichwai_painting.jpg",
-    caption: "Mathura Krishna",
-    captionHindi: "मथुरा कृष्ण",
-  },
-  {
-    id: "k34",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg/640px-Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg",
-    caption: "Vrindavan Dham",
-    captionHindi: "वृन्दावन धाम",
-  },
-  {
-    id: "k35",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Lakshmi_by_Raja_Ravi_Varma.jpg/640px-Lakshmi_by_Raja_Ravi_Varma.jpg",
-    caption: "Braj Lila",
-    captionHindi: "ब्रज लीला",
-  },
-  {
-    id: "k36",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Saraswati_by_Raja_Ravi_Varma.jpg/640px-Saraswati_by_Raja_Ravi_Varma.jpg",
-    caption: "Gopala Krishna",
-    captionHindi: "गोपाल",
-  },
-  {
-    id: "k37",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg/640px-Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg",
-    caption: "Makhan Chor",
-    captionHindi: "माखन चोर",
-  },
-  {
-    id: "k38",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Lord_Hanuman.jpg/640px-Lord_Hanuman.jpg",
-    caption: "Govinda Krishna",
-    captionHindi: "गोविंद",
-  },
-  {
-    id: "k39",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Maa_Durga_with_all_Weapons.jpg/640px-Maa_Durga_with_all_Weapons.jpg",
-    caption: "Murali Manohar",
-    captionHindi: "मुरली मनोहर",
-  },
-  {
-    id: "k40",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Konarka_Surya_statue.jpg/640px-Konarka_Surya_statue.jpg",
-    caption: "Kanhaiya Lal",
-    captionHindi: "कन्हैया लाल",
-  },
-  {
-    id: "k41",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Lord_Rama_with_arrow.jpg/640px-Lord_Rama_with_arrow.jpg",
-    caption: "Nandalal Krishna",
-    captionHindi: "नंदलाल",
-  },
-  {
-    id: "k42",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Shani_graha.jpg/640px-Shani_graha.jpg",
-    caption: "Bansuri Krishna",
-    captionHindi: "बांसुरी कृष्ण",
-  },
-  {
-    id: "k43",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Krishna-Arjun.jpg/640px-Krishna-Arjun.jpg",
-    caption: "Kangra Radha Krishna",
-    captionHindi: "कांगड़ा राधा कृष्ण",
-  },
-  {
-    id: "k44",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg/640px-Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg",
-    caption: "Basholi Radha Krishna",
-    captionHindi: "बसोहली राधा कृष्ण",
-  },
-  {
-    id: "k45",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
-    caption: "Pahari Radha Krishna",
-    captionHindi: "पहाड़ी राधा कृष्ण",
-  },
-  {
-    id: "k46",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Radha_krishna.jpg/640px-Radha_krishna.jpg",
-    caption: "Rajasthani Art",
-    captionHindi: "राजस्थानी कला",
-  },
-  {
-    id: "k47",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
-    caption: "Mughal Style",
-    captionHindi: "मुगल शैली",
-  },
-  {
-    id: "k48",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/LakshmiNarayana.jpg/640px-LakshmiNarayana.jpg",
-    caption: "Mysore Painting",
-    captionHindi: "मैसूर चित्र",
-  },
-  {
-    id: "k49",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Pichwai_painting.jpg/640px-Pichwai_painting.jpg",
-    caption: "Tanjore Painting",
-    captionHindi: "तंजावुर चित्र",
-  },
-  {
-    id: "k50",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
-    caption: "Pichwai Art",
-    captionHindi: "पिछवाई कला",
-  },
-  {
-    id: "k51",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Lakshmi_by_Raja_Ravi_Varma.jpg/640px-Lakshmi_by_Raja_Ravi_Varma.jpg",
-    caption: "Nathdwara Shrinathji",
-    captionHindi: "नाथद्वारा श्रीनाथजी",
-  },
-  {
-    id: "k52",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Saraswati_by_Raja_Ravi_Varma.jpg/640px-Saraswati_by_Raja_Ravi_Varma.jpg",
-    caption: "ISKCON Radha Krishna",
-    captionHindi: "इस्कॉन राधा कृष्ण",
-  },
-  {
-    id: "k53",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg/640px-Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg",
-    caption: "Vrindavan Radha Krishna",
-    captionHindi: "वृन्दावन राधा कृष्ण",
-  },
-  {
-    id: "k54",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Lord_Hanuman.jpg/640px-Lord_Hanuman.jpg",
-    caption: "Barsana Lila",
-    captionHindi: "बरसाना लीला",
-  },
-  {
-    id: "k55",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Maa_Durga_with_all_Weapons.jpg/640px-Maa_Durga_with_all_Weapons.jpg",
-    caption: "Gokul Lila",
-    captionHindi: "गोकुल लीला",
-  },
-  {
-    id: "k56",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Konarka_Surya_statue.jpg/640px-Konarka_Surya_statue.jpg",
-    caption: "Nikunj Lila",
-    captionHindi: "निकुञ्ज लीला",
-  },
-  {
-    id: "k57",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Lord_Rama_with_arrow.jpg/640px-Lord_Rama_with_arrow.jpg",
-    caption: "Yamuna Tat",
-    captionHindi: "यमुना तट",
-  },
-  {
-    id: "k58",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Shani_graha.jpg/640px-Shani_graha.jpg",
-    caption: "Jhoola Lila",
-    captionHindi: "झूला लीला",
-  },
-  {
-    id: "k59",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg/640px-Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg",
-    caption: "Holi Lila",
-    captionHindi: "होली लीला",
-  },
-  {
-    id: "k60",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Krishna-Arjun.jpg/640px-Krishna-Arjun.jpg",
-    caption: "Ras Lila",
-    captionHindi: "रास लीला",
-  },
-  {
-    id: "k61",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
-    caption: "Divine Milan",
-    captionHindi: "दिव्य मिलन",
-  },
-  {
-    id: "k62",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Radha_krishna.jpg/640px-Radha_krishna.jpg",
-    caption: "Divine Prem",
-    captionHindi: "दिव्य प्रेम",
-  },
-  {
-    id: "k63",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
-    caption: "Sakhis with Radha Krishna",
-    captionHindi: "सखियाँ",
-  },
-  {
-    id: "k64",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg/640px-Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg",
-    caption: "Gopi Krishna",
-    captionHindi: "गोपी कृष्ण",
-  },
-  {
-    id: "k65",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/LakshmiNarayana.jpg/640px-LakshmiNarayana.jpg",
-    caption: "Meera Krishna",
-    captionHindi: "मीरा कृष्ण",
-  },
-  {
-    id: "k66",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
-    caption: "Surdas Krishna",
-    captionHindi: "सूरदास कृष्ण",
-  },
-  {
-    id: "k67",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Pichwai_painting.jpg/640px-Pichwai_painting.jpg",
-    caption: "Chaitanya Mahaprabhu",
-    captionHindi: "चैतन्य महाप्रभु",
-  },
-  {
-    id: "k68",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Lakshmi_by_Raja_Ravi_Varma.jpg/640px-Lakshmi_by_Raja_Ravi_Varma.jpg",
-    caption: "Vallabhacharya",
-    captionHindi: "वल्लभाचार्य",
-  },
-  {
-    id: "k69",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Saraswati_by_Raja_Ravi_Varma.jpg/640px-Saraswati_by_Raja_Ravi_Varma.jpg",
-    caption: "Nimbarka Sampradaya",
-    captionHindi: "निंबार्क सम्प्रदाय",
-  },
-  {
-    id: "k70",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Lord_Hanuman.jpg/640px-Lord_Hanuman.jpg",
-    caption: "Madhva Sampradaya",
-    captionHindi: "माध्व सम्प्रदाय",
-  },
-  {
-    id: "k71",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Maa_Durga_with_all_Weapons.jpg/640px-Maa_Durga_with_all_Weapons.jpg",
-    caption: "Ramanuja Sampradaya",
-    captionHindi: "रामानुज सम्प्रदाय",
-  },
-  {
-    id: "k72",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Konarka_Surya_statue.jpg/640px-Konarka_Surya_statue.jpg",
-    caption: "Ramanandi Sampradaya",
-    captionHindi: "रामानंदी सम्प्रदाय",
-  },
-  {
-    id: "k73",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Lord_Rama_with_arrow.jpg/640px-Lord_Rama_with_arrow.jpg",
-    caption: "Kabir Krishna",
-    captionHindi: "कबीर कृष्ण",
-  },
-  {
-    id: "k74",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Shani_graha.jpg/640px-Shani_graha.jpg",
-    caption: "Tulsidas Krishna",
-    captionHindi: "तुलसीदास कृष्ण",
-  },
-  {
-    id: "k75",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg/640px-Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg",
-    caption: "Mira Bai Krishna",
-    captionHindi: "मीरा बाई कृष्ण",
-  },
-  {
-    id: "k76",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg/640px-Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg",
-    caption: "Surdas Bhakti",
-    captionHindi: "सूरदास भक्ति",
-  },
-  {
-    id: "k77",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Krishna-Arjun.jpg/640px-Krishna-Arjun.jpg",
-    caption: "Tukaram Krishna",
-    captionHindi: "तुकाराम कृष्ण",
-  },
-  {
-    id: "k78",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
-    caption: "Namdev Krishna",
-    captionHindi: "नामदेव कृष्ण",
-  },
-  {
-    id: "k79",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Radha_krishna.jpg/640px-Radha_krishna.jpg",
-    caption: "Eknath Krishna",
-    captionHindi: "एकनाथ कृष्ण",
-  },
-  {
-    id: "k80",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
-    caption: "Gyaneshwar Krishna",
-    captionHindi: "ज्ञानेश्वर कृष्ण",
-  },
-  {
-    id: "k81",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg/640px-Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg",
-    caption: "Samarth Ramdas",
-    captionHindi: "समर्थ रामदास",
-  },
-  {
-    id: "k82",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/LakshmiNarayana.jpg/640px-LakshmiNarayana.jpg",
-    caption: "Tukaram Abhang",
-    captionHindi: "तुकाराम अभंग",
-  },
-  {
-    id: "k83",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
-    caption: "Namdev Abhang",
-    captionHindi: "नामदेव अभंग",
-  },
-  {
-    id: "k84",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Pichwai_painting.jpg/640px-Pichwai_painting.jpg",
-    caption: "Jnandev Krishna",
-    captionHindi: "ज्ञानदेव कृष्ण",
-  },
-  {
-    id: "k85",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/89/Lakshmi_by_Raja_Ravi_Varma.jpg/640px-Lakshmi_by_Raja_Ravi_Varma.jpg",
-    caption: "Sopandev Krishna",
-    captionHindi: "सोपानदेव कृष्ण",
-  },
-  {
-    id: "k86",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5f/Saraswati_by_Raja_Ravi_Varma.jpg/640px-Saraswati_by_Raja_Ravi_Varma.jpg",
-    caption: "Muktabai Krishna",
-    captionHindi: "मुक्ताबाई कृष्ण",
-  },
-  {
-    id: "k87",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/2/20/Lord_Hanuman.jpg/640px-Lord_Hanuman.jpg",
-    caption: "Nivrutti Krishna",
-    captionHindi: "निवृत्ति कृष्ण",
-  },
-  {
-    id: "k88",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Maa_Durga_with_all_Weapons.jpg/640px-Maa_Durga_with_all_Weapons.jpg",
-    caption: "Savitri Krishna",
-    captionHindi: "सावित्री कृष्ण",
-  },
-  {
-    id: "k89",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/00/Konarka_Surya_statue.jpg/640px-Konarka_Surya_statue.jpg",
-    caption: "Satyabhama Krishna",
-    captionHindi: "सत्यभामा कृष्ण",
-  },
-  {
-    id: "k90",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Lord_Rama_with_arrow.jpg/640px-Lord_Rama_with_arrow.jpg",
-    caption: "Rukmini Krishna",
-    captionHindi: "रुक्मिणी कृष्ण",
-  },
-  {
-    id: "k91",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Shani_graha.jpg/640px-Shani_graha.jpg",
-    caption: "Jambavati Krishna",
-    captionHindi: "जांबवती कृष्ण",
-  },
-  {
-    id: "k92",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8b/Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg/640px-Nataraja_Shiva_statue%2C_Dancing_Shiva_in_Chola_bronze_style_by_Indian_artist.jpg",
-    caption: "Kalindi Krishna",
-    captionHindi: "कालिंदी कृष्ण",
-  },
-  {
-    id: "k93",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1e/Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg/640px-Ganesha_Basohli_miniature_circa_1730_Dubost_p73.jpg",
-    caption: "Mitravinda Krishna",
-    captionHindi: "मित्रविंदा कृष्ण",
-  },
-  {
-    id: "k94",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/06/Krishna-Arjun.jpg/640px-Krishna-Arjun.jpg",
-    caption: "Nagnajiti Krishna",
-    captionHindi: "नाग्नजिति कृष्ण",
-  },
-  {
-    id: "k95",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Radha_and_Krishna_in_the_Grove.jpg/640px-Radha_and_Krishna_in_the_Grove.jpg",
-    caption: "Bhadra Krishna",
-    captionHindi: "भद्रा कृष्ण",
-  },
-  {
-    id: "k96",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4b/Radha_krishna.jpg/640px-Radha_krishna.jpg",
-    caption: "Lakshana Krishna",
-    captionHindi: "लक्षणा कृष्ण",
-  },
-  {
-    id: "k97",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b4/Radha_Krishna_Tanjore_style.jpg/640px-Radha_Krishna_Tanjore_style.jpg",
-    caption: "Susheela Krishna",
-    captionHindi: "सुशीला कृष्ण",
-  },
-  {
-    id: "k98",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg/640px-Krishna_and_Radha_playing_a_swing-_A_Kangra_Painting.jpg",
-    caption: "Madhavi Krishna",
-    captionHindi: "माधवी कृष्ण",
-  },
-  {
-    id: "k99",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5e/LakshmiNarayana.jpg/640px-LakshmiNarayana.jpg",
-    caption: "Kirti Krishna",
-    captionHindi: "कीर्ति कृष्ण",
-  },
-  {
-    id: "k100",
-    src: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a7/Narayana.jpg/640px-Narayana.jpg",
-    caption: "Saibya Krishna",
-    captionHindi: "सैब्या कृष्ण",
-  },
-];
+// ─── Krishna Photos ──────────────────────────────────────────────────────────
+// Live state: populated from backend.getGalleryUploads() on mount.
+// Empty by default — the user adds their own Krishna photos via the upload button.
 
 // ─── 18 Bhagavad Gita Story Cards ─────────────────────────────────────────────
 
@@ -959,155 +376,147 @@ function PhotoModal({
 
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3"
+      className="fixed inset-0 z-[100] flex items-center justify-center p-4"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
-      style={{ background: "rgba(4,2,1,0.96)", backdropFilter: "blur(14px)" }}
+      onKeyDown={(e) => {
+        if (e.key === "Escape") onClose();
+        if (e.key === "ArrowLeft" && prev) onNavigate(prev);
+        if (e.key === "ArrowRight" && next) onNavigate(next);
+      }}
+      role="presentation"
+      style={{ background: "rgba(4,2,1,0.97)", backdropFilter: "blur(14px)" }}
       data-ocid="gallery.modal"
     >
-      <motion.div
-        className="relative w-full max-w-sm overflow-hidden"
-        initial={{ scale: 0.85, opacity: 0, y: 24 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.88, opacity: 0 }}
-        transition={{ type: "spring", damping: 22, stiffness: 300 }}
-        onClick={(e) => e.stopPropagation()}
+      {/* Close button */}
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute top-4 right-4 z-20 w-11 h-11 flex items-center justify-center font-bold hover:opacity-70 transition-opacity"
         style={{
-          borderRadius: "12px",
-          border: "2.5px solid oklch(0.82 0.32 54 / 0.75)",
-          boxShadow:
-            "0 0 0 5px oklch(0.78 0.28 54 / 0.20), 0 24px 80px oklch(0.10 0.06 46 / 0.8)",
-          background:
-            "linear-gradient(160deg, oklch(0.97 0.07 68) 0%, oklch(0.93 0.09 60) 100%)",
-          overflow: "hidden",
-          maxHeight: "90vh",
-          overflowY: "auto",
+          background: "oklch(0.14 0.06 30 / 0.7)",
+          borderRadius: "50%",
+          color: "oklch(0.92 0.10 60)",
+          border: "1px solid oklch(0.72 0.24 54 / 0.5)",
+          fontSize: "1.1rem",
         }}
+        aria-label="Close photo"
+        data-ocid="gallery.close_button"
       >
-        {/* Gold frame top bar */}
-        <div
-          style={{
-            height: 4,
-            background:
-              "linear-gradient(90deg, oklch(0.72 0.28 32), oklch(0.86 0.38 54), oklch(0.72 0.28 32))",
-          }}
-        />
+        ✕
+      </button>
 
-        {/* Close button */}
-        <button
-          type="button"
-          onClick={onClose}
-          className="absolute top-3 right-3 z-20 w-8 h-8 flex items-center justify-center font-bold hover:opacity-70 transition-opacity"
+      {/* Image container — fullscreen cover, image centered & as large as possible */}
+      <div
+        className="relative w-full h-full flex items-center justify-center"
+        onClick={(e) => e.stopPropagation()}
+        onKeyDown={(e) => e.stopPropagation()}
+        role="presentation"
+      >
+        {!imgError ? (
+          <img
+            src={photo.src}
+            alt={photo.caption}
+            className="max-w-full max-h-full object-contain"
+            style={{
+              borderRadius: "8px",
+              border: "2.5px solid oklch(0.82 0.32 54 / 0.75)",
+              boxShadow:
+                "0 0 0 5px oklch(0.78 0.28 54 / 0.20), 0 24px 80px oklch(0.10 0.06 46 / 0.8)",
+            }}
+            onError={() => setImgError(true)}
+            key={photo.id}
+          />
+        ) : (
+          <div
+            className="w-full h-full flex flex-col items-center justify-center gap-4"
+            style={{
+              background:
+                "linear-gradient(135deg, oklch(0.90 0.12 54), oklch(0.84 0.18 46))",
+              borderRadius: "8px",
+              border: "2.5px solid oklch(0.82 0.32 54 / 0.75)",
+            }}
+          >
+            <span className="text-7xl">🕉️</span>
+            <p
+              className="font-body text-xl font-bold"
+              style={{ color: "oklch(0.38 0.20 46)" }}
+            >
+              {photo.captionHindi}
+            </p>
+          </div>
+        )}
+
+        {/* Caption — floating at bottom, non-blocking */}
+        <div
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 text-center pointer-events-none px-4"
           style={{
-            background: "oklch(0.14 0.06 30 / 0.7)",
-            borderRadius: "50%",
-            color: "oklch(0.92 0.10 60)",
+            background: "oklch(0.08 0.06 30 / 0.72)",
+            borderRadius: "10px",
+            padding: "8px 18px",
             border: "1px solid oklch(0.72 0.24 54 / 0.4)",
-            fontSize: "0.9rem",
           }}
-          aria-label="Close photo"
-          data-ocid="gallery.close_button"
         >
-          ✕
-        </button>
-
-        {/* Image */}
-        <div
-          className="relative overflow-hidden"
-          style={{ aspectRatio: "4/3" }}
-        >
-          {!imgError ? (
-            <img
-              src={photo.src}
-              alt={photo.caption}
-              className="w-full h-full object-cover"
-              onError={() => setImgError(true)}
-              key={photo.id}
-            />
-          ) : (
-            <div
-              className="w-full h-full flex items-center justify-center"
-              style={{
-                background:
-                  "linear-gradient(135deg, oklch(0.90 0.12 54), oklch(0.84 0.18 46))",
-              }}
-            >
-              <span className="text-6xl">🕉️</span>
-            </div>
-          )}
-
-          {/* nav arrows */}
-          {prev && (
-            <button
-              type="button"
-              onClick={() => onNavigate(prev)}
-              className="absolute left-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center font-bold hover:scale-110 transition-transform"
-              style={{
-                background: "oklch(0.10 0.06 30 / 0.72)",
-                borderRadius: "50%",
-                color: "oklch(0.90 0.10 60)",
-                border: "1px solid oklch(0.72 0.24 54 / 0.4)",
-                fontSize: "1rem",
-              }}
-              aria-label="Previous"
-              data-ocid="gallery.pagination_prev"
-            >
-              ‹
-            </button>
-          )}
-          {next && (
-            <button
-              type="button"
-              onClick={() => onNavigate(next)}
-              className="absolute right-2 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center font-bold hover:scale-110 transition-transform"
-              style={{
-                background: "oklch(0.10 0.06 30 / 0.72)",
-                borderRadius: "50%",
-                color: "oklch(0.90 0.10 60)",
-                border: "1px solid oklch(0.72 0.24 54 / 0.4)",
-                fontSize: "1rem",
-              }}
-              aria-label="Next"
-              data-ocid="gallery.pagination_next"
-            >
-              ›
-            </button>
-          )}
-        </div>
-
-        {/* Caption */}
-        <div className="px-4 py-3 text-center">
           <p
-            className="font-body text-xl font-bold"
-            style={{ color: "oklch(0.62 0.26 46)" }}
+            className="font-body text-lg font-bold"
+            style={{ color: "oklch(0.92 0.18 58)" }}
           >
             {photo.captionHindi}
           </p>
           <p
             className="font-display text-xs italic"
-            style={{ color: "oklch(0.50 0.16 46 / 0.75)" }}
+            style={{ color: "oklch(0.82 0.12 60 / 0.85)" }}
           >
             {photo.caption}
           </p>
-          <p
-            className="font-display text-xs mt-2 tracking-widest"
-            style={{ color: "oklch(0.68 0.24 54 / 0.8)" }}
-          >
-            Sanatan Dharma ~ Krishna AI
-          </p>
         </div>
 
-        {/* Gold frame bottom bar */}
-        <div
-          style={{
-            height: 4,
-            background:
-              "linear-gradient(90deg, oklch(0.72 0.28 32), oklch(0.86 0.38 54), oklch(0.72 0.28 32))",
-          }}
-        />
-      </motion.div>
+        {/* nav arrows */}
+        {prev && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onNavigate(prev);
+            }}
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center font-bold hover:scale-110 transition-transform"
+            style={{
+              background: "oklch(0.10 0.06 30 / 0.72)",
+              borderRadius: "50%",
+              color: "oklch(0.90 0.10 60)",
+              border: "1px solid oklch(0.72 0.24 54 / 0.5)",
+              fontSize: "1.4rem",
+            }}
+            aria-label="Previous"
+            data-ocid="gallery.pagination_prev"
+          >
+            ‹
+          </button>
+        )}
+        {next && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onNavigate(next);
+            }}
+            className="absolute right-3 top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center font-bold hover:scale-110 transition-transform"
+            style={{
+              background: "oklch(0.10 0.06 30 / 0.72)",
+              borderRadius: "50%",
+              color: "oklch(0.90 0.10 60)",
+              border: "1px solid oklch(0.72 0.24 54 / 0.5)",
+              fontSize: "1.4rem",
+            }}
+            aria-label="Next"
+            data-ocid="gallery.pagination_next"
+          >
+            ›
+          </button>
+        )}
+      </div>
     </motion.div>
   );
 }
@@ -1471,14 +880,85 @@ function FlowerPetalShower({ active }: { active: boolean }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export function GalleryPage() {
+  const [photos, setPhotos] = useState<KrishnaPhoto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
   const [openPhoto, setOpenPhoto] = useState<KrishnaPhoto | null>(null);
   const [petals, setPetals] = useState(false);
   const [sheetModalSrc, setSheetModalSrc] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // ── Load approved gallery uploads from the backend on mount ──
+  const refreshPhotos = useCallback(async () => {
+    try {
+      const metas = await getBackend().getGalleryUploads();
+      setPhotos(metas.map(metaToPhoto));
+    } catch {
+      // Keep the gallery empty on error — the empty-state + upload button still render.
+      setPhotos([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshPhotos();
+  }, [refreshPhotos]);
 
   function handlePhotoOpen(photo: KrishnaPhoto) {
     setOpenPhoto(photo);
     setPetals(true);
     setTimeout(() => setPetals(false), 3000);
+  }
+
+  // ── Upload handler — mirrors the GemstoneCheckTab hidden-input pattern ──
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setUploading(true);
+    setUploadError(null);
+
+    try {
+      for (const file of Array.from(files)) {
+        const bytes = new Uint8Array(await file.arrayBuffer());
+        const blob = ExternalBlob.fromBytes(bytes, file.type, file.name);
+
+        // Pass the ExternalBlob directly as `asset`. The uploadFile callback in
+        // backend-client.ts serializes it to bytes for durable canister storage.
+        // Do NOT call getDirectURL() here — that returns a transient blob: URL
+        // which would not survive a page reload.
+        await getBackend().uploadGalleryImage({
+          asset: blob,
+          category: "darshan",
+          caption: file.name,
+        });
+
+        // Optimistic prepend so the grid updates instantly, then reconcile.
+        // getDirectURL() is safe here for an in-memory display URL only.
+        const optimistic: KrishnaPhoto = {
+          id: `local-${Date.now()}-${file.name}`,
+          src: blob.getDirectURL(),
+          caption: file.name,
+          captionHindi: file.name,
+        };
+        setPhotos((prev) => [optimistic, ...prev]);
+      }
+
+      toast.success("🪷 Your Krishna photo has been offered to the gallery.");
+      // Reconcile with the backend's authoritative list (newest-first).
+      refreshPhotos();
+    } catch (err) {
+      const msg =
+        err instanceof Error ? err.message : "Unable to upload your photo.";
+      setUploadError(msg);
+      toast.error(`Upload failed: ${msg}`);
+    } finally {
+      setUploading(false);
+      // Reset the input so the same file can be re-selected later.
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
   }
 
   return (
@@ -1558,18 +1038,119 @@ export function GalleryPage() {
       >
         <SectionHeader
           title="Krishna Darshan"
-          subtitle="100 Sacred Images of the Divine · Tap any image for full darshan"
+          subtitle="Sacred Images of the Divine · Tap any image for full darshan"
         />
-        <div className="grid grid-cols-3 gap-2.5">
-          {KRISHNA_PHOTOS.map((photo, i) => (
-            <PhotoCard
-              key={photo.id}
-              photo={photo}
-              index={i}
-              onClick={() => handlePhotoOpen(photo)}
-            />
-          ))}
-        </div>
+        {loading ? (
+          <div
+            className="grid grid-cols-3 gap-2.5"
+            data-ocid="gallery.photos.loading_state"
+          >
+            {[0, 1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className="animate-pulse rounded-lg"
+                style={{
+                  aspectRatio: "3/4",
+                  background:
+                    "linear-gradient(135deg, oklch(0.90 0.08 54), oklch(0.86 0.12 46))",
+                  border: "1.5px solid oklch(0.82 0.26 54 / 0.4)",
+                }}
+              />
+            ))}
+          </div>
+        ) : photos.length > 0 ? (
+          <div className="grid grid-cols-3 gap-2.5">
+            {photos.map((photo, i) => (
+              <PhotoCard
+                key={photo.id}
+                photo={photo}
+                index={i}
+                onClick={() => handlePhotoOpen(photo)}
+              />
+            ))}
+          </div>
+        ) : (
+          <div
+            className="flex flex-col items-center justify-center text-center py-16 px-6 rounded-2xl"
+            style={{
+              background:
+                "linear-gradient(160deg, oklch(0.96 0.06 62) 0%, oklch(0.92 0.10 54) 100%)",
+              border: "2px dashed oklch(0.72 0.24 54 / 0.45)",
+              boxShadow: "0 4px 24px oklch(0.18 0.08 46 / 0.18)",
+            }}
+            data-ocid="gallery.photos.empty_state"
+          >
+            <div className="text-5xl mb-4">🪷</div>
+            <p
+              className="font-display font-bold italic mb-2"
+              style={{
+                fontSize: "clamp(1.1rem, 4vw, 1.4rem)",
+                color: "oklch(0.56 0.26 46)",
+                textShadow: "0 0 20px oklch(0.82 0.30 54 / 0.25)",
+              }}
+            >
+              ॐ No images yet
+            </p>
+            <p
+              className="font-body italic"
+              style={{
+                fontSize: "0.85rem",
+                color: "oklch(0.52 0.18 46 / 0.85)",
+                maxWidth: "20rem",
+                lineHeight: 1.7,
+              }}
+            >
+              Your divine photos will appear here. Add your own Krishna photos
+              to begin your darshan journey.
+            </p>
+            <button
+              type="button"
+              className="wax-seal-btn mt-6"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              data-ocid="gallery.upload_button"
+            >
+              {uploading ? "Offering…" : "🪷 Add Krishna Photo"}
+            </button>
+            {uploadError && (
+              <p
+                className="font-body italic mt-3 text-center"
+                style={{
+                  fontSize: "0.78rem",
+                  color: "oklch(0.50 0.20 25 / 0.95)",
+                  maxWidth: "20rem",
+                }}
+                data-ocid="gallery.upload_error"
+              >
+                {uploadError}
+              </p>
+            )}
+            <div className="flex items-center gap-3 mt-5 w-full max-w-xs">
+              <div
+                style={{
+                  flex: 1,
+                  height: "1px",
+                  background:
+                    "linear-gradient(to right, transparent, oklch(0.72 0.22 54 / 0.5))",
+                }}
+              />
+              <span
+                className="font-display text-xs tracking-widest"
+                style={{ color: "oklch(0.68 0.24 46 / 0.7)" }}
+              >
+                ✦ श्री कृष्ण ✦
+              </span>
+              <div
+                style={{
+                  flex: 1,
+                  height: "1px",
+                  background:
+                    "linear-gradient(to left, transparent, oklch(0.72 0.22 54 / 0.5))",
+                }}
+              />
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ── Section 2: Story Cards ── */}
@@ -1608,12 +1189,37 @@ export function GalleryPage() {
         {openPhoto && (
           <PhotoModal
             photo={openPhoto}
-            allPhotos={KRISHNA_PHOTOS}
+            allPhotos={photos}
             onClose={() => setOpenPhoto(null)}
             onNavigate={(p) => setOpenPhoto(p)}
           />
         )}
       </AnimatePresence>
+
+      {/* Floating add button — visible once the gallery has photos */}
+      {photos.length > 0 && (
+        <button
+          type="button"
+          className="wax-seal-btn fixed bottom-6 right-6 z-40 shadow-lg"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+          aria-label="Add Krishna photo"
+          data-ocid="gallery.floating_upload_button"
+        >
+          {uploading ? "Offering…" : "＋ Add"}
+        </button>
+      )}
+
+      {/* Hidden file input — triggered by the upload buttons */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={handleFileSelect}
+        data-ocid="gallery.file_input"
+      />
 
       <div className="rainbow-border-line" />
 

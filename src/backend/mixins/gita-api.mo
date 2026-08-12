@@ -9,6 +9,9 @@ mixin (
   mantras : Map.Map<Text, Types.MantraEntry>,
   festivals : Map.Map<Text, Types.Festival>,
   challenges : Map.Map<Text, Types.DailyChallenge>,
+  granths : Map.Map<Text, Types.Granth>,
+  granthChapters : Map.Map<(Text, Nat), Types.GranthChapter>,
+  granthVerses : Map.Map<(Text, Nat, Nat), Types.GranthVerse>,
 ) {
   public query func listChapters() : async [Types.Chapter] {
     GitaLib.listChapters(chapters);
@@ -44,5 +47,30 @@ mixin (
 
   public query func getGuidanceByCategory(category : Text) : async ?Types.GuidanceResult {
     GitaLib.getGuidanceByCategory(guidanceMap, category);
+  };
+
+  // ─── Digital Library (Pustakaalaye) — Granth accessors ──────────────────────
+  public query func listGranths() : async [Types.Granth] {
+    GitaLib.listGranths(granths);
+  };
+
+  public query func getGranth(granthId : Text) : async ?Types.Granth {
+    GitaLib.getGranth(granths, granthId);
+  };
+
+  public query func listGranthChapters(granthId : Text) : async [Types.GranthChapter] {
+    GitaLib.listGranthChapters(granthChapters, granthId);
+  };
+
+  public query func getGranthChapter(granthId : Text, chapterId : Nat) : async ?Types.GranthChapter {
+    GitaLib.getGranthChapter(granthChapters, granthId, chapterId);
+  };
+
+  public query func getGranthVerse(granthId : Text, chapterId : Nat, verseId : Nat) : async ?Types.GranthVerse {
+    GitaLib.getGranthVerse(granthVerses, granthId, chapterId, verseId);
+  };
+
+  public query func listGranthVerses(granthId : Text, chapterId : Nat) : async [Types.GranthVerse] {
+    GitaLib.listGranthVerses(granthVerses, granthId, chapterId);
   };
 };

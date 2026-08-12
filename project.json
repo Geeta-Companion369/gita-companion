@@ -1,30 +1,25 @@
 {
-  "overview": "Gita Companion is a deeply sacred, immersive spiritual platform delivering the complete Bhagavad Gita, Krishna AI guidance, 21 sacred pathways, a 38-book animated scripture library, and the Kurukshetra Sacred Story — designed to make Krishna's presence felt on every screen through vibrant temple aesthetics and full offline accessibility.",
+  "overview": "A Sanatan Dharma companion app with 29 sacred pathways filled with real content — Gita library, daily duties, mantras, fasts, and spiritual practices.",
   "features": [
-    "21 Sacred Pathways including Bhagavad Gita Reader, Krishna AI Chatbot, Digital Mala, Naam Jaap, Virtual Temple, and Life Purpose Finder",
-    "38-book animated Vedic Library with Ashtavakra Gita, 4 Vedas, 18 Puranas, and rare scriptures — fully embedded",
-    "Kurukshetra Sacred Story — all 18 days with full detail, Gita verses, and sacred artwork",
-    "Roadmap to Moksha powered by Ashtavakra Gita teachings with Library interlinking",
-    "Virtual Temple with HD deity photos, day-specific idols, and animated offerings",
-    "Krishna AI deeply interlinked with Library — every answer points to exact book and chapter",
-    "Vibrant gold, saffron, lotus pink design — zero black backgrounds — love at first sight",
-    "Emergency Mode with 70+ helplines fully offline, user's personal railway station story",
-    "Garbha Sanskar 280-day pregnancy journey and Baby's Spiritual Passport",
-    "Antim Yaatra with all 13 Shradh days and Garuda Purana passages",
-    "Satsang Circles with internal community chat",
-    "Achievements, rewards, points store, and unlockable sacred books"
+    "29 Sacred Pathways with filled-in content",
+    "Gita Library with all 18 chapters and 700 verses",
+    "Daily Panchaang on the home page",
+    "Aachar Saadhna daily duties and ritual explanations",
+    "Siddhi Saadhna with 8 Siddhis, 9 Nidhis, and Kalas",
+    "Pitru Saadhna ancestor rites",
+    "Guru Parampara with 4 Sampradayas and Diksha Vidhi",
+    "Karma Yoga with karma types",
+    "Vrat Saadhna with 18 fasts and 24 Ekadashis",
+    "Mantra and Mala practice with 108 mantras"
   ],
-  "category": "spirituality",
+  "category": "productivity",
   "tags": [
-    "bhagavad-gita",
-    "krishna",
-    "hinduism",
-    "sanatan-dharma",
-    "spirituality",
-    "vedic",
-    "library",
-    "meditation",
-    "dharma"
+    "spiritual",
+    "hindu",
+    "gita",
+    "dharma",
+    "mantra",
+    "panchaang"
   ],
-  "last_updated": "2026-04-28T02:59:04.609Z"
+  "last_updated": "2026-08-07T04:45:26.178Z"
 }

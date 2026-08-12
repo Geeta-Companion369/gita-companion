@@ -20,7 +20,7 @@ module {
     nextId.value += 1;
     let meta : Types.GalleryImageMeta = {
       id;
-      assetId    = input.assetId;
+      asset      = input.asset;
       uploader;
       category   = input.category;
       caption    = input.caption;
